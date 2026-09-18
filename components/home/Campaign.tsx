@@ -1,25 +1,49 @@
+import Image from 'next/image';
+import Link from 'next/link';
+
 export default function Campaign() {
   return (
-    <section className="max-w-[1440px] mx-auto px-6 lg:px-16 my-10" id="campaign">
-      <div className="relative bg-primary-container text-surface rounded-2xl overflow-hidden p-8 lg:p-14 border border-outline-variant/20 shadow-[0_20px_48px_-8px_rgba(45,32,36,0.15)] flex flex-col md:flex-row items-center justify-between gap-8">
-        {/* Pattern Overlay */}
-        <div className="absolute -right-20 -bottom-20 w-80 h-80 rounded-full border border-secondary-fixed/20 pointer-events-none"></div>
-        <div className="absolute -left-10 -top-10 w-60 h-60 rounded-full border border-secondary-fixed/10 pointer-events-none"></div>
-        
-        <div className="max-w-2xl relative z-10">
-          <span className="font-label-sm text-label-sm text-secondary-fixed tracking-[0.2em] uppercase block mb-2">Festive Privileges &amp; Curations</span>
-          <h2 className="font-headline-lg text-headline-lg lg:text-[40px] text-surface font-medium leading-tight">
-            More Sparkle, More Reasons <br className="hidden sm:block"/>to Celebrate
-          </h2>
-          <p className="font-body-md text-body-md text-on-primary-container mt-3 max-w-lg">
-            Enjoy up to 20% off making charges on signature diamond creations and complimentary bespoke engraving throughout this season.
-          </p>
-        </div>
-        
-        <div className="relative z-10 flex-shrink-0">
-          <a className="px-8 py-4 bg-secondary-fixed text-on-secondary-fixed hover:bg-secondary-fixed-dim font-label-lg text-label-lg rounded-full transition-all duration-200 inline-block shadow-lg hover:scale-[1.02]" href="#offers">
-            Shop Festival Offers
-          </a>
+    <section className="relative w-full overflow-hidden" id="campaign">
+      {/* Full-width banner image */}
+      <div className="relative w-full aspect-[16/6] md:aspect-[21/7] lg:aspect-[24/7]">
+        <Image
+          src="/images/hero/banner-3.png"
+          alt="Jewellery that Blooms with You"
+          fill
+          className="object-cover object-center"
+        />
+
+        {/* Dark gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-l from-black/75 via-black/40 to-transparent sm:via-black/30 sm:to-transparent" />
+        {/* On mobile: center overlay */}
+        <div className="absolute inset-0 bg-black/30 sm:hidden" />
+
+        {/* Text overlay */}
+        <div className="absolute inset-0 flex items-center justify-center sm:justify-end">
+          <div className="px-5 sm:px-16 lg:px-24 text-center sm:text-right max-w-xs sm:max-w-xl lg:max-w-2xl">
+            <span className="text-[10px] sm:text-xs tracking-[0.3em] uppercase text-[#D4AF37] font-semibold block mb-2 sm:mb-3">
+              Natural Diamonds
+            </span>
+            <h2
+              className="text-white leading-tight"
+              style={{
+                fontFamily: 'Playfair Display, serif',
+                fontSize: 'clamp(22px, 5vw, 58px)',
+              }}
+            >
+              Jewellery that <br />
+              <em>Blooms with You</em>
+            </h2>
+            <p className="text-white/80 text-xs sm:text-base mt-2 sm:mt-3 mb-4 sm:mb-6 leading-relaxed hidden sm:block">
+              Timeless pieces for your every special moment.
+            </p>
+            <Link
+              href="/anthologies"
+              className="inline-block bg-[#D4AF37] hover:bg-[#c09c2d] text-[#0F0F11] font-semibold px-5 sm:px-7 py-2 sm:py-3 rounded-full text-xs sm:text-sm tracking-wide transition-all duration-200 hover:scale-[1.02] shadow-lg"
+            >
+              Shop Now
+            </Link>
+          </div>
         </div>
       </div>
     </section>

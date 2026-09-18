@@ -18,10 +18,10 @@ export default function CartSidebar() {
       />
       
       {/* Sidebar */}
-      <div className="fixed top-0 right-0 h-full w-full sm:w-[400px] bg-surface shadow-2xl z-[101] flex flex-col transform transition-transform duration-300 ease-in-out border-l border-outline-variant/30">
+      <div className="fixed top-0 right-0 h-full w-full sm:w-[380px] md:w-[420px] bg-surface shadow-2xl z-[101] flex flex-col transform transition-transform duration-300 ease-in-out border-l border-outline-variant/30">
         
         {/* Header */}
-        <div className="px-6 py-4 border-b border-outline-variant/30 flex items-center justify-between">
+        <div className="px-4 sm:px-6 py-4 border-b border-outline-variant/30 flex items-center justify-between">
           <h2 className="font-headline-sm text-headline-sm text-primary uppercase tracking-wider">Your Bag ({items.length})</h2>
           <button 
             onClick={closeCart}
@@ -32,7 +32,7 @@ export default function CartSidebar() {
         </div>
 
         {/* Cart Items */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-5 sm:space-y-6">
           {items.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center space-y-4 text-on-surface-variant">
               <span className="material-symbols-outlined text-[48px] opacity-50">shopping_bag</span>
@@ -82,7 +82,7 @@ export default function CartSidebar() {
 
         {/* Footer / Summary */}
         {items.length > 0 && (
-          <div className="border-t border-outline-variant/30 p-6 bg-surface-container-lowest">
+          <div className="border-t border-outline-variant/30 px-4 sm:px-6 py-4 sm:py-5 bg-surface-container-lowest">
             <div className="space-y-3 mb-6">
               <div className="flex justify-between text-body-md text-on-surface-variant">
                 <span>Subtotal</span>
@@ -97,10 +97,10 @@ export default function CartSidebar() {
                 <span>₹{total.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
               </div>
             </div>
-            <button className="w-full bg-primary text-surface py-4 rounded-full font-label-lg uppercase tracking-wider hover:bg-tertiary transition-colors flex items-center justify-center gap-2">
+            <Link href="/checkout" onClick={closeCart} className="w-full bg-primary text-surface py-4 rounded-full font-label-lg uppercase tracking-wider hover:bg-tertiary transition-colors flex items-center justify-center gap-2">
               Proceed to Checkout
               <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
-            </button>
+            </Link>
             <p className="text-center text-label-sm text-on-surface-variant mt-4">
               Complimentary shipping on all orders.
             </p>

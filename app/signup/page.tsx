@@ -9,6 +9,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 
 export default function SignupPage() {
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -26,6 +27,11 @@ export default function SignupPage() {
     const { error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: {
+          full_name: fullName,
+        }
+      }
     });
 
     if (error) {
@@ -36,8 +42,7 @@ export default function SignupPage() {
       setIsLoading(false);
       // Assuming auto-login is true or email confirmation is disabled for now
       setTimeout(() => {
-        router.push('/');
-        router.refresh();
+        window.location.href = '/';
       }, 2000);
     }
   };
@@ -68,6 +73,17 @@ export default function SignupPage() {
                 </div>
               )}
               
+              <div className="space-y-1">
+                <label className="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant">Full Name</label>
+                <input 
+                  type="text" 
+                  required
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="w-full bg-surface border border-outline-variant rounded-md px-4 py-2.5 text-on-surface focus:outline-none focus:border-primary transition-colors"
+                />
+              </div>
+
               <div className="space-y-1">
                 <label className="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant">Email</label>
                 <input 

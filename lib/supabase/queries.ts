@@ -15,9 +15,19 @@ export async function getFeaturedProducts(): Promise<Product[]> {
 
   if (error) {
     console.error('Error fetching featured products:', error);
-    return [];
   }
-  return data || [];
+
+  if (data && data.length > 0) {
+    return data;
+  }
+
+  // Fallback: return latest products if none explicitly marked as featured
+  const fallback = await supabase
+    .from('products')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  return fallback.data || [];
 }
 
 export async function getNewArrivals(): Promise<Product[]> {
@@ -30,9 +40,19 @@ export async function getNewArrivals(): Promise<Product[]> {
 
   if (error) {
     console.error('Error fetching new arrivals:', error);
-    return [];
   }
-  return data || [];
+
+  if (data && data.length > 0) {
+    return data;
+  }
+
+  // Fallback: return latest products if none explicitly marked as new arrival
+  const fallback = await supabase
+    .from('products')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  return fallback.data || [];
 }
 
 export async function getProductsByCategorySlug(slug: string): Promise<{ category: Category | null, products: Product[] }> {

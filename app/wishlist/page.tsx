@@ -78,9 +78,9 @@ export default function WishlistPage() {
     <>
       <AnnouncementBar />
       <Header />
-      <main className="flex-grow w-full max-w-[1440px] mx-auto px-6 lg:px-16 pt-6 pb-24">
+      <main className="flex-grow w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-16 pt-4 sm:pt-6 pb-16 sm:pb-24">
         <div className="mb-10 text-center md:text-left">
-          <h1 className="text-display-md text-primary font-normal mb-2">Your Wishlist</h1>
+          <h1 className="text-[26px] sm:text-display-md text-primary font-normal mb-2">Your Wishlist</h1>
           <p className="text-body-md text-on-surface-variant">Curated pieces saved for later.</p>
         </div>
 
@@ -94,7 +94,7 @@ export default function WishlistPage() {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             {products.map(product => (
               <ProductCard
                 key={product.id}
@@ -105,7 +105,9 @@ export default function WishlistPage() {
                 material={product.material}
                 title={product.title}
                 certification={product.certification || 'Verified'}
-                price={`₹${product.price.toLocaleString('en-IN')}`}
+                price={product.price}
+                mrp={product.mrp}
+                stock={product.stock}
                 slug={product.slug}
               />
             ))}

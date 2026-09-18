@@ -1,66 +1,86 @@
+"use client";
+
+import { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+
+const slides = [
+  { id: 1, src: '/images/hero/banner-1.png', alt: 'Timeless Beauty in Every Detail', href: '/collections' },
+  { id: 2, src: '/images/hero/banner-2.png', alt: 'Timeless Elegance for Every You', href: '/new-arrivals' },
+  { id: 3, src: '/images/hero/banner-3.png', alt: 'Jewellery that Blooms with You', href: '/anthologies' },
+  { id: 4, src: '/images/hero/banner-4.png', alt: 'Timeless Bangles for Every Occasion', href: '/collections' },
+];
+
 export default function Hero() {
+  const [current, setCurrent] = useState(0);
+
+  const nextSlide = useCallback(() => {
+    setCurrent((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
+  }, []);
+
+  const prevSlide = () => {
+    setCurrent((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
+  };
+
+  useEffect(() => {
+    const timer = setInterval(nextSlide, 5000);
+    return () => clearInterval(timer);
+  }, [nextSlide]);
+
   return (
-    <section className="relative bg-surface-container-low overflow-hidden border-b border-outline-variant/30">
-      <div className="max-w-[1440px] mx-auto px-6 lg:px-16 py-12 lg:py-20 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center min-h-[720px]">
-        {/* Text Composition */}
-        <div className="lg:col-span-6 space-y-6 z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-secondary/40 bg-surface/80">
-            <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
-            <span className="font-label-sm text-label-sm text-secondary tracking-widest uppercase">The Royal Solitaire Anthology 2025</span>
+    <section className="relative w-full overflow-hidden bg-surface-container-low group">
+      {/* Slider Container */}
+      <div 
+        className="flex transition-transform duration-700 ease-in-out" 
+        style={{ transform: `translateX(-${current * 100}%)` }}
+      >
+        {slides.map((slide) => (
+          <div key={slide.id} className="min-w-full relative aspect-[4/3] sm:aspect-[16/9] md:aspect-[21/9] lg:aspect-[24/9]" style={{ position: 'relative' }}>
+            <Link href={slide.href} className="block w-full h-full absolute inset-0">
+              <Image
+                src={slide.src}
+                alt={slide.alt}
+                fill
+                className="object-cover object-center"
+                priority={slide.id === 1}
+              />
+            </Link>
           </div>
-          <h1 className="font-display-lg text-display-lg-mobile md:text-display-lg text-primary leading-tight">
-            Made to Be <br /><span className="italic font-normal">Remembered</span>
-          </h1>
-          <p className="font-body-lg text-body-lg text-on-surface-variant max-w-lg leading-relaxed">
-            Timeless jewellery crafted in 18K gold and conflict-free diamonds for every extraordinary moment, sculpted with Indian royal intimacy.
-          </p>
-          <div className="pt-4 flex flex-wrap items-center gap-4">
-            <a className="px-8 py-4 bg-primary-container hover:bg-tertiary-container text-surface font-label-lg text-label-lg rounded-full shadow-sm hover:scale-[1.01] transition-all duration-200" href="#new-arrivals">
-              Shop New Arrivals
-            </a>
-            <a className="px-8 py-4 border border-primary text-primary hover:bg-surface-container font-label-lg text-label-lg rounded-full transition-all duration-200" href="#collections">
-              Explore Collections
-            </a>
-          </div>
-          {/* Micro Features */}
-          <div className="pt-8 grid grid-cols-3 gap-6 border-t border-outline-variant/40">
-            <div>
-              <span className="block font-headline-sm text-headline-sm text-primary">100%</span>
-              <span className="font-label-sm text-label-sm text-outline tracking-wider">BIS HALLMARKED</span>
-            </div>
-            <div>
-              <span className="block font-headline-sm text-headline-sm text-primary">IGI / GIA</span>
-              <span className="font-label-sm text-label-sm text-outline tracking-wider">NATURAL DIAMONDS</span>
-            </div>
-            <div>
-              <span className="block font-headline-sm text-headline-sm text-primary">Bespoke</span>
-              <span className="font-label-sm text-label-sm text-outline tracking-wider">MASTER ATELIERS</span>
-            </div>
-          </div>
-        </div>
-        
-        {/* Hero Visual Composition */}
-        <div className="lg:col-span-6 relative">
-          <div className="relative w-full aspect-[4/5] max-w-[540px] mx-auto rounded-xl overflow-hidden border border-outline-variant/40 shadow-[0_20px_48px_-8px_rgba(45,32,36,0.09)]">
-            <img className="w-full h-full object-cover" data-alt="Editorial portrait of an elegant Indian woman wearing layered high-end 18K gold and solitaire diamond necklaces with matching chandelier earrings, set against a soft ivory studio background with warm atmospheric lighting highlighting the glistening jewelry details and artisanal craftsmanship." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0FB5dAQipFSv89rFwMwZCZkI-5XdmdOGQ_XR2lBdIjLiK_ZJ20efMBqAW_OGEW6n2shguosrj0IfoELmeQi7-BIU_GI6-Zx51A_8wbhuI4dGjC2O4C9VENXNb8Sy2Zx8-BVUL-k2RfTfVyPDB5TTmTAML--wqa0xqc_UUOsxlTpST-OwO-gpbYXbGcoU98K8U3mZWTFRb7AzE1ifEfZTwEEjRH7-NVBHtynfVbBft5bRbgBLc4NCx2A" alt="Hero Banner" />
-            
-            {/* Floating Editorial Pill */}
-            <div className="absolute bottom-6 left-6 right-6 p-4 rounded-xl bg-surface/90 backdrop-blur-md border border-outline-variant/50 flex items-center justify-between">
-              <div>
-                <p className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Featured Haute Piece</p>
-                <p className="font-headline-sm text-headline-sm text-primary">Aurelia Cascade Collar in 18K Gold</p>
-              </div>
-              <span className="font-body-md text-body-md font-semibold text-secondary">₹1,85,000</span>
-            </div>
-          </div>
-          
-          {/* Slider Pagination Accent */}
-          <div className="flex items-center justify-center gap-2 mt-6">
-            <span className="w-8 h-1 bg-secondary rounded-full"></span>
-            <span className="w-2 h-1 bg-outline-variant rounded-full"></span>
-            <span className="w-2 h-1 bg-outline-variant rounded-full"></span>
-          </div>
-        </div>
+        ))}
+      </div>
+
+      {/* Prev Button */}
+      <button 
+        onClick={prevSlide}
+        className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 bg-white/90 hover:bg-white rounded-full flex items-center justify-center text-primary shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300 focus:outline-none"
+        aria-label="Previous Slide"
+      >
+        <span className="material-symbols-outlined text-2xl leading-none">chevron_left</span>
+      </button>
+
+      {/* Next Button */}
+      <button 
+        onClick={nextSlide}
+        className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 bg-white/90 hover:bg-white rounded-full flex items-center justify-center text-primary shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300 focus:outline-none"
+        aria-label="Next Slide"
+      >
+        <span className="material-symbols-outlined text-2xl leading-none">chevron_right</span>
+      </button>
+
+      {/* Pagination Dots */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2">
+        {slides.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => setCurrent(index)}
+            className={`transition-all duration-300 rounded-full ${
+              current === index 
+                ? 'w-6 h-1.5 bg-primary' 
+                : 'w-2 h-1.5 bg-primary/40 hover:bg-primary/60'
+            }`}
+            aria-label={`Go to slide ${index + 1}`}
+          />
+        ))}
       </div>
     </section>
   );

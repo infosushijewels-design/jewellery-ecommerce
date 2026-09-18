@@ -25,6 +25,7 @@ interface CartContextType {
   subtotal: number;
   tax: number; // 3% GST
   total: number;
+  clearCart: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -82,6 +83,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const toggleCart = () => setIsCartOpen((prev) => !prev);
   const openCart = () => setIsCartOpen(true);
   const closeCart = () => setIsCartOpen(false);
+  const clearCart = () => setItems([]);
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const tax = subtotal * 0.03; // 3% GST for jewellery in India
@@ -98,6 +100,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         toggleCart,
         openCart,
         closeCart,
+        clearCart,
         subtotal,
         tax,
         total,

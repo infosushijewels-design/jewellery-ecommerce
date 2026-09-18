@@ -16,6 +16,8 @@ const playfair = Playfair_Display({
   style: ['normal', 'italic'],
 });
 
+import { ToastProvider } from "@/lib/context/ToastContext";
+
 export const metadata: Metadata = {
   title: "Sushi Jewels | Fine High Jewellery",
   description: "Revered high jewellery crafted with BIS 916 hallmarked pure gold and conflict-free natural diamonds.",
@@ -34,14 +36,16 @@ export default function RootLayout({
       <head>
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       </head>
-      <body className="bg-background text-on-surface antialiased selection:bg-secondary-container selection:text-on-secondary-fixed">
+      <body className="bg-background text-on-surface antialiased selection:bg-secondary-container selection:text-on-secondary-fixed min-h-screen flex flex-col overflow-x-hidden">
         <AuthProvider>
-          <CartProvider>
-            <WishlistProvider>
-              {children}
-              <CartSidebar />
-            </WishlistProvider>
-          </CartProvider>
+          <ToastProvider>
+            <CartProvider>
+              <WishlistProvider>
+                {children}
+                <CartSidebar />
+              </WishlistProvider>
+            </CartProvider>
+          </ToastProvider>
         </AuthProvider>
       </body>
     </html>
