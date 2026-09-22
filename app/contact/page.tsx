@@ -6,6 +6,7 @@ import Footer from '@/components/layout/Footer';
 import AnnouncementBar from '@/components/layout/AnnouncementBar';
 import Breadcrumb from '@/components/ui/Breadcrumb';
 import { useToast } from '@/lib/context/ToastContext';
+import { createClient } from '@/lib/supabase/client';
 
 const categories = ['Engagement', 'High Jewellery', 'Bespoke'];
 
@@ -30,12 +31,25 @@ export default function ContactPage() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulated submission — no backend endpoint for enquiries in this phase.
-    await new Promise((resolve) => setTimeout(resolve, 900));
-
-    showToast('Thank you. Our concierge team will reach out within 24 hours.', 'success');
-    setForm({ name: '', email: '', phone: '', category: categories[0], message: '' });
-    setIsSubmitting(false);
+    try {
+      const { error } = await createClient()
+        .from('contact_inquiries')
+        .insert({
+          name: form.name.trim(),
+          email: form.email.trim(),
+          phone: form.phone.trim() || null,
+          category: form.category,
+          message: form.message.trim(),
+        });
+      if (error) throw error;
+      showToast('Thank you. Our concierge team will reach out within 24 hours.', 'success');
+      setForm({ name: '', email: '', phone: '', category: categories[0], message: '' });
+    } catch (err) {
+      console.error('Failed to submit enquiry:', err);
+      showToast('Sorry, we could not send your message. Please try again or email concierge@sushijewels.com.', 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

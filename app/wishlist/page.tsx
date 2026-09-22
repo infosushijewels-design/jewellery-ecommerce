@@ -108,6 +108,8 @@ export default function WishlistPage() {
                 price={product.price}
                 mrp={product.mrp}
                 stock={product.stock}
+                isNewArrival={product.is_new_arrival}
+                isFeatured={product.is_featured}
                 slug={product.slug}
               />
             ))}

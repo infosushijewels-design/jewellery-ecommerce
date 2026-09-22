@@ -1,12 +1,18 @@
 import type { Metadata } from 'next';
 import LegalLayout, { LegalSection } from '@/components/legal/LegalLayout';
+import LegalContent from '@/components/legal/LegalContent';
+import { getLegalPage } from '@/lib/supabase/queries';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy | Sushi Jewels',
   description: 'How Sushi Jewels collects, uses, and protects your data, including our 256-bit SSL encryption and payment tokenization standards.',
 };
 
-export default function PrivacyPolicyPage() {
+export default async function PrivacyPolicyPage() {
+  // Content edited in Admin → Legal Pages overrides the default copy below
+  const custom = await getLegalPage('privacy-policy');
+  if (custom) return <LegalContent page={custom} />;
+
   return (
     <LegalLayout
       eyebrow="Legal"

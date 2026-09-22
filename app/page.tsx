@@ -12,7 +12,7 @@ import SignatureEdit from '@/components/home/SignatureEdit';
 import GiftFinder from '@/components/home/GiftFinder';
 import Heritage from '@/components/home/Heritage';
 import TrustMatrix from '@/components/home/TrustMatrix';
-import StoreExperience from '@/components/home/StoreExperience';
+import StoreLocator from '@/components/home/StoreLocator';
 import Testimonials from '@/components/home/Testimonials';
 import Newsletter from '@/components/layout/Newsletter';
 import Footer from '@/components/layout/Footer';
@@ -35,7 +35,7 @@ export default function Home() {
         <GiftFinder />
         <Heritage />
         <TrustMatrix />
-        <StoreExperience />
+        <StoreLocator />
         <Testimonials />
         <Newsletter />
       </main>

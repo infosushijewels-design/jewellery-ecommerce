@@ -17,6 +17,8 @@ interface ProductCardProps {
   price: number;
   mrp?: number | null;
   stock?: number;
+  isNewArrival?: boolean;
+  isFeatured?: boolean;
   slug: string;
 }
 
@@ -31,6 +33,8 @@ export default function ProductCard({
   price,
   mrp,
   stock,
+  isNewArrival,
+  isFeatured,
   slug
 }: ProductCardProps) {
   const { wishlistIds, toggleWishlist } = useWishlist();
@@ -81,6 +85,16 @@ export default function ProductCard({
                   {badge}
                 </span>
               )}
+              {isNewArrival && (
+                <span className="bg-green-700 text-green-50 px-2 py-0.5 rounded-full text-[9px] sm:text-label-sm font-label-sm uppercase">
+                  New
+                </span>
+              )}
+              {isFeatured && (
+                <span className="bg-purple-700 text-purple-50 px-2 py-0.5 rounded-full text-[9px] sm:text-label-sm font-label-sm uppercase">
+                  Featured
+                </span>
+              )}
               {hasDiscount && (
                 <span className="bg-emerald-700 text-emerald-50 px-2 py-0.5 rounded-full text-[9px] sm:text-label-sm font-label-sm uppercase">
                   Save {discountPercent}%
@@ -89,13 +103,13 @@ export default function ProductCard({
             </div>
             {isSoldOut ? (
               <div className="absolute inset-0 bg-primary/60 flex items-center justify-center">
-                <span className="bg-surface px-3 py-1 rounded-full text-[9px] sm:text-label-sm font-label-sm uppercase text-primary">
-                  Made to Order
+                <span className="bg-red-700 text-red-50 px-3 py-1 rounded-full text-[9px] sm:text-label-sm font-label-sm uppercase">
+                  Sold Out
                 </span>
               </div>
             ) : isLowStock ? (
               <div className="absolute bottom-2 left-2">
-                <span className="bg-error-container text-error px-2 py-0.5 rounded-full text-[9px] sm:text-label-sm font-label-sm uppercase">
+                <span className="bg-amber-500 text-amber-950 px-2 py-0.5 rounded-full text-[9px] sm:text-label-sm font-label-sm uppercase">
                   Only {stock} Left
                 </span>
               </div>

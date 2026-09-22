@@ -3,13 +3,13 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import AnnouncementBar from '@/components/layout/AnnouncementBar';
 import ProductCatalog from '@/components/product/ProductCatalog';
-import { getNewArrivals } from '@/lib/supabase/queries';
+import { getCategoryList, getNewArrivals } from '@/lib/supabase/queries';
 import Link from 'next/link';
 
 export const revalidate = 0;
 
 export default async function NewArrivalsPage() {
-  const products = await getNewArrivals();
+  const [products, categories] = await Promise.all([getNewArrivals(), getCategoryList()]);
 
   return (
     <>
@@ -45,7 +45,7 @@ export default async function NewArrivalsPage() {
           </div>
         ) : (
           <Suspense fallback={null}>
-            <ProductCatalog products={products} />
+            <ProductCatalog products={products} categories={categories} />
           </Suspense>
         )}
       </main>

@@ -174,3 +174,14 @@ html {
 * {
   -webkit-overflow-scrolling: touch;
 }
+
+/* Admin: right-side drawer slide-in */
+@keyframes drawerIn {
+  from { transform: translateX(24px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

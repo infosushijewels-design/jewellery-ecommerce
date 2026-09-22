@@ -3,7 +3,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import AnnouncementBar from '@/components/layout/AnnouncementBar';
 import ProductCatalog from '@/components/product/ProductCatalog';
-import { getProductsByCategorySlug } from '@/lib/supabase/queries';
+import { getCategoryList, getProductsByCategorySlug } from '@/lib/supabase/queries';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -11,7 +11,7 @@ export const revalidate = 0;
 
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const { category, products } = await getProductsByCategorySlug(slug);
+  const [{ category, products }, categories] = await Promise.all([getProductsByCategorySlug(slug), getCategoryList()]);
 
   if (!category) {
     return (
@@ -69,7 +69,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
           </div>
         ) : (
           <Suspense fallback={null}>
-            <ProductCatalog products={products} />
+            <ProductCatalog products={products} categories={categories} />
           </Suspense>
         )}
       </main>

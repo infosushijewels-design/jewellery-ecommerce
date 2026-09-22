@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 
 export type PriceRangeKey = 'under25' | '25to50' | 'above50';
-export type MetalKey = '18k-yellow' | '18k-rose' | '22k-gold' | 'platinum';
+export type MetalKey = '18k-yellow' | '18k-rose' | '18k-white' | '22k-gold' | 'platinum';
 export type GemstoneKey = 'solitaire' | 'gemstone' | 'plain-gold';
 
 export const PRICE_RANGE_OPTIONS: { key: PriceRangeKey; label: string }[] = [
@@ -15,6 +15,7 @@ export const PRICE_RANGE_OPTIONS: { key: PriceRangeKey; label: string }[] = [
 export const METAL_OPTIONS: { key: MetalKey; label: string }[] = [
   { key: '18k-yellow', label: '18K Yellow Gold' },
   { key: '18k-rose', label: '18K Rose Gold' },
+  { key: '18k-white', label: '18K White Gold' },
   { key: '22k-gold', label: '22K Gold' },
   { key: 'platinum', label: 'Platinum' },
 ];

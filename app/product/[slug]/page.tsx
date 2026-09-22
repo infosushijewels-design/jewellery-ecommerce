@@ -43,6 +43,20 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           {/* Right: Product Details & Actions */}
           <div className="flex flex-col pt-4 lg:pt-8">
             <div className="space-y-4 mb-8">
+              {(product.is_new_arrival || product.is_featured) && (
+                <div className="flex items-center gap-2">
+                  {product.is_new_arrival && (
+                    <span className="bg-green-700 text-green-50 px-3 py-1 rounded-full text-label-sm font-label-sm uppercase tracking-wide">
+                      New
+                    </span>
+                  )}
+                  {product.is_featured && (
+                    <span className="bg-purple-700 text-purple-50 px-3 py-1 rounded-full text-label-sm font-label-sm uppercase tracking-wide">
+                      Featured
+                    </span>
+                  )}
+                </div>
+              )}
               <h1 className="text-[26px] sm:text-headline-lg md:text-display-md text-primary font-normal leading-tight">
                 {product.title}
               </h1>
@@ -74,6 +88,15 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                     </span>
                   </>
                 )}
+                {product.stock <= 0 ? (
+                  <span className="bg-red-700 text-red-50 px-3 py-1 rounded-full text-label-sm font-label-sm uppercase tracking-wide">
+                    Sold Out
+                  </span>
+                ) : product.stock <= 3 ? (
+                  <span className="bg-amber-500 text-amber-950 px-3 py-1 rounded-full text-label-sm font-label-sm uppercase tracking-wide">
+                    Only {product.stock} Left
+                  </span>
+                ) : null}
               </div>
               <span className="block text-label-md font-label-md text-on-surface-variant mt-1">Inclusive of all taxes</span>
             </div>

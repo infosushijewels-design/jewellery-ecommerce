@@ -4,7 +4,8 @@ import CartButton from '@/components/cart/CartButton';
 import Link from 'next/link';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useWishlist } from '@/lib/context/WishlistContext';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
+import SearchBox from './SearchBox';
 
 interface DropdownColumn {
   heading: string;
@@ -57,10 +58,10 @@ const navLinks: NavItem[] = [
       {
         heading: 'Shop by Style',
         links: [
-          { label: 'Engagement Rings', href: '/category/rings' },
-          { label: 'Solitaire Rings', href: '/category/rings' },
-          { label: 'Cocktail Rings', href: '/category/rings' },
-          { label: 'Bands', href: '/category/rings' },
+          { label: 'Engagement Rings', href: '/category/rings?style=engagement' },
+          { label: 'Solitaire Rings', href: '/category/rings?style=solitaire' },
+          { label: 'Cocktail Rings', href: '/category/rings?style=cocktail' },
+          { label: 'Bands', href: '/category/rings?style=bands' },
         ],
       },
       {
@@ -88,10 +89,10 @@ const navLinks: NavItem[] = [
       {
         heading: 'Shop by Style',
         links: [
-          { label: 'Studs', href: '/category/earrings' },
-          { label: 'Hoops', href: '/category/earrings' },
-          { label: 'Drops & Dangles', href: '/category/earrings' },
-          { label: 'Chandeliers', href: '/category/earrings' },
+          { label: 'Studs', href: '/category/earrings?style=studs' },
+          { label: 'Hoops', href: '/category/earrings?style=hoops' },
+          { label: 'Drops & Dangles', href: '/category/earrings?style=drops' },
+          { label: 'Chandeliers', href: '/category/earrings?style=chandeliers' },
         ],
       },
       {
@@ -119,10 +120,10 @@ const navLinks: NavItem[] = [
       {
         heading: 'Shop by Style',
         links: [
-          { label: 'Lightweight Necklaces', href: '/category/necklaces' },
-          { label: 'Everyday Pendants', href: '/category/necklaces' },
-          { label: 'Statement Pieces', href: '/category/necklaces' },
-          { label: 'Mangalsutras', href: '/category/necklaces' },
+          { label: 'Lightweight Necklaces', href: '/category/necklaces?style=lightweight' },
+          { label: 'Everyday Pendants', href: '/category/necklaces?style=pendants' },
+          { label: 'Statement Pieces', href: '/category/necklaces?style=statement' },
+          { label: 'Mangalsutras', href: '/category/necklaces?style=mangalsutra' },
         ],
       },
       {
@@ -150,8 +151,8 @@ const navLinks: NavItem[] = [
       {
         heading: 'Shop by Style',
         links: [
-          { label: 'Tennis Bracelets', href: '/category/bracelets' },
-          { label: 'Charm Bracelets', href: '/category/bracelets' },
+          { label: 'Tennis Bracelets', href: '/category/bracelets?style=tennis' },
+          { label: 'Charm Bracelets', href: '/category/bracelets?style=charm' },
           { label: 'Bangles', href: '/category/bangles' },
         ],
       },
@@ -172,9 +173,9 @@ const navLinks: NavItem[] = [
       {
         heading: 'Shop by Style',
         links: [
-          { label: 'Traditional Bangles', href: '/category/bangles' },
-          { label: 'Diamond Bangles', href: '/category/bangles' },
-          { label: 'Gold Bangles', href: '/category/bangles' },
+          { label: 'Traditional Bangles', href: '/category/bangles?style=traditional' },
+          { label: 'Diamond Bangles', href: '/category/bangles?style=diamond' },
+          { label: 'Gold Bangles', href: '/category/bangles?style=gold' },
         ],
       },
       {
@@ -188,7 +189,7 @@ const navLinks: NavItem[] = [
     ],
   },
   { label: 'Collections', href: '/collections' },
-  { label: 'Offers', href: '#campaign', highlight: true },
+  { label: 'Offers', href: '/#campaign', highlight: true },
 ];
 
 export default function Header() {
@@ -217,18 +218,21 @@ export default function Header() {
 
           {/* Center Search Bar */}
           <div className="hidden lg:flex flex-1 mx-6 xl:mx-12 relative">
-            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-[20px]">
-              search
-            </span>
-            <input
-              className="w-full bg-surface-container-low border border-outline-variant/60 rounded-full py-2.5 pl-11 pr-5 font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/30 transition-all"
-              placeholder="Search rings, necklaces, diamonds..."
-              type="text"
-            />
+            <Suspense fallback={<div className="w-full h-[46px] rounded-full bg-surface-container-low border border-outline-variant/60" />}>
+              <SearchBox placeholder="Search rings, necklaces, diamonds..." />
+            </Suspense>
           </div>
 
           {/* Trailing Icons */}
           <div className="flex items-center ml-auto lg:ml-0">
+            <Link
+              href="/stores"
+              className="h-10 px-2 sm:px-3 flex items-center gap-1.5 text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface-container"
+              title="Find a store"
+            >
+              <span className="material-symbols-outlined text-[22px]">location_on</span>
+              <span className="hidden xl:inline font-label-md text-label-md uppercase tracking-wider">Stores</span>
+            </Link>
             {user ? (
               <div className="group relative">
                 <button className="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface-container" title="Account">
@@ -277,11 +281,10 @@ export default function Header() {
                 {/* Nav Link */}
                 <Link
                   href={link.href}
-                  className={`flex items-center gap-1 px-4 py-3.5 text-[13px] font-medium tracking-wide whitespace-nowrap transition-colors border-b-2 border-transparent group-hover:border-primary group-hover:text-primary ${
-                    link.highlight
+                  className={`flex items-center gap-1 px-4 py-3.5 text-[13px] font-medium tracking-wide whitespace-nowrap transition-colors border-b-2 border-transparent group-hover:border-primary group-hover:text-primary ${link.highlight
                       ? 'text-secondary font-semibold group-hover:border-secondary group-hover:text-secondary'
                       : 'text-on-surface-variant'
-                  }`}
+                    }`}
                 >
                   {link.label}
                   {link.dropdown && (
@@ -344,10 +347,9 @@ export default function Header() {
         </div>
 
         <div className="px-5 py-3 border-b border-outline-variant/20">
-          <div className="relative">
-            <input className="w-full bg-surface-container-low border border-outline-variant/60 rounded-full py-2 pl-9 pr-4 font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:border-secondary transition-all" placeholder="Search jewellery..." type="text" />
-            <span className="material-symbols-outlined absolute left-3 top-2.5 text-outline text-[16px]">search</span>
-          </div>
+          <Suspense fallback={<div className="w-full h-[38px] rounded-full bg-surface-container-low border border-outline-variant/60" />}>
+            <SearchBox placeholder="Search jewellery..." compact onNavigate={closeMobileMenu} />
+          </Suspense>
         </div>
 
         <nav className="flex-1 overflow-y-auto py-4">
@@ -364,18 +366,37 @@ export default function Header() {
           <div className="border-t border-outline-variant/30 mx-4 my-3" />
 
           <div className="px-2 space-y-1">
+            {user && (
+              <div className="flex items-center gap-3 px-4 py-3 mb-1 rounded-lg bg-surface-container-low border border-outline-variant/30">
+                <div className="w-10 h-10 flex-shrink-0 rounded-full bg-secondary/20 text-secondary flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[20px]">person</span>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-primary font-label-lg text-label-lg truncate">{user.email}</p>
+                  <p className="text-on-surface-variant text-[11px]">Logged in</p>
+                </div>
+              </div>
+            )}
+
+            <Link href="/stores" onClick={closeMobileMenu} className="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-label-lg text-label-lg hover:bg-surface-container-low hover:text-primary transition-colors">
+              <span className="material-symbols-outlined text-[20px]">location_on</span>
+              Store Locator
+            </Link>
             <Link href="/wishlist" onClick={closeMobileMenu} className="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-label-lg text-label-lg hover:bg-surface-container-low hover:text-primary transition-colors">
               <span className="material-symbols-outlined text-secondary text-[20px]">favorite</span>
               Wishlist
               {wishlistIds.size > 0 && <span className="ml-auto bg-secondary text-surface text-[10px] h-5 w-5 rounded-full flex items-center justify-center font-semibold">{wishlistIds.size}</span>}
             </Link>
-            <Link href="/orders" onClick={closeMobileMenu} className="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-label-lg text-label-lg hover:bg-surface-container-low hover:text-primary transition-colors">
-              <span className="material-symbols-outlined text-secondary text-[20px]">package_2</span>My Orders
-            </Link>
+
             {user ? (
-              <button onClick={async () => { await signOut(); closeMobileMenu(); window.location.href = '/login'; }} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-error font-label-lg text-label-lg hover:bg-error-container/20 transition-colors">
-                <span className="material-symbols-outlined text-[20px]">logout</span>Sign Out
-              </button>
+              <>
+                <Link href="/orders" onClick={closeMobileMenu} className="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-label-lg text-label-lg hover:bg-surface-container-low hover:text-primary transition-colors">
+                  <span className="material-symbols-outlined text-secondary text-[20px]">package_2</span>My Orders
+                </Link>
+                <button onClick={async () => { await signOut(); closeMobileMenu(); window.location.href = '/login'; }} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-error font-label-lg text-label-lg hover:bg-error-container/20 transition-colors">
+                  <span className="material-symbols-outlined text-[20px]">logout</span>Sign Out
+                </button>
+              </>
             ) : (
               <Link href="/login" onClick={closeMobileMenu} className="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-label-lg text-label-lg hover:bg-surface-container-low hover:text-primary transition-colors">
                 <span className="material-symbols-outlined text-secondary text-[20px]">login</span>Sign In / Register

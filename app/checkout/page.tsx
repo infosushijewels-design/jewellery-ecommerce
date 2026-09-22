@@ -8,6 +8,8 @@ import { useCart } from '@/lib/context/CartContext';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useToast } from '@/lib/context/ToastContext';
 import { createOrder } from '@/lib/supabase/orderService';
+import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
+import { shippingFeeFor } from '@/lib/storeSettings';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -16,6 +18,7 @@ export default function CheckoutPage() {
   const { user } = useAuth();
   const { showToast } = useToast();
   const router = useRouter();
+  const storeSettings = useStoreSettings();
 
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -34,9 +37,17 @@ export default function CheckoutPage() {
     notes: '',
   });
 
-  // Calculate Shipping: Free for orders >= ₹2000, else ₹99
-  const shippingFee = subtotal >= 2000 || subtotal === 0 ? 0 : 99;
+  // Shipping & payment rules come from Admin → Settings
+  const shippingFee = shippingFeeFor(subtotal, storeSettings);
   const calculatedTotal = subtotal + tax + shippingFee;
+  const { codEnabled, onlineEnabled, codMaxOrderValue } = storeSettings.payments;
+  const codAllowed = codEnabled && (codMaxOrderValue <= 0 || calculatedTotal <= codMaxOrderValue);
+  const noPaymentMethod = !codAllowed && !onlineEnabled;
+  const { minOrderValue } = storeSettings.orders;
+  const belowMinimum = minOrderValue > 0 && subtotal < minOrderValue;
+  // If the chosen method isn't available, fall back to the other one
+  const paymentMethod: 'cod' | 'online' =
+    formData.paymentMethod === 'cod' && !codAllowed ? 'online' : formData.paymentMethod === 'online' && !onlineEnabled ? 'cod' : formData.paymentMethod;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -46,6 +57,14 @@ export default function CheckoutPage() {
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (items.length === 0) return;
+    if (belowMinimum) {
+      showToast(`The minimum order value is ₹${minOrderValue.toLocaleString('en-IN')}.`, 'error');
+      return;
+    }
+    if (noPaymentMethod) {
+      showToast('No payment method is available for this order. Please contact us to complete your purchase.', 'error');
+      return;
+    }
 
     setIsProcessing(true);
 
@@ -74,8 +93,8 @@ export default function CheckoutPage() {
         tax,
         shippingFee,
         total: calculatedTotal,
-        paymentMethod: formData.paymentMethod,
-        paymentStatus: formData.paymentMethod === 'online' ? 'paid' : 'pending',
+        paymentMethod,
+        paymentStatus: paymentMethod === 'online' ? 'paid' : 'pending',
         notes: formData.notes,
       });
 
@@ -279,9 +298,20 @@ export default function CheckoutPage() {
                   </h2>
                   
                   <div className="space-y-3 mb-4">
+                    {noPaymentMethod && (
+                      <p className="text-sm text-error bg-error-container/40 rounded-lg px-4 py-3">
+                        Online and cash-on-delivery payments are currently unavailable. Please contact our concierge to place this order.
+                      </p>
+                    )}
+                    {codEnabled && !codAllowed && (
+                      <p className="text-xs text-on-surface-variant">
+                        Cash on Delivery is available for orders up to ₹{codMaxOrderValue.toLocaleString('en-IN')}.
+                      </p>
+                    )}
                     {/* Option 1: COD */}
+                    {codAllowed && (
                     <label className={`flex items-start gap-3.5 p-4 rounded-xl border cursor-pointer transition-all ${
-                      formData.paymentMethod === 'cod' 
+                      paymentMethod === 'cod' 
                         ? 'border-primary bg-surface-container-low shadow-sm' 
                         : 'border-outline-variant/50 hover:border-outline-variant'
                     }`}>
@@ -289,7 +319,7 @@ export default function CheckoutPage() {
                         type="radio" 
                         name="paymentMethod" 
                         value="cod"
-                        checked={formData.paymentMethod === 'cod'} 
+                        checked={paymentMethod === 'cod'} 
                         onChange={handleChange}
                         className="mt-1 accent-primary" 
                       />
@@ -301,10 +331,12 @@ export default function CheckoutPage() {
                         <p className="text-xs text-on-surface-variant mt-1">Pay with cash or UPI at your doorstep upon delivery verification.</p>
                       </div>
                     </label>
+                    )}
 
                     {/* Option 2: Online / Card */}
+                    {onlineEnabled && (
                     <label className={`flex items-start gap-3.5 p-4 rounded-xl border cursor-pointer transition-all ${
-                      formData.paymentMethod === 'online' 
+                      paymentMethod === 'online' 
                         ? 'border-primary bg-surface-container-low shadow-sm' 
                         : 'border-outline-variant/50 hover:border-outline-variant'
                     }`}>
@@ -312,7 +344,7 @@ export default function CheckoutPage() {
                         type="radio" 
                         name="paymentMethod" 
                         value="online"
-                        checked={formData.paymentMethod === 'online'} 
+                        checked={paymentMethod === 'online'} 
                         onChange={handleChange}
                         className="mt-1 accent-primary" 
                       />
@@ -323,7 +355,7 @@ export default function CheckoutPage() {
                         </div>
                         <p className="text-xs text-on-surface-variant mt-1">Simulated instant card checkout (Demo mode enabled).</p>
                         
-                        {formData.paymentMethod === 'online' && (
+                        {paymentMethod === 'online' && (
                           <div className="mt-3 pt-3 border-t border-outline-variant/30 space-y-2">
                             <label className="text-[11px] uppercase tracking-wider text-on-surface-variant block">Simulated Card Number</label>
                             <input 
@@ -336,13 +368,14 @@ export default function CheckoutPage() {
                         )}
                       </div>
                     </label>
+                    )}
                   </div>
                 </section>
               </form>
             </div>
 
             {/* Right: Order Summary */}
-            <div className="lg:col-span-5 order-first lg:order-last">
+            <div className="lg:col-span-5">
               <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-xl p-5 sm:p-6 sticky top-24 shadow-sm">
                 <h2 className="text-title-md font-title-lg text-primary mb-4 uppercase tracking-widest border-b border-outline-variant/30 pb-3">Order Bag ({items.length})</h2>
                 
@@ -369,7 +402,7 @@ export default function CheckoutPage() {
                     <span>₹{subtotal.toLocaleString('en-IN')}</span>
                   </div>
                   <div className="flex justify-between text-on-surface-variant">
-                    <span>GST (3% jewellery tax)</span>
+                    <span>GST ({storeSettings.commerce.gstRate}% jewellery tax)</span>
                     <span>₹{tax.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                   </div>
                   <div className="flex justify-between text-on-surface-variant">
@@ -387,10 +420,16 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
+                {belowMinimum && (
+                  <p className="mt-4 text-xs text-error bg-error-container/40 rounded-lg px-3 py-2">
+                    Add ₹{(minOrderValue - subtotal).toLocaleString('en-IN', { maximumFractionDigits: 0 })} more to reach the minimum order value of ₹{minOrderValue.toLocaleString('en-IN')}.
+                  </p>
+                )}
+
                 <button 
                   type="submit"
                   form="checkout-form"
-                  disabled={isProcessing}
+                  disabled={isProcessing || noPaymentMethod || belowMinimum}
                   className="w-full bg-primary text-surface py-3.5 rounded-full font-label-lg uppercase tracking-wider hover:bg-tertiary transition-colors mt-6 disabled:opacity-50 flex justify-center items-center gap-2 shadow-md cursor-pointer"
                 >
                   {isProcessing ? (

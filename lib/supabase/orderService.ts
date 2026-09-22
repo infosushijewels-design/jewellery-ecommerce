@@ -1,10 +1,12 @@
 import { createClient } from './client';
 import { Database } from './database.types';
-
+import { loadStoreSettings } from '@/lib/hooks/useStoreSettings';
+import { isDemoAdminActive } from '@/lib/utils/adminDemoAccess';
 export type Order = Database['public']['Tables']['orders']['Row'];
 export type OrderItem = Database['public']['Tables']['order_items']['Row'];
 export type Profile = Database['public']['Tables']['profiles']['Row'];
 export type Product = Database['public']['Tables']['products']['Row'];
+export type ProductVariant = Database['public']['Tables']['product_variants']['Row'];
 
 export interface FullOrder extends Order {
   items: OrderItem[];
@@ -100,7 +102,9 @@ function addGuestRecentOrder(ref: GuestOrderRef) {
  */
 export async function createOrder(input: CreateOrderInput): Promise<{ success: boolean; orderId?: string; orderNumber?: string; error?: string }> {
   const supabase = createClient();
-  const orderNumber = `SJ-${Date.now().toString().slice(-6)}`;
+  // Prefix is configurable in Admin → Settings → Order Settings
+  const prefix = (await loadStoreSettings()).orders.numberPrefix.trim().toUpperCase() || 'SJ';
+  const orderNumber = `${prefix}-${Date.now().toString().slice(-6)}`;
   const orderId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `order-${Date.now()}`;
 
   const orderRecord: Order = {
@@ -362,6 +366,32 @@ export async function updateOrderStatus(orderId: string, status: Order['status']
 }
 
 /**
+ * Admin: Update an order's payment status (pending, paid, failed).
+ * Mirrors updateOrderStatus: local cache first, then Supabase (best-effort).
+ */
+export async function updateOrderPaymentStatus(orderId: string, paymentStatus: Order['payment_status']): Promise<boolean> {
+  const local = getLocalOrders();
+  saveLocalOrders(
+    local.map((o) =>
+      o.id === orderId || o.order_number === orderId
+        ? { ...o, payment_status: paymentStatus, updated_at: new Date().toISOString() }
+        : o
+    )
+  );
+
+  const supabase = createClient();
+  try {
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderId);
+    const query = supabase.from('orders').update({ payment_status: paymentStatus, updated_at: new Date().toISOString() });
+    const { error } = isUuid ? await query.eq('id', orderId) : await query.eq('order_number', orderId);
+    if (error) console.warn('Error updating payment status in Supabase:', error.message);
+    return true;
+  } catch {
+    return true;
+  }
+}
+
+/**
  * Admin: Fetch statistics for dashboard
  */
 export async function getAdminStats() {
@@ -391,6 +421,156 @@ export async function getAdminStats() {
     totalCustomers,
     pendingShipments,
     recentOrders: orders.slice(0, 5),
+  };
+}
+
+export interface DashboardOverview {
+  totalRevenue: number;
+  totalOrders: number;
+  totalCustomers: number;
+  totalProducts: number;
+  revenueChangePct: number;
+  ordersChangePct: number;
+  customersChangePct: number;
+  productsChangePct: number;
+  monthlySales: { label: string; value: number }[];
+  recentOrders: FullOrder[];
+  topSellingProducts: { id: string; title: string; imageUrl: string; unitsSold: number }[];
+  lowStockProducts: { id: string; title: string; stock: number }[];
+  categorySales: { name: string; revenue: number; units: number }[];
+}
+
+function pctChange(current: number, previous: number): number {
+  if (previous === 0) return current > 0 ? 100 : 0;
+  return Math.round(((current - previous) / previous) * 100);
+}
+
+/**
+ * Admin: Fetch the full dashboard overview — revenue/orders/customers/products
+ * with month-over-month % change, a 6-month sales trend, recent orders,
+ * top-selling products (by units sold), and low-stock alerts (stock < 5).
+ */
+export async function getAdminDashboardOverview(): Promise<DashboardOverview> {
+  const supabase = createClient();
+  const orders = await getAllOrdersAdmin();
+
+  let products: Product[] = [];
+  try {
+    const { data } = await supabase.from('products').select('*');
+    products = data || [];
+  } catch {
+    products = [];
+  }
+
+  let categories: { id: string; name: string }[] = [];
+  try {
+    const { data } = await supabase.from('categories').select('id, name');
+    categories = data || [];
+  } catch {
+    categories = [];
+  }
+
+  const now = new Date();
+  const startOfMonth = (d: Date) => new Date(d.getFullYear(), d.getMonth(), 1);
+  const thisMonthStart = startOfMonth(now);
+  const lastMonthStart = new Date(thisMonthStart.getFullYear(), thisMonthStart.getMonth() - 1, 1);
+
+  const isInRange = (dateStr: string, start: Date, end: Date) => {
+    const t = new Date(dateStr).getTime();
+    return t >= start.getTime() && t < end.getTime();
+  };
+
+  const thisMonthOrders = orders.filter((o) => isInRange(o.created_at, thisMonthStart, now));
+  const lastMonthOrders = orders.filter((o) => isInRange(o.created_at, lastMonthStart, thisMonthStart));
+
+  const sumRevenue = (list: FullOrder[]) => list.reduce((acc, o) => acc + (Number(o.total) || 0), 0);
+  const uniqueEmailCount = (list: FullOrder[]) =>
+    new Set(list.map((o) => o.shipping_address?.email).filter(Boolean)).size;
+
+  const totalRevenue = sumRevenue(orders);
+  const totalOrders = orders.length;
+  const totalCustomers = uniqueEmailCount(orders);
+  const totalProducts = products.length;
+
+  const thisMonthProducts = products.filter((p) => isInRange(p.created_at, thisMonthStart, now)).length;
+  const lastMonthProducts = products.filter((p) => isInRange(p.created_at, lastMonthStart, thisMonthStart)).length;
+
+  const revenueChangePct = pctChange(sumRevenue(thisMonthOrders), sumRevenue(lastMonthOrders));
+  const ordersChangePct = pctChange(thisMonthOrders.length, lastMonthOrders.length);
+  const customersChangePct = pctChange(uniqueEmailCount(thisMonthOrders), uniqueEmailCount(lastMonthOrders));
+  const productsChangePct = pctChange(thisMonthProducts, lastMonthProducts);
+
+  // Monthly revenue trend for the last 6 months (oldest first)
+  const monthlySales: { label: string; value: number }[] = [];
+  for (let i = 5; i >= 0; i--) {
+    const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
+    monthlySales.push({
+      label: monthStart.toLocaleDateString('en-IN', { month: 'short' }),
+      value: sumRevenue(orders.filter((o) => isInRange(o.created_at, monthStart, monthEnd))),
+    });
+  }
+
+  // Top-selling products by units sold, aggregated from order line items
+  const unitsSoldMap = new Map<string, { title: string; imageUrl: string; unitsSold: number }>();
+  orders.forEach((o) => {
+    (o.items || []).forEach((item) => {
+      const key = item.product_id || item.title;
+      const existing = unitsSoldMap.get(key);
+      if (existing) {
+        existing.unitsSold += item.quantity;
+      } else {
+        unitsSoldMap.set(key, { title: item.title, imageUrl: item.image_url || '', unitsSold: item.quantity });
+      }
+    });
+  });
+  const topSellingProducts = Array.from(unitsSoldMap.entries())
+    .map(([id, v]) => ({ id, ...v }))
+    .sort((a, b) => b.unitsSold - a.unitsSold)
+    .slice(0, 5);
+
+  // Low stock alerts
+  const lowStockProducts = products
+    .filter((p) => (p.stock ?? 0) < 5)
+    .sort((a, b) => (a.stock ?? 0) - (b.stock ?? 0))
+    .slice(0, 6)
+    .map((p) => ({ id: p.id, title: p.title, stock: p.stock ?? 0 }));
+
+  // Revenue split by category (cancelled orders excluded), via product -> category_id
+  const categoryNameById = new Map(categories.map((c) => [c.id, c.name]));
+  const categoryByProduct = new Map(
+    products.map((p) => [p.id, (p.category_id && categoryNameById.get(p.category_id)) || 'Uncategorised'])
+  );
+  const categoryMap = new Map<string, { revenue: number; units: number }>();
+  orders
+    .filter((o) => o.status !== 'cancelled')
+    .forEach((o) => {
+      (o.items || []).forEach((item) => {
+        const name = (item.product_id && categoryByProduct.get(item.product_id)) || 'Uncategorised';
+        const entry = categoryMap.get(name) || { revenue: 0, units: 0 };
+        entry.revenue += (Number(item.price) || 0) * item.quantity;
+        entry.units += item.quantity;
+        categoryMap.set(name, entry);
+      });
+    });
+  const categorySales = Array.from(categoryMap.entries())
+    .map(([name, v]) => ({ name, ...v }))
+    .sort((a, b) => b.revenue - a.revenue);
+
+  return {
+    totalRevenue,
+    totalOrders,
+    totalCustomers,
+    totalProducts,
+    revenueChangePct,
+    ordersChangePct,
+    customersChangePct,
+    productsChangePct,
+    monthlySales,
+    recentOrders: orders.slice(0, 6),
+    topSellingProducts,
+    lowStockProducts,
+    categorySales,
   };
 }
 
@@ -426,65 +606,104 @@ export async function checkIsAdmin(userId?: string): Promise<boolean> {
 /**
  * Admin: Fetch all registered customer profiles
  */
-export async function getAdminCustomers(): Promise<{ id: string; email: string; fullName: string; role: string; createdAt: string; orderCount: number }[]> {
+export interface AdminCustomer {
+  id: string;
+  email: string;
+  fullName: string;
+  phone: string | null;
+  city: string | null;
+  role: string;
+  isGuest: boolean;
+  createdAt: string;
+  orderCount: number;
+  totalSpent: number;
+  lastOrderAt: string | null;
+  orders: FullOrder[];
+}
+
+/**
+ * Admin: Customer directory — registered profiles merged with guest shoppers
+ * (checkout emails with no matching profile), each with order history and
+ * lifetime spend (cancelled orders excluded).
+ */
+export async function getAdminCustomers(): Promise<AdminCustomer[]> {
   const supabase = createClient();
   const orders = await getAllOrdersAdmin();
 
+  let profiles: Profile[] = [];
   try {
-    const { data: profiles, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error || !profiles || profiles.length === 0) {
-      // Fallback from order shipping addresses
-      const customerMap = new Map<string, { id: string; email: string; fullName: string; role: string; createdAt: string; orderCount: number }>();
-      
-      orders.forEach((o) => {
-        const email = o.shipping_address?.email || 'guest@sushijewels.com';
-        if (!customerMap.has(email)) {
-          customerMap.set(email, {
-            id: o.user_id || email,
-            email,
-            fullName: o.shipping_address?.full_name || 'Valued Customer',
-            role: 'customer',
-            createdAt: o.created_at,
-            orderCount: 1,
-          });
-        } else {
-          const item = customerMap.get(email)!;
-          item.orderCount += 1;
-        }
-      });
-
-      return Array.from(customerMap.values());
-    }
-
-    return profiles.map((p) => {
-      const userOrderCount = orders.filter((o) => o.user_id === p.id || o.shipping_address?.email === p.email).length;
-      return {
-        id: p.id,
-        email: p.email,
-        fullName: p.full_name || 'Client',
-        role: p.role,
-        createdAt: p.created_at,
-        orderCount: userOrderCount,
-      };
-    });
+    const { data } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
+    profiles = data || [];
   } catch {
-    return [];
+    profiles = [];
   }
+
+  const summarise = (list: FullOrder[]) => {
+    const sorted = [...list].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    const latest = sorted[0];
+    return {
+      orders: sorted,
+      orderCount: sorted.length,
+      totalSpent: sorted.filter((o) => o.status !== 'cancelled').reduce((acc, o) => acc + (Number(o.total) || 0), 0),
+      lastOrderAt: latest?.created_at || null,
+      phone: latest?.shipping_address?.phone || null,
+      city: latest?.shipping_address?.city || null,
+    };
+  };
+
+  const claimed = new Set<string>();
+  const registered: AdminCustomer[] = profiles.map((p) => {
+    const email = (p.email || '').toLowerCase();
+    const own = orders.filter((o) => o.user_id === p.id || (email && o.shipping_address?.email?.toLowerCase() === email));
+    own.forEach((o) => claimed.add(o.id));
+    return {
+      id: p.id,
+      email: p.email,
+      fullName: p.full_name || own[0]?.shipping_address?.full_name || 'Client',
+      role: p.role,
+      isGuest: false,
+      createdAt: p.created_at,
+      ...summarise(own),
+    };
+  });
+
+  // Guests: group the remaining orders by checkout email
+  const guestMap = new Map<string, FullOrder[]>();
+  orders
+    .filter((o) => !claimed.has(o.id))
+    .forEach((o) => {
+      const key = (o.shipping_address?.email || 'unknown').toLowerCase();
+      guestMap.set(key, [...(guestMap.get(key) || []), o]);
+    });
+  const guests: AdminCustomer[] = Array.from(guestMap.entries()).map(([email, list]) => {
+    const summary = summarise(list);
+    const first = summary.orders[summary.orders.length - 1];
+    return {
+      id: `guest:${email}`,
+      email: summary.orders[0]?.shipping_address?.email || email,
+      fullName: summary.orders[0]?.shipping_address?.full_name || 'Guest',
+      role: 'customer',
+      isGuest: true,
+      createdAt: first?.created_at || new Date().toISOString(),
+      ...summary,
+    };
+  });
+
+  return [...registered, ...guests];
 }
 
 /**
  * Admin: Product management functions with graceful column fallback
  */
-export async function adminCreateProduct(product: Record<string, any>): Promise<{ success: boolean; error?: string }> {
+export async function adminCreateProduct(product: Record<string, any>): Promise<{ success: boolean; id?: string; error?: string }> {
+  if (isDemoAdminActive()) {
+    return { success: true, id: `demo-product-${Date.now()}` };
+  }
   const supabase = createClient();
   try {
     // 1. Try full insert
-    const { error } = await supabase.from('products').insert(product as any);
-    if (!error) return { success: true };
+    const { data, error } = await supabase.from('products').insert(product as any).select('id').single();
+    if (!error) return { success: true, id: data?.id };
 
     // 2. If column error (e.g. available_sizes, mrp, stock not in schema yet), fallback to baseline columns
     if (error.message.includes('column') || error.message.includes('schema cache')) {
@@ -497,13 +716,14 @@ export async function adminCreateProduct(product: Record<string, any>): Promise<
         badge: product.badge,
         image_url: product.image_url,
         category_id: product.category_id,
+        collection_id: product.collection_id,
         description: product.description,
         is_featured: product.is_featured,
         is_new_arrival: product.is_new_arrival,
       };
-      const { error: retryError } = await supabase.from('products').insert(baselinePayload as any);
+      const { data: retryData, error: retryError } = await supabase.from('products').insert(baselinePayload as any).select('id').single();
       if (retryError) return { success: false, error: retryError.message };
-      return { success: true };
+      return { success: true, id: retryData?.id };
     }
 
     return { success: false, error: error.message };
@@ -512,7 +732,61 @@ export async function adminCreateProduct(product: Record<string, any>): Promise<
   }
 }
 
+/**
+ * Admin: Fetch all variants (karat, metal color, weight, price override, stock) for a product.
+ */
+export async function adminGetProductVariants(productId: string): Promise<ProductVariant[]> {
+  const supabase = createClient();
+  try {
+    const { data, error } = await supabase
+      .from('product_variants')
+      .select('*')
+      .eq('product_id', productId)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching product variants:', error.message);
+      return [];
+    }
+    return data || [];
+  } catch (e) {
+    console.error('Error fetching product variants:', e);
+    return [];
+  }
+}
+
+/**
+ * Admin: Replace all variants for a product with the given list (delete + insert).
+ */
+export async function adminSaveProductVariants(
+  productId: string,
+  variants: { sku?: string | null; karat?: string | null; metal_color?: string | null; weight?: number | null; price?: number | null; stock?: number }[]
+): Promise<{ success: boolean; error?: string }> {
+  if (isDemoAdminActive()) {
+    return { success: true };
+  }
+  const supabase = createClient();
+  try {
+    const { error: deleteError } = await supabase.from('product_variants').delete().eq('product_id', productId);
+    if (deleteError) return { success: false, error: deleteError.message };
+
+    if (variants.length === 0) return { success: true };
+
+    const { error: insertError } = await supabase.from('product_variants').insert(
+      variants.map((v) => ({ ...v, product_id: productId })) as any
+    );
+    if (insertError) return { success: false, error: insertError.message };
+
+    return { success: true };
+  } catch (e: any) {
+    return { success: false, error: e?.message || 'Failed to save product variants' };
+  }
+}
+
 export async function adminUpdateProduct(id: string, product: Record<string, any>): Promise<{ success: boolean; error?: string }> {
+  if (isDemoAdminActive()) {
+    return { success: true };
+  }
   const supabase = createClient();
   try {
     const { error } = await supabase.from('products').update(product as any).eq('id', id);
@@ -529,6 +803,7 @@ export async function adminUpdateProduct(id: string, product: Record<string, any
         badge: product.badge,
         image_url: product.image_url,
         category_id: product.category_id,
+        collection_id: product.collection_id,
         description: product.description,
         is_featured: product.is_featured,
         is_new_arrival: product.is_new_arrival,

@@ -27,30 +27,23 @@ export default function Newsletter() {
           Subscribe to receive exclusive access to private launches, editorial journals, and privileged seasonal pricing.
         </p>
 
-        {submitted ? (
-          <div className="mt-8 flex flex-col items-center gap-2">
-            <span className="material-symbols-outlined text-[40px] text-secondary">check_circle</span>
-            <p className="font-headline-sm text-headline-sm text-primary">You&apos;re in the Inner Circle!</p>
-            <p className="font-body-sm text-body-sm text-on-surface-variant">Welcome. Expect exclusive updates in your inbox soon.</p>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="mt-6 sm:mt-8 flex flex-col sm:flex-row max-w-lg mx-auto gap-3">
-            <input
-              className="flex-1 px-5 sm:px-6 py-3.5 sm:py-4 bg-surface-container-low border border-outline-variant/60 rounded-full font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary transition-all"
-              placeholder="Enter your email address"
-              required
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <button
-              className="px-7 sm:px-8 py-3.5 sm:py-4 bg-primary text-surface rounded-full font-label-lg text-label-lg hover:bg-primary-container active:scale-95 transition-all flex-shrink-0"
-              type="submit"
-            >
-              Subscribe
-            </button>
-          </form>
-        )}
+        <form onSubmit={handleSubmit} className="mt-6 sm:mt-8 flex flex-col sm:flex-row max-w-lg mx-auto gap-3">
+          <input
+            className="flex-1 px-5 sm:px-6 py-3.5 sm:py-4 bg-surface-container-low border border-outline-variant/60 rounded-full font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary transition-all"
+            placeholder="Enter your email address"
+            required
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <button
+            className="px-7 sm:px-8 py-3.5 sm:py-4 bg-primary text-surface rounded-full font-label-lg text-label-lg hover:bg-primary-container active:scale-95 transition-all flex-shrink-0"
+            type="submit"
+            disabled={submitted}
+          >
+            {submitted ? 'Subscribed' : 'Subscribe'}
+          </button>
+        </form>
       </div>
     </section>
   );

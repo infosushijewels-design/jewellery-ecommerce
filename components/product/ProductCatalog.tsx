@@ -11,12 +11,36 @@ import FilterSidebar, {
   GEMSTONE_OPTIONS,
 } from '@/components/product/FilterSidebar';
 import { Database } from '@/lib/supabase/database.types';
+import { STYLE_FILTERS, matchesStyle } from '@/lib/catalogSearch';
 
 type Product = Database['public']['Tables']['products']['Row'];
+export type CatalogCategory = { id: string; name: string; slug: string };
+
+const formatPrice = (n: number) => `₹${n.toLocaleString('en-IN')}`;
+
+/** "bangles" → "bangle", "necklaces" → "necklace" (for matching product titles) */
+const singular = (word: string) => word.toLowerCase().replace(/(es|s)$/, '');
+
+/**
+ * Does a product belong to the category in ?category=<slug>?
+ * Prefers the product's real category; falls back to its title for
+ * products that haven't been assigned one yet.
+ */
+function matchesCategory(product: Product, slug: string, categoriesById: Map<string, CatalogCategory>) {
+  const wanted = singular(slug);
+  const category = product.category_id ? categoriesById.get(product.category_id) : undefined;
+  if (category) {
+    // Exact match only — "earrings" must not match "rings"
+    return singular(category.slug) === wanted || singular(category.name) === wanted;
+  }
+  // Whole-word match on the title, e.g. "Gold Bangles" but not "Earrings" for "ring"
+  return new RegExp(`\\b${wanted}(e?s)?\\b`, 'i').test(product.title);
+}
 
 const METAL_MATCHERS: Record<MetalKey, string[]> = {
   '18k-yellow': ['18k yellow', 'yellow gold'],
   '18k-rose': ['18k rose', 'rose gold', 'blush rose'],
+  '18k-white': ['18k white', 'white gold'],
   '22k-gold': ['22k'],
   platinum: ['platinum'],
 };
@@ -45,7 +69,14 @@ function matchesPriceRange(price: number, range: PriceRangeKey | null): boolean 
   return price > 50000;
 }
 
-export default function ProductCatalog({ products }: { products: Product[] }) {
+export default function ProductCatalog({
+  products,
+  categories = [],
+}: {
+  products: Product[];
+  /** Needed for ?category= filtering (e.g. New Arrivals → Latest Bangles) */
+  categories?: CatalogCategory[];
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -53,6 +84,17 @@ export default function ProductCatalog({ products }: { products: Product[] }) {
   const priceRange = (searchParams.get('price') as PriceRangeKey | null) || null;
   const metalParam = searchParams.get('metal');
   const gemParam = searchParams.get('gem');
+  const categoryParam = searchParams.get('category');
+  const styleParam = searchParams.get('style');
+  const styleLabel = styleParam ? STYLE_FILTERS[styleParam]?.label ?? null : null;
+  // Menu links use explicit bounds (?minPrice=25000&maxPrice=50000)
+  const minPrice = Number(searchParams.get('minPrice')) || null;
+  const maxPrice = Number(searchParams.get('maxPrice')) || null;
+  const categoriesById = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
+  const categoryLabel = categoryParam
+    ? categories.find((c) => c.slug.toLowerCase() === categoryParam.toLowerCase())?.name ||
+      categoryParam.charAt(0).toUpperCase() + categoryParam.slice(1).replace(/-/g, ' ')
+    : null;
   const selectedMetals = useMemo(
     () => (metalParam?.split(',').filter(Boolean) as MetalKey[]) || [],
     [metalParam]
@@ -94,17 +136,30 @@ export default function ProductCatalog({ products }: { products: Product[] }) {
   };
 
   const handleClearAll = () => {
-    updateParams({ price: null, metal: null, gem: null });
+    updateParams({ price: null, metal: null, gem: null, category: null, style: null, minPrice: null, maxPrice: null });
   };
+
+  // Category + explicit price bounds narrow the base set; the sidebar filters apply on top
+  const scoped = useMemo(
+    () =>
+      products.filter(
+        (p) =>
+          (!categoryParam || matchesCategory(p, categoryParam, categoriesById)) &&
+          (!styleParam || matchesStyle(p, styleParam)) &&
+          (minPrice == null || p.price >= minPrice) &&
+          (maxPrice == null || p.price <= maxPrice)
+      ),
+    [products, categoryParam, styleParam, categoriesById, minPrice, maxPrice]
+  );
 
   const classified = useMemo(
     () =>
-      products.map((product) => ({
+      scoped.map((product) => ({
         product,
         metalKey: classifyMetal(product.material),
         gemstoneKey: classifyGemstone(product),
       })),
-    [products]
+    [scoped]
   );
 
   const metalCounts = useMemo(() => {
@@ -131,7 +186,22 @@ export default function ProductCatalog({ products }: { products: Product[] }) {
       .map(({ product }) => product);
   }, [classified, priceRange, selectedMetals, selectedGemstones]);
 
-  const activeFilterCount = (priceRange ? 1 : 0) + selectedMetals.length + selectedGemstones.length;
+  const priceBoundsLabel =
+    minPrice != null && maxPrice != null
+      ? `${formatPrice(minPrice)} – ${formatPrice(maxPrice)}`
+      : minPrice != null
+        ? `Above ${formatPrice(minPrice)}`
+        : maxPrice != null
+          ? `Under ${formatPrice(maxPrice)}`
+          : null;
+
+  const activeFilterCount =
+    (priceRange ? 1 : 0) +
+    selectedMetals.length +
+    selectedGemstones.length +
+    (categoryParam ? 1 : 0) +
+    (styleLabel ? 1 : 0) +
+    (priceBoundsLabel ? 1 : 0);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -150,19 +220,62 @@ export default function ProductCatalog({ products }: { products: Product[] }) {
       />
 
       <section aria-label="Catalog" className="lg:col-span-9">
+        {(categoryLabel || styleLabel || priceBoundsLabel) && (
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            <span className="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant mr-1">Showing</span>
+            {categoryLabel && (
+              <button
+                onClick={() => updateParams({ category: null })}
+                className="inline-flex items-center gap-1.5 bg-surface-container-low border border-outline-variant/60 text-primary text-sm px-3 py-1.5 rounded-full hover:border-primary transition-colors"
+                aria-label={`Remove ${categoryLabel} filter`}
+              >
+                {categoryLabel}
+                <span className="material-symbols-outlined text-base">close</span>
+              </button>
+            )}
+            {styleLabel && (
+              <button
+                onClick={() => updateParams({ style: null })}
+                className="inline-flex items-center gap-1.5 bg-surface-container-low border border-outline-variant/60 text-primary text-sm px-3 py-1.5 rounded-full hover:border-primary transition-colors"
+                aria-label={`Remove ${styleLabel} filter`}
+              >
+                {styleLabel}
+                <span className="material-symbols-outlined text-base">close</span>
+              </button>
+            )}
+            {priceBoundsLabel && (
+              <button
+                onClick={() => updateParams({ minPrice: null, maxPrice: null })}
+                className="inline-flex items-center gap-1.5 bg-surface-container-low border border-outline-variant/60 text-primary text-sm px-3 py-1.5 rounded-full hover:border-primary transition-colors"
+                aria-label="Remove price filter"
+              >
+                {priceBoundsLabel}
+                <span className="material-symbols-outlined text-base">close</span>
+              </button>
+            )}
+          </div>
+        )}
         {filteredProducts.length === 0 ? (
           <div className="text-center py-20 bg-surface-container-lowest border border-outline-variant/40 rounded-xl">
             <span className="material-symbols-outlined text-[40px] text-outline mb-3 block">search_off</span>
-            <h3 className="font-headline-sm text-headline-sm text-primary mb-2">No pieces match your filters</h3>
+            <h3 className="font-headline-sm text-headline-sm text-primary mb-2">
+              {styleLabel && activeFilterCount === 1
+                ? `No ${styleLabel.toLowerCase()}${/s$/i.test(styleLabel) ? '' : ' pieces'} yet`
+                : categoryLabel && activeFilterCount === 1
+                  ? `No ${categoryLabel.toLowerCase()} here yet`
+                  : 'No pieces match your filters'}
+            </h3>
             <p className="text-on-surface-variant font-body-sm text-body-sm mb-5">
-              Try adjusting or clearing your filters to see more of the collection.
+              {(categoryLabel || styleLabel) && activeFilterCount === 1
+                ? 'Our ateliers are crafting new pieces in this style. Browse the full collection in the meantime.'
+                : 'Try adjusting or clearing your filters to see more of the collection.'}
             </p>
             {activeFilterCount > 0 && (
               <button
                 onClick={handleClearAll}
                 className="bg-primary text-surface px-6 py-2.5 rounded-full font-label-md uppercase hover:bg-tertiary transition-colors"
               >
-                Clear All Filters
+                {activeFilterCount === 1 && (categoryLabel || styleLabel || priceBoundsLabel) ? 'View All Pieces' : 'Clear All Filters'}
               </button>
             )}
           </div>
@@ -181,6 +294,8 @@ export default function ProductCatalog({ products }: { products: Product[] }) {
                 price={product.price}
                 mrp={product.mrp}
                 stock={product.stock}
+                isNewArrival={product.is_new_arrival}
+                isFeatured={product.is_featured}
                 slug={product.slug}
               />
             ))}

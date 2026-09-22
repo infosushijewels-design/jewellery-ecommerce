@@ -1,12 +1,18 @@
 import type { Metadata } from 'next';
 import LegalLayout, { LegalSection } from '@/components/legal/LegalLayout';
+import LegalContent from '@/components/legal/LegalContent';
+import { getLegalPage } from '@/lib/supabase/queries';
 
 export const metadata: Metadata = {
   title: 'Shipping Policy | Sushi Jewels',
   description: 'Fully insured, tamper-proof shipping with armed courier delivery and OTP verification — learn our delivery timelines and packaging standards.',
 };
 
-export default function ShippingPolicyPage() {
+export default async function ShippingPolicyPage() {
+  // Content edited in Admin → Legal Pages overrides the default copy below
+  const custom = await getLegalPage('shipping-policy');
+  if (custom) return <LegalContent page={custom} />;
+
   return (
     <LegalLayout
       eyebrow="Client Services"

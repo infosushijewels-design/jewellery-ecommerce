@@ -5,10 +5,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 const slides = [
-  { id: 1, src: '/images/hero/banner-1.png', alt: 'Timeless Beauty in Every Detail', href: '/collections' },
-  { id: 2, src: '/images/hero/banner-2.png', alt: 'Timeless Elegance for Every You', href: '/new-arrivals' },
-  { id: 3, src: '/images/hero/banner-3.png', alt: 'Jewellery that Blooms with You', href: '/anthologies' },
-  { id: 4, src: '/images/hero/banner-4.png', alt: 'Timeless Bangles for Every Occasion', href: '/collections' },
+  { id: 1, src: '/images/hero/banner-1.png', alt: 'Timeless Beauty in Every Detail', href: '/collections', cta: 'Shop Now' },
+  { id: 2, src: '/images/hero/banner-2.png', alt: 'Timeless Elegance for Every You', href: '/new-arrivals', cta: 'Shop New Arrivals' },
+  { id: 3, src: '/images/hero/banner-3.png', alt: 'Jewellery that Blooms with You', href: '/anthologies', cta: 'Explore Now' },
+  { id: 4, src: '/images/hero/banner-4.png', alt: 'Timeless Bangles for Every Occasion', href: '/category/bangles', cta: 'Shop Bangles' },
 ];
 
 export default function Hero() {
@@ -28,22 +28,31 @@ export default function Hero() {
   }, [nextSlide]);
 
   return (
-    <section className="relative w-full overflow-hidden bg-surface-container-low group">
+    <section className="w-full bg-surface-container-low">
+      <div className="relative overflow-hidden group">
       {/* Slider Container */}
       <div 
         className="flex transition-transform duration-700 ease-in-out" 
         style={{ transform: `translateX(-${current * 100}%)` }}
       >
         {slides.map((slide) => (
-          <div key={slide.id} className="min-w-full relative aspect-[4/3] sm:aspect-[16/9] md:aspect-[21/9] lg:aspect-[24/9]" style={{ position: 'relative' }}>
+          <div key={slide.id} className="min-w-full relative aspect-[9/4] md:aspect-[3/1]" style={{ position: 'relative' }}>
             <Link href={slide.href} className="block w-full h-full absolute inset-0">
               <Image
                 src={slide.src}
                 alt={slide.alt}
                 fill
-                className="object-cover object-center"
+                // Banners are 3:1 with the headline baked into the right half. On mobile keep the
+                // right side (headline + product) in frame; from md up the full banner fits exactly.
+                sizes="100vw"
+                className="object-cover object-right md:object-center"
                 priority={slide.id === 1}
               />
+              {/* CTA — a span, since the whole banner is already the link */}
+              <span className="hidden lg:inline-flex absolute bottom-[5%] left-[75.5%] -translate-x-1/2 items-center gap-2 bg-primary text-surface px-6 py-2.5 xl:py-3 font-label-md text-label-md uppercase tracking-[0.15em] shadow-lg transition-colors hover:bg-tertiary whitespace-nowrap">
+                {slide.cta}
+                <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+              </span>
             </Link>
           </div>
         ))}
@@ -81,6 +90,18 @@ export default function Hero() {
             aria-label={`Go to slide ${index + 1}`}
           />
         ))}
+      </div>
+      </div>
+
+      {/* Below lg the banner is too small to overlay a button without covering its text */}
+      <div className="lg:hidden flex justify-center py-4 bg-surface">
+        <Link
+          href={slides[current].href}
+          className="inline-flex items-center gap-2 bg-primary text-surface px-6 py-2.5 font-label-md text-label-md uppercase tracking-[0.15em] hover:bg-tertiary transition-colors"
+        >
+          {slides[current].cta}
+          <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+        </Link>
       </div>
     </section>
   );

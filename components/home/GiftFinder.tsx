@@ -20,10 +20,9 @@ export default function GiftFinder() {
 
   const handleFind = () => {
     const budget = budgets[selectedBudget];
-    const params = new URLSearchParams({
-      minPrice: budget.min.toString(),
-      maxPrice: budget.max.toString(),
-    });
+    const params = new URLSearchParams();
+    if (budget.min > 0) params.set('minPrice', budget.min.toString());
+    if (budget.max < 9999999) params.set('maxPrice', budget.max.toString());
     showToast(`Finding perfect ${selectedOccasion} gifts for you...`, 'success');
     router.push(`/new-arrivals?${params.toString()}`);
   };

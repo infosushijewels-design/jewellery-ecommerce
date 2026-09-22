@@ -1,12 +1,18 @@
 import type { Metadata } from 'next';
 import LegalLayout, { LegalSection } from '@/components/legal/LegalLayout';
+import LegalContent from '@/components/legal/LegalContent';
+import { getLegalPage } from '@/lib/supabase/queries';
 
 export const metadata: Metadata = {
   title: 'Terms & Conditions | Sushi Jewels',
   description: 'Authenticity guarantees, pricing policy, intellectual property, and jurisdiction terms governing your use of Sushi Jewels.',
 };
 
-export default function TermsPage() {
+export default async function TermsPage() {
+  // Content edited in Admin → Legal Pages overrides the default copy below
+  const custom = await getLegalPage('terms');
+  if (custom) return <LegalContent page={custom} />;
+
   return (
     <LegalLayout
       eyebrow="Legal"

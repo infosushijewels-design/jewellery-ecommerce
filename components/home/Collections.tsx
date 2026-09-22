@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function Collections() {
   return (
     <section className="py-12 sm:py-20 bg-surface-container-low border-y border-outline-variant/30" id="collections">
@@ -8,15 +10,15 @@ export default function Collections() {
             <h2 className="font-headline-lg text-[24px] sm:text-headline-lg text-primary mt-1">Curated Collections</h2>
             <p className="font-body-md text-body-md text-on-surface-variant mt-1">Themes woven in precious metal, telling stories across generations.</p>
           </div>
-          <a className="font-label-lg text-label-lg text-primary hover:text-secondary flex items-center gap-1 group flex-shrink-0" href="#">
+          <Link className="font-label-lg text-label-lg text-primary hover:text-secondary flex items-center gap-1 group flex-shrink-0" href="/collections">
             View All Anthologies
             <span className="material-symbols-outlined text-[16px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
-          </a>
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
           {/* Collection 1 */}
-          <article className="group relative bg-surface rounded-xl overflow-hidden border border-outline-variant/50 hover:shadow-[0_8px_24px_-4px_rgba(45,32,36,0.08)] transition-all duration-300 flex flex-col">
+          <Link href="/collections/best-sellers" className="group relative bg-surface rounded-xl overflow-hidden border border-outline-variant/50 hover:shadow-[0_8px_24px_-4px_rgba(45,32,36,0.08)] transition-all duration-300 flex flex-col">
             <div className="aspect-[4/3] sm:aspect-[4/5] overflow-hidden bg-surface-container">
               <img className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBGBHMckxZb5c0fQWJYYTSyVRHsBc9fXIHCFnuING2mfSghzq6v1g7vKlhEyCx15n58bXutss2o6UA8x_69znxMJvPUQ70rxhrRkLw0WQlHJFDccdObrMwEFGSkennoUsWJaN_nm4S1Tu_lxGzpxbtKYr8Xjz3erODoJ4U9tkcpLT09pgFI4cj6LueTHxAiRdJRY-6CNp5ho3LDlBUectANLrTn3sWDqARr8NAOb7WEGjVsXW-bXKcS3Q" alt="Everyday Luxury" />
             </div>
@@ -32,10 +34,10 @@ export default function Collections() {
                 </span>
               </div>
             </div>
-          </article>
+          </Link>
 
           {/* Collection 2 */}
-          <article className="group relative bg-surface rounded-xl overflow-hidden border border-outline-variant/50 hover:shadow-[0_8px_24px_-4px_rgba(45,32,36,0.08)] transition-all duration-300 flex flex-col">
+          <Link href="/collections/festive-collection" className="group relative bg-surface rounded-xl overflow-hidden border border-outline-variant/50 hover:shadow-[0_8px_24px_-4px_rgba(45,32,36,0.08)] transition-all duration-300 flex flex-col">
             <div className="aspect-[4/3] sm:aspect-[4/5] overflow-hidden bg-surface-container">
               <img className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-H9Xvu3YmPXsf6OF_Qrys1lz3BoPTufC3vXf9bOM0RXDIT6zQPix_VCRp4mjk5kFPMl2iRWofjkSbb8bm-THKprCk07xVq4XlIjOi8Tx4ffcq815fp26tn8ENmKTctiFTPngpHmaLkB25aahzaTvuJD7IGbwsGqe7yYKY3ECHuSRfmd-9iSnpWUS5B3rnX2lP6d7J4RnTjR0VAEaJJCbAzAbOh_vzpWAn86HOKkdzDAoKVvLXhbuz8A" alt="Royal Provenance" />
             </div>
@@ -51,10 +53,10 @@ export default function Collections() {
                 </span>
               </div>
             </div>
-          </article>
+          </Link>
 
           {/* Collection 3 */}
-          <article className="group relative bg-surface rounded-xl overflow-hidden border border-outline-variant/50 hover:shadow-[0_8px_24px_-4px_rgba(45,32,36,0.08)] transition-all duration-300 flex flex-col sm:col-span-2 md:col-span-1">
+          <Link href="/collections/bridal-collection" className="group relative bg-surface rounded-xl overflow-hidden border border-outline-variant/50 hover:shadow-[0_8px_24px_-4px_rgba(45,32,36,0.08)] transition-all duration-300 flex flex-col sm:col-span-2 md:col-span-1">
             <div className="aspect-[4/3] sm:aspect-[4/5] overflow-hidden bg-surface-container">
               <img className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD9ZzGg3JyVot2TgX45PNawp2Ve3a69LYtU3LStvvsed6VIzq9znShKly7gQuaXx6h8eAWs9BqWhu2TMh9j8Dlpg6WFqhyvo_i_dZ-lBYU8gyzXzZZZGWcsh4iWRAfqnPeXRlZz4DCBWLicQFwjINfqPkKPSKVBsfydqgwBtqxLkqA9M803ykOvDJIla8mDeBYCXpwJOHaMZExT7UnkAATLxs-BwZyTk6dm4OKs7CKjD1U2ThTNmK69gw" alt="The Vivaha Suite" />
             </div>
@@ -70,7 +72,7 @@ export default function Collections() {
                 </span>
               </div>
             </div>
-          </article>
+          </Link>
         </div>
       </div>
     </section>

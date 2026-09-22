@@ -82,7 +82,7 @@ export default function AboutPage() {
               </div>
               {/* Image Content */}
               <div className="order-1 lg:order-2 relative">
-                <div className="relative w-full max-w-sm mx-auto lg:max-w-none aspect-[3/4] sm:aspect-[4/5] rounded-tl-[60px] sm:rounded-tl-[80px] rounded-br-[60px] sm:rounded-br-[80px] overflow-hidden border border-[#D4AF37]/30 shadow-[0_0_40px_rgba(212,175,55,0.1)]">
+                <div className="relative w-full max-w-[280px] sm:max-w-sm mx-auto lg:max-w-none aspect-[3/4] sm:aspect-[4/5] rounded-tl-[60px] sm:rounded-tl-[80px] rounded-br-[60px] sm:rounded-br-[80px] overflow-hidden border border-[#D4AF37]/30 shadow-[0_0_40px_rgba(212,175,55,0.1)]">
                   <Image
                     src="/images/about-hero.png"
                     alt="Made to Make You Feel Beautiful"

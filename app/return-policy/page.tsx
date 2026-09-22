@@ -1,12 +1,18 @@
 import type { Metadata } from 'next';
 import LegalLayout, { LegalSection } from '@/components/legal/LegalLayout';
+import LegalContent from '@/components/legal/LegalContent';
+import { getLegalPage } from '@/lib/supabase/queries';
 
 export const metadata: Metadata = {
   title: 'Returns & Lifetime Buyback | Sushi Jewels',
   description: '30-day hassle-free returns and a lifetime buyback & upgrade guarantee on every Sushi Jewels piece.',
 };
 
-export default function ReturnPolicyPage() {
+export default async function ReturnPolicyPage() {
+  // Content edited in Admin → Legal Pages overrides the default copy below
+  const custom = await getLegalPage('return-policy');
+  if (custom) return <LegalContent page={custom} />;
+
   return (
     <LegalLayout
       eyebrow="Client Services"

@@ -17,11 +17,18 @@ const playfair = Playfair_Display({
 });
 
 import { ToastProvider } from "@/lib/context/ToastContext";
+import { getPublicStoreSettings } from "@/lib/supabase/public";
 
-export const metadata: Metadata = {
-  title: "Sushi Jewels | Fine High Jewellery",
-  description: "Revered high jewellery crafted with BIS 916 hallmarked pure gold and conflict-free natural diamonds.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  // Title, description, keywords and favicon are editable in Admin → Settings → SEO
+  const { seo, store } = await getPublicStoreSettings();
+  return {
+    title: seo.metaTitle,
+    description: seo.metaDescription,
+    keywords: seo.keywords || undefined,
+    ...(store.faviconUrl ? { icons: { icon: store.faviconUrl } } : {}),
+  };
+}
 
 export default function RootLayout({
   children,

@@ -64,8 +64,9 @@ export async function getProductsByCategorySlug(slug: string): Promise<{ categor
     .eq('slug', slug)
     .single();
 
-  if (categoryError || !category) {
-    console.error('Error fetching category:', categoryError);
+  // Inactive categories are hidden from the storefront (is_active is undefined before migration 008)
+  if (categoryError || !category || category.is_active === false) {
+    if (categoryError) console.error('Error fetching category:', categoryError);
     return { category: null, products: [] };
   }
 
@@ -138,4 +139,69 @@ export async function getAllCollections(): Promise<Collection[]> {
     return [];
   }
   return data || [];
+}
+
+/**
+ * Active admin-managed legal page by slug, or null (also null if migration 009
+ * hasn't been applied yet, so built-in pages fall back to their default content).
+ */
+export async function getLegalPage(slug: string) {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from('legal_pages')
+      .select('*')
+      .eq('slug', slug)
+      .eq('is_active', true)
+      .maybeSingle();
+    if (error) return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+/** Lightweight category list (id, name, slug) for catalog filtering. */
+export async function getCategoryList(): Promise<{ id: string; name: string; slug: string }[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.from('categories').select('id, name, slug').order('name');
+  if (error) {
+    console.error('Error fetching categories:', error);
+    return [];
+  }
+  return data || [];
+}
+
+/**
+ * Storefront search: every term must match (word-prefix) the product's title,
+ * material, badge, description, category or collection. Ranked by relevance.
+ * The catalogue is small, so matching runs in memory for accurate plural and
+ * partial-word handling ("rings" → Ring, not Earrings).
+ */
+export async function searchProducts(query: string): Promise<Product[]> {
+  const { scoreProduct } = await import('@/lib/catalogSearch');
+  const supabase = await createClient();
+  const [productsRes, categoriesRes, collectionsRes] = await Promise.all([
+    supabase.from('products').select('*').order('created_at', { ascending: false }).limit(1000),
+    supabase.from('categories').select('id, name'),
+    supabase.from('collections').select('id, name'),
+  ]);
+  if (productsRes.error) {
+    console.error('Error searching products:', productsRes.error);
+    return [];
+  }
+  const categoryName = new Map((categoriesRes.data || []).map((c) => [c.id, c.name]));
+  const collectionName = new Map((collectionsRes.data || []).map((c) => [c.id, c.name]));
+
+  return (productsRes.data || [])
+    .map((p) => ({
+      p,
+      score: scoreProduct(p, query, [
+        (p.category_id && categoryName.get(p.category_id)) || '',
+        (p.collection_id && collectionName.get(p.collection_id)) || '',
+      ].filter(Boolean)),
+    }))
+    .filter(({ score }) => score > 0)
+    .sort((a, b) => b.score - a.score)
+    .map(({ p }) => p);
 }

@@ -45,21 +45,21 @@ export default function Categories() {
           <span className="font-label-sm sm:font-label-lg text-[10px] sm:text-label-lg text-primary mt-2 sm:mt-3 group-hover:text-secondary transition-colors">Bangles</span>
         </Link>
         {/* 6: Solitaires */}
-        <Link className="group flex flex-col items-center" href="/category/rings">
+        <Link className="group flex flex-col items-center" href="/search?q=solitaire">
           <div className="w-16 h-16 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-full overflow-hidden bg-surface-container border border-outline-variant/60 p-1 group-hover:border-secondary transition-colors duration-300">
             <img className="w-full h-full object-cover rounded-full group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYaFTGzA8QjnJ4sd8JPMjITqQ-LuydJBs8Y0mKciPl4t2hHGx9c7CaXWLCrod9RC_lnHX5ElH_fXKjVsTpK72-RlqoXAiQpaqPMOzhtqZat2tF3DJgpogAV-Mf6zn_5tq40aB9mqGl8vYa65O7lgIOpQlB98kREKS8Id7cDFHRx0gQmS4qyilcfwo_aCmb3peyI0mb485mu_Dsk91uhIbk5B8CvGzbIR1DKi-1e4YPuzNTAyq8RVZamQ" alt="Solitaires" />
           </div>
           <span className="font-label-sm sm:font-label-lg text-[10px] sm:text-label-lg text-primary mt-2 sm:mt-3 group-hover:text-secondary transition-colors">Solitaires</span>
         </Link>
         {/* 7: Mangalsutras */}
-        <Link className="group flex flex-col items-center" href="/category/necklaces">
+        <Link className="group flex flex-col items-center" href="/category/necklaces?style=mangalsutra">
           <div className="w-16 h-16 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-full overflow-hidden bg-surface-container border border-outline-variant/60 p-1 group-hover:border-secondary transition-colors duration-300">
             <img className="w-full h-full object-cover rounded-full group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbTDRspPlaZdrt95j9IdK0vFArW_cjhYuuq-_OOoAoAHMD9-W-EwaMe839rg5ziZOf2nYNBaM5AMSnoKxGJ8Ryo6Dan-OCcf8XDjTgEPLJjFGAi73gNszawfDgQ234-xm4uVu643VXBrj9euiTvAoS76jwNmCvicXXEDEzht017mFmVjQGiF7hYkWqYDJAt6m-QYmIJgP3GmyVP3zylg7GqZM6RlE3zxL5G2R7kvd5KErY8QPih0QpBg" alt="Mangalsutras" />
           </div>
           <span className="font-label-sm sm:font-label-lg text-[10px] sm:text-label-lg text-primary mt-2 sm:mt-3 group-hover:text-secondary transition-colors">Mangalsutras</span>
         </Link>
         {/* 8: Gold Coins */}
-        <Link className="group flex flex-col items-center" href="/category/rings">
+        <Link className="group flex flex-col items-center" href="/search?q=gold%20coin">
           <div className="w-16 h-16 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-full overflow-hidden bg-surface-container border border-outline-variant/60 p-1 group-hover:border-secondary transition-colors duration-300">
             <img className="w-full h-full object-cover rounded-full group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5T1brtItLcP7aO6m991RgQsRe8t8Gqi6DAL71CdF5QgJbUbcQ2eFJ6plkTo3NGu4V8QRUI32xPD_dLN7d5KPJbjnZxN6DPdOJ2u7YJflOocIMwBea0xTk6sfo4M5i65V4OkuTuglnyNi526jvoW5u7RSE_wsQttKS_oB_lyHXfPHK4Md94BDcTeHtLntLQcjmpWmehWofM1dWesE1Hf6NktoTvTgNxmq8xP2bPPe9MCzpxx-8_37NSA" alt="Gold Coins" />
           </div>

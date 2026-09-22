@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 
 export interface CartItem {
   id: string; // combination of productId + size + metal to make unique
@@ -23,7 +24,7 @@ interface CartContextType {
   openCart: () => void;
   closeCart: () => void;
   subtotal: number;
-  tax: number; // 3% GST
+  tax: number; // GST at the rate configured in Admin → Settings (default 3%)
   total: number;
   clearCart: () => void;
 }
@@ -80,13 +81,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
     );
   };
 
+  const storeSettings = useStoreSettings();
+
   const toggleCart = () => setIsCartOpen((prev) => !prev);
   const openCart = () => setIsCartOpen(true);
   const closeCart = () => setIsCartOpen(false);
   const clearCart = () => setItems([]);
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const tax = subtotal * 0.03; // 3% GST for jewellery in India
+  const tax = subtotal * (storeSettings.commerce.gstRate / 100);
   const total = subtotal + tax;
 
   return (

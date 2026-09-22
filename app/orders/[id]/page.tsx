@@ -276,7 +276,7 @@ export default function OrderTrackingPage() {
                       <span>₹{Number(order.subtotal).toLocaleString('en-IN')}</span>
                     </div>
                     <div className="flex justify-between text-on-surface-variant">
-                      <span>GST (3%)</span>
+                      <span>GST</span>
                       <span>₹{Number(order.tax).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                     </div>
                     <div className="flex justify-between text-on-surface-variant">
