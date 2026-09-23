@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
+import { linkGuestOrdersForUser } from '@/lib/supabase/orderService';
 
 interface AuthContextType {
   user: User | null;
@@ -38,11 +39,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     getSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
         if (mounted) {
           setSession(session);
           setUser(session?.user ?? null);
           setIsLoading(false);
+        }
+        // Guest orders placed with this email become part of the account
+        if ((event === 'SIGNED_IN' || event === 'USER_UPDATED') && session?.user) {
+          linkGuestOrdersForUser(session.user.id, session.user.email).catch(() => {});
         }
       }
     );

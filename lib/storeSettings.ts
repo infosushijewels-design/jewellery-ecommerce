@@ -33,6 +33,14 @@ export interface StoreSettings {
     freeShippingThreshold: number;
     shippingFee: number;
   };
+  homepage: {
+    philosophyEyebrow: string;
+    philosophyQuote: string;
+    philosophyText: string;
+    founderName: string;
+    founderTitle: string;
+    philosophyImageUrl: string;
+  };
   orders: {
     numberPrefix: string;
     minOrderValue: number; // 0 = no minimum
@@ -81,6 +89,15 @@ export const DEFAULT_STORE_SETTINGS: StoreSettings = {
     gstin: '',
     freeShippingThreshold: 2000,
     shippingFee: 99,
+  },
+  homepage: {
+    philosophyEyebrow: 'The Philosophy',
+    philosophyQuote: 'Jewellery That Feels Like You — Crafted with BIS 916 hallmarked gold and certified diamonds to accompany every milestone.',
+    philosophyText:
+      'At Sushi Jewels, we believe precious metals are living archives. Each curve is carved by master karigars with generational precision, honouring India’s artisanal lineage while speaking fluent contemporary grace.',
+    founderName: 'Vipul & Meera Singhania',
+    founderTitle: 'Founding Atelier Artisans',
+    philosophyImageUrl: '',
   },
   orders: {
     numberPrefix: 'SJ',

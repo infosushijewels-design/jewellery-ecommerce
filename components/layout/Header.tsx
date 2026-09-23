@@ -2,9 +2,11 @@
 
 import CartButton from '@/components/cart/CartButton';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useWishlist } from '@/lib/context/WishlistContext';
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
+import { checkIsAdmin } from '@/lib/supabase/orderService';
 import SearchBox from './SearchBox';
 
 interface DropdownColumn {
@@ -193,11 +195,37 @@ const navLinks: NavItem[] = [
 ];
 
 export default function Header() {
+  const pathname = usePathname();
   const { user, signOut } = useAuth();
   const { wishlistIds } = useWishlist();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Only admins see the Admin Panel shortcut
+  useEffect(() => {
+    let active = true;
+    if (!user) {
+      void Promise.resolve().then(() => active && setIsAdmin(false));
+      return () => {
+        active = false;
+      };
+    }
+    checkIsAdmin(user.id)
+      .then((result) => active && setIsAdmin(result))
+      .catch(() => active && setIsAdmin(false));
+    return () => {
+      active = false;
+    };
+  }, [user]);
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
+
+  const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (pathname === '/') {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   return (
     <>
@@ -207,7 +235,7 @@ export default function Header() {
         <div className="w-full px-4 sm:px-6 lg:px-12 max-w-[1440px] mx-auto flex items-center gap-4 h-16 sm:h-20">
 
           {/* Brand Logo */}
-          <Link className="flex flex-col items-start flex-shrink-0 group" href="/">
+          <Link href="/" prefetch={true} onClick={handleLogoClick} className="flex flex-col items-start flex-shrink-0 group">
             <span className="font-headline-lg text-[20px] sm:text-[22px] text-primary tracking-tight group-hover:text-secondary transition-colors leading-tight">
               Sushi Jewels
             </span>
@@ -243,9 +271,11 @@ export default function Header() {
                   <Link href="/orders" className="flex items-center gap-2.5 px-4 py-2.5 text-xs hover:bg-surface-container-low transition-colors text-primary font-medium">
                     <span className="material-symbols-outlined text-[18px] text-tertiary">package_2</span>My Orders
                   </Link>
-                  <Link href="/admin" className="flex items-center gap-2.5 px-4 py-2.5 text-xs hover:bg-surface-container-low transition-colors text-primary font-medium">
-                    <span className="material-symbols-outlined text-[18px] text-tertiary">admin_panel_settings</span>Admin Panel
-                  </Link>
+                  {isAdmin && (
+                    <Link href="/admin" className="flex items-center gap-2.5 px-4 py-2.5 text-xs hover:bg-surface-container-low transition-colors text-primary font-medium">
+                      <span className="material-symbols-outlined text-[18px] text-tertiary">admin_panel_settings</span>Admin Panel
+                    </Link>
+                  )}
                   <button onClick={async () => { await signOut(); window.location.href = '/login'; }} className="w-full flex items-center gap-2.5 text-left px-4 py-2.5 text-xs hover:bg-surface-container-low transition-colors text-error border-t border-outline-variant/20">
                     <span className="material-symbols-outlined text-[18px]">logout</span>Sign Out
                   </button>
@@ -271,6 +301,13 @@ export default function Header() {
               <span className="material-symbols-outlined text-[24px]">menu</span>
             </button>
           </div>
+        </div>
+
+        {/* ── ROW 1b: Search (mobile only — desktop keeps it inside Row 1) ── */}
+        <div className="block lg:hidden px-4 pb-3 pt-1 bg-surface border-b border-outline-variant/20">
+          <Suspense fallback={<div className="w-full h-[40px] sm:h-[44px] rounded-full bg-surface-container-low border border-outline-variant/60" />}>
+            <SearchBox placeholder="Search rings, necklaces, diamonds..." compact />
+          </Suspense>
         </div>
 
         {/* ── ROW 2: Nav links with Dropdowns ───────────────────────── */}

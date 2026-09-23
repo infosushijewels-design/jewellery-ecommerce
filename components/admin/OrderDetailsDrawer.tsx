@@ -157,9 +157,26 @@ export default function OrderDetailsDrawer({
               {getInitials(addr?.full_name)}
             </div>
             <div className="min-w-0 text-sm space-y-0.5">
-              <p className="font-semibold text-[#2D2024]">{addr?.full_name || 'Guest'}</p>
+              {addr?.email ? (
+                <Link
+                  href={`/admin/customers?q=${encodeURIComponent(addr.email)}&open=1`}
+                  className="font-semibold text-[#2D2024] hover:text-[#8A6F3C] inline-flex items-center gap-1"
+                  title="Open full customer profile"
+                >
+                  {addr?.full_name || 'Guest'}
+                  <span className="material-symbols-outlined text-[16px]">open_in_new</span>
+                </Link>
+              ) : (
+                <p className="font-semibold text-[#2D2024]">{addr?.full_name || 'Guest'}</p>
+              )}
               {addr?.email && (
-                <a href={`mailto:${addr.email}`} className="block text-[#2D2024]/70 hover:text-[#8A6F3C] truncate">{addr.email}</a>
+                <Link
+                  href={`/admin/customers?q=${encodeURIComponent(addr.email)}&open=1`}
+                  className="block text-[#2D2024]/70 hover:text-[#8A6F3C] truncate"
+                  title="Open full customer profile"
+                >
+                  {addr.email}
+                </Link>
               )}
               {addr?.phone && (
                 <a href={`tel:${addr.phone}`} className="block text-[#2D2024]/70 hover:text-[#8A6F3C]">{addr.phone}</a>

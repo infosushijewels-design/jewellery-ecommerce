@@ -14,8 +14,9 @@ import Heritage from '@/components/home/Heritage';
 import TrustMatrix from '@/components/home/TrustMatrix';
 import StoreLocator from '@/components/home/StoreLocator';
 import Testimonials from '@/components/home/Testimonials';
-import Newsletter from '@/components/layout/Newsletter';
 import Footer from '@/components/layout/Footer';
+
+export const revalidate = 60;
 
 export default function Home() {
   return (
@@ -37,7 +38,6 @@ export default function Home() {
         <TrustMatrix />
         <StoreLocator />
         <Testimonials />
-        <Newsletter />
       </main>
       <Footer />
     </>

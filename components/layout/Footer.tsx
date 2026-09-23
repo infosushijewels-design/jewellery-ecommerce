@@ -21,10 +21,10 @@ export default function Footer() {
         <div className="lg:col-span-2">
           <h4 className="font-label-md text-label-md text-surface uppercase tracking-wider mb-4 sm:mb-6">The Collections</h4>
           <ul className="space-y-3 sm:space-y-4">
-            <li><a className="font-body-sm text-body-sm text-surface-dim hover:text-secondary-fixed transition-colors" href="/collections/premium-collection">High Jewellery</a></li>
-            <li><a className="font-body-sm text-body-sm text-surface-dim hover:text-secondary-fixed transition-colors" href="/collections/best-sellers">Everyday Edit</a></li>
-            <li><a className="font-body-sm text-body-sm text-surface-dim hover:text-secondary-fixed transition-colors" href="/collections/bridal-collection">Bridal Trousseau</a></li>
-            <li><a className="font-body-sm text-body-sm text-surface-dim hover:text-secondary-fixed transition-colors" href="/search?q=men">Menswear Classics</a></li>
+            <li><Link className="font-body-sm text-body-sm text-surface-dim hover:text-secondary-fixed transition-colors" href="/collections/premium-collection">High Jewellery</Link></li>
+            <li><Link className="font-body-sm text-body-sm text-surface-dim hover:text-secondary-fixed transition-colors" href="/collections/best-sellers">Everyday Edit</Link></li>
+            <li><Link className="font-body-sm text-body-sm text-surface-dim hover:text-secondary-fixed transition-colors" href="/collections/bridal-collection">Bridal Trousseau</Link></li>
+            <li><Link className="font-body-sm text-body-sm text-surface-dim hover:text-secondary-fixed transition-colors" href="/search?q=men">Menswear Classics</Link></li>
           </ul>
         </div>
 

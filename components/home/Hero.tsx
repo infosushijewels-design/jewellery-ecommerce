@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -27,9 +27,23 @@ export default function Hero() {
     return () => clearInterval(timer);
   }, [nextSlide]);
 
+  // Swipe left/right on touch devices
+  const touchStartX = useRef<number | null>(null);
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current == null) return;
+    const delta = e.changedTouches[0].clientX - touchStartX.current;
+    touchStartX.current = null;
+    if (Math.abs(delta) < 50) return;
+    if (delta < 0) nextSlide();
+    else prevSlide();
+  };
+
   return (
     <section className="w-full bg-surface-container-low">
-      <div className="relative overflow-hidden group">
+      <div className="relative overflow-hidden group" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
       {/* Slider Container */}
       <div 
         className="flex transition-transform duration-700 ease-in-out" 
@@ -49,9 +63,9 @@ export default function Hero() {
                 priority={slide.id === 1}
               />
               {/* CTA — a span, since the whole banner is already the link */}
-              <span className="hidden lg:inline-flex absolute bottom-[5%] left-[75.5%] -translate-x-1/2 items-center gap-2 bg-primary text-surface px-6 py-2.5 xl:py-3 font-label-md text-label-md uppercase tracking-[0.15em] shadow-lg transition-colors hover:bg-tertiary whitespace-nowrap">
+              <span className="absolute z-10 bottom-[14%] right-4 sm:bottom-[5%] sm:left-[75.5%] sm:right-auto sm:-translate-x-1/2 inline-flex items-center gap-1 sm:gap-2 rounded-full bg-primary/85 sm:bg-primary backdrop-blur-sm border border-surface/20 sm:border-transparent text-surface px-3.5 py-1.5 sm:px-6 sm:py-2.5 xl:py-3 font-label-sm sm:font-label-md text-[10px] sm:text-label-md uppercase tracking-wider sm:tracking-[0.15em] shadow-lg transition-colors hover:bg-tertiary whitespace-nowrap">
                 {slide.cta}
-                <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                <span className="material-symbols-outlined text-[13px] sm:text-[18px]">arrow_forward</span>
               </span>
             </Link>
           </div>
@@ -61,19 +75,19 @@ export default function Hero() {
       {/* Prev Button */}
       <button 
         onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 bg-white/90 hover:bg-white rounded-full flex items-center justify-center text-primary shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300 focus:outline-none"
+        className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 w-9 h-9 md:w-12 md:h-12 bg-white/85 hover:bg-white backdrop-blur-sm rounded-full flex items-center justify-center text-primary shadow-md opacity-100 md:opacity-0 md:group-hover:opacity-100 md:-translate-x-2 md:group-hover:translate-x-0 focus-visible:opacity-100 transition-all duration-300 focus:outline-none z-10"
         aria-label="Previous Slide"
       >
-        <span className="material-symbols-outlined text-2xl leading-none">chevron_left</span>
+        <span className="material-symbols-outlined text-xl md:text-2xl leading-none">chevron_left</span>
       </button>
 
       {/* Next Button */}
       <button 
         onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 bg-white/90 hover:bg-white rounded-full flex items-center justify-center text-primary shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300 focus:outline-none"
+        className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 w-9 h-9 md:w-12 md:h-12 bg-white/85 hover:bg-white backdrop-blur-sm rounded-full flex items-center justify-center text-primary shadow-md opacity-100 md:opacity-0 md:group-hover:opacity-100 md:translate-x-2 md:group-hover:translate-x-0 focus-visible:opacity-100 transition-all duration-300 focus:outline-none z-10"
         aria-label="Next Slide"
       >
-        <span className="material-symbols-outlined text-2xl leading-none">chevron_right</span>
+        <span className="material-symbols-outlined text-xl md:text-2xl leading-none">chevron_right</span>
       </button>
 
       {/* Pagination Dots */}
@@ -91,17 +105,6 @@ export default function Hero() {
           />
         ))}
       </div>
-      </div>
-
-      {/* Below lg the banner is too small to overlay a button without covering its text */}
-      <div className="lg:hidden flex justify-center py-4 bg-surface">
-        <Link
-          href={slides[current].href}
-          className="inline-flex items-center gap-2 bg-primary text-surface px-6 py-2.5 font-label-md text-label-md uppercase tracking-[0.15em] hover:bg-tertiary transition-colors"
-        >
-          {slides[current].cta}
-          <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
-        </Link>
       </div>
     </section>
   );

@@ -153,10 +153,19 @@ export default function AdminStoresPage() {
     });
   }, [stores, searchQuery, cityFilter]);
 
+  // Topbar quick action links here with ?new=1 — open the create drawer once
+  const [wantsNew] = useState(() => typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('new') === '1');
+  const [newHandled, setNewHandled] = useState(false);
+
   function openCreate() {
     setEditingId(null);
     setForm({ ...emptyForm, sortOrder: String(stores.length + 1) });
     setFormOpen(true);
+  }
+
+  if (wantsNew && !newHandled && !missingTable) {
+    setNewHandled(true);
+    openCreate();
   }
 
   function openEdit(s: StoreBranch) {

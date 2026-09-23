@@ -179,8 +179,8 @@ export default function SearchBox({ placeholder, compact = false, onNavigate }: 
           aria-autocomplete="list"
           role="combobox"
           autoComplete="off"
-          className={`w-full bg-surface-container-low border border-outline-variant/60 rounded-full text-on-surface placeholder:text-outline focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/30 transition-all [&::-webkit-search-cancel-button]:hidden ${
-            compact ? 'py-2 pl-9 pr-9 font-body-sm text-body-sm' : 'py-2.5 pl-11 pr-11 font-body-md text-body-md'
+          className={`w-full bg-surface-container-low border border-outline-variant/60 rounded-full text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all [&::-webkit-search-cancel-button]:hidden ${
+            compact ? 'h-[40px] sm:h-[44px] pl-10 pr-10 font-body-sm text-body-sm' : 'py-2.5 pl-11 pr-11 font-body-md text-body-md'
           }`}
         />
         {query && (

@@ -13,7 +13,6 @@ export const PERMISSION_MODULES = [
   { key: 'products', label: 'Products', href: '/admin/products', actions: ['view', 'create', 'edit', 'delete'] },
   { key: 'categories', label: 'Categories', href: '/admin/categories', actions: ['view', 'create', 'edit', 'delete'] },
   { key: 'customers', label: 'Customers', href: '/admin/customers', actions: ['view'] },
-  { key: 'payments', label: 'Payments History', href: '/admin/payments', actions: ['view', 'edit'] },
   { key: 'stores', label: 'Stores', href: '/admin/stores', actions: ['view', 'create', 'edit', 'delete'] },
   { key: 'coupons', label: 'Coupons', href: '/admin/coupons', actions: ['view', 'create', 'edit', 'delete'] },
   { key: 'reviews', label: 'Reviews', href: '/admin/reviews', actions: ['view', 'edit', 'delete'] },

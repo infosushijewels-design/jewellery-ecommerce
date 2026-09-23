@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from 'react';
-import { getAllOrdersAdmin, updateOrderStatus, FullOrder } from '@/lib/supabase/orderService';
+import { getAllOrdersAdmin, updateOrderPaymentStatus, updateOrderStatus, FullOrder } from '@/lib/supabase/orderService';
 import { useToast } from '@/lib/context/ToastContext';
 import { printOrderInvoice } from '@/lib/utils/printInvoice';
 import OrderDetailsDrawer, {
@@ -40,6 +40,27 @@ const STATUS_TABS: { key: StatusTab; label: string }[] = [
   ...ORDER_STATUS_OPTIONS.map((o) => ({ key: o.value as StatusTab, label: o.label })),
 ];
 
+type PaymentStatus = FullOrder['payment_status'];
+
+const PAYMENT_STATUS_OPTIONS: { value: PaymentStatus; label: string }[] = [
+  { value: 'pending', label: 'Pending' },
+  { value: 'paid', label: 'Paid' },
+  { value: 'failed', label: 'Failed' },
+];
+
+const PAYMENT_STATUS_STYLES: Record<PaymentStatus, string> = {
+  paid: 'bg-emerald-50 border-emerald-200 text-emerald-800',
+  pending: 'bg-amber-50 border-amber-200 text-amber-800',
+  failed: 'bg-red-50 border-red-200 text-red-700',
+};
+
+const PAYMENT_STATUS_FILTERS = [
+  { value: 'all', label: 'All payments' },
+  { value: 'paid', label: 'Paid' },
+  { value: 'pending', label: 'Payment pending' },
+  { value: 'failed', label: 'Payment failed' },
+];
+
 const PAYMENT_OPTIONS = [
   { value: 'all', label: 'All payments' },
   { value: 'cod', label: 'Cash on Delivery' },
@@ -51,7 +72,7 @@ function itemCount(order: FullOrder) {
 }
 
 function exportOrdersCsv(orders: FullOrder[]) {
-  const header = ['Order Number', 'Date', 'Customer', 'Email', 'Phone', 'City', 'State', 'Items', 'Amount', 'Payment', 'Payment Status', 'Status'];
+  const header = ['Order Number', 'Date', 'Customer', 'Email', 'Phone', 'City', 'State', 'Items', 'Amount', 'Payment Method', 'Payment Status', 'Order Status'];
   const rows = orders.map((o) => [
     o.order_number,
     new Date(o.created_at).toISOString(),
@@ -86,6 +107,7 @@ export default function AdminOrdersPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusTab>('all');
   const [paymentFilter, setPaymentFilter] = useState('all');
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState('all');
   const [page, setPage] = useState(1);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -123,15 +145,37 @@ export default function AdminOrdersPage() {
     }
   };
 
+  const handlePaymentStatusChange = async (order: FullOrder, next: PaymentStatus) => {
+    setUpdatingId(order.id);
+    try {
+      await updateOrderPaymentStatus(order.id, next);
+      setOrders((prev) => prev.map((o) => (o.id === order.id ? { ...o, payment_status: next } : o)));
+      showToast(`Payment for #${order.order_number} marked ${next}`, 'success');
+    } catch {
+      showToast('Failed to update payment status', 'error');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
   const selectedOrder = orders.find((o) => o.id === selectedId) || null;
 
   const stats = useMemo(() => {
     const count = (s: OrderStatus) => orders.filter((o) => o.status === s).length;
+    const live = orders.filter((o) => o.status !== 'cancelled');
+    const sum = (list: FullOrder[]) => list.reduce((acc, o) => acc + (Number(o.total) || 0), 0);
+    const paid = live.filter((o) => o.payment_status === 'paid');
+    const codPending = live.filter((o) => o.payment_status === 'pending' && o.payment_method === 'cod');
     return {
       total: orders.length,
       pending: count('placed') + count('processing'),
       shipped: count('shipped'),
       delivered: count('delivered'),
+      collected: sum(paid),
+      paidCount: paid.length,
+      codPending: sum(codPending),
+      codPendingCount: codPending.length,
+      failedCount: orders.filter((o) => o.payment_status === 'failed').length,
     };
   }, [orders]);
 
@@ -155,9 +199,10 @@ export default function AdminOrdersPage() {
         addr?.phone?.includes(q);
       const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
       const matchesPayment = paymentFilter === 'all' || order.payment_method === paymentFilter;
-      return matchesSearch && matchesStatus && matchesPayment;
+      const matchesPaymentStatus = paymentStatusFilter === 'all' || order.payment_status === paymentStatusFilter;
+      return matchesSearch && matchesStatus && matchesPayment && matchesPaymentStatus;
     });
-  }, [orders, searchQuery, statusFilter, paymentFilter]);
+  }, [orders, searchQuery, statusFilter, paymentFilter, paymentStatusFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filteredOrders.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
@@ -199,6 +244,23 @@ export default function AdminOrdersPage() {
         <StatTile icon="check_circle" value={stats.delivered} label="Delivered" tone="bg-emerald-100 text-emerald-700" />
       </div>
 
+      {/* Payment reconciliation at a glance */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5">
+        <StatTile
+          icon="account_balance_wallet"
+          value={formatINR(stats.collected)}
+          label={`Revenue collected · ${stats.paidCount} paid`}
+          tone="bg-emerald-100 text-emerald-700"
+        />
+        <StatTile
+          icon="hourglass_top"
+          value={formatINR(stats.codPending)}
+          label={`Pending COD · ${stats.codPendingCount} order${stats.codPendingCount === 1 ? '' : 's'}`}
+          tone="bg-amber-100 text-amber-700"
+        />
+        <StatTile icon="error" value={stats.failedCount} label="Failed payments" tone="bg-red-100 text-red-600" />
+      </div>
+
       {/* Search + Filters */}
       <div className="flex flex-col xl:flex-row gap-3 xl:items-center">
         <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
@@ -218,6 +280,15 @@ export default function AdminOrdersPage() {
             }}
             options={PAYMENT_OPTIONS}
             ariaLabel="Filter by payment method"
+          />
+          <SelectFilter
+            value={paymentStatusFilter}
+            onChange={(v) => {
+              setPaymentStatusFilter(v);
+              setPage(1);
+            }}
+            options={PAYMENT_STATUS_FILTERS}
+            ariaLabel="Filter by payment status"
           />
         </div>
         <FilterPills
@@ -286,9 +357,28 @@ export default function AdminOrdersPage() {
                           {formatINR(order.total)}
                         </td>
                         <td className="py-4 px-4">
-                          <span className="inline-block text-xs text-[#2D2024]/75 bg-[#F5EEE7] border border-[#E8D5C5] px-2.5 py-1 rounded-md whitespace-nowrap">
-                            {paymentLabel(order.payment_method)}
-                          </span>
+                          <div className="flex flex-col gap-1.5 items-start">
+                            <span className="inline-flex items-center gap-1.5 text-xs text-[#2D2024]/75 bg-[#F5EEE7] border border-[#E8D5C5] px-2.5 py-1 rounded-md whitespace-nowrap">
+                              <span className="material-symbols-outlined text-sm">
+                                {order.payment_method === 'cod' ? 'payments' : 'credit_card'}
+                              </span>
+                              {order.payment_method === 'cod' ? 'COD' : 'Online'}
+                            </span>
+                            <select
+                              value={order.payment_status}
+                              disabled={updatingId === order.id}
+                              onChange={(e) => handlePaymentStatusChange(order, e.target.value as PaymentStatus)}
+                              aria-label={`Payment status for order ${order.order_number}`}
+                              className={`rounded-full min-w-[105px] pl-3 pr-7 py-1 text-[11px] font-semibold border capitalize focus:outline-none cursor-pointer appearance-none disabled:opacity-60 ${PAYMENT_STATUS_STYLES[order.payment_status]}`}
+                              style={{ backgroundImage: CHEVRON_BG, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center' }}
+                            >
+                              {PAYMENT_STATUS_OPTIONS.map((opt) => (
+                                <option key={opt.value} value={opt.value} style={{ backgroundColor: '#FFFFFF', color: '#2D2024' }}>
+                                  {opt.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
                         </td>
                         <td className="py-4 px-4">
                           <select

@@ -7,6 +7,7 @@ import { useAdminAccess } from '@/components/admin/AdminAccessContext';
 import { publishStoreSettings } from '@/lib/hooks/useStoreSettings';
 import { DEFAULT_STORE_SETTINGS, mergeStoreSettings, type StoreSettings } from '@/lib/storeSettings';
 import { ACCEPTED_ICON_TYPES, ACCEPTED_IMAGE_TYPES, uploadImage } from '@/lib/storage';
+import { ImageUploader } from '@/components/admin/ImageUploader';
 import {
   LoadingState,
   MigrationNotice,
@@ -21,10 +22,11 @@ import {
 
 const MIGRATION = '010_staff_roles_and_settings.sql';
 
-type TabKey = 'general' | 'payments' | 'tax' | 'shipping' | 'orders' | 'social' | 'announcement' | 'seo';
+type TabKey = 'general' | 'homepage' | 'payments' | 'tax' | 'shipping' | 'orders' | 'social' | 'announcement' | 'seo';
 
 const TABS: { key: TabKey; label: string; icon: string }[] = [
   { key: 'general', label: 'General Store Settings', icon: 'storefront' },
+  { key: 'homepage', label: 'Homepage Content', icon: 'home' },
   { key: 'payments', label: 'Payment Settings', icon: 'credit_card' },
   { key: 'tax', label: 'Tax Settings (GST)', icon: 'receipt_long' },
   { key: 'shipping', label: 'Shipping Settings', icon: 'local_shipping' },
@@ -258,6 +260,7 @@ export default function AdminSettingsPage() {
     if (s.contact.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.contact.email)) return { tab: 'general', message: 'Store email looks invalid' };
     if (s.store.websiteUrl.trim() && !/^https?:\/\//i.test(s.store.websiteUrl.trim()))
       return { tab: 'general', message: 'Website link must start with https://' };
+    if (s.homepage.philosophyQuote.length > 220) return { tab: 'homepage', message: 'Keep the philosophy quote under 220 characters' };
     if (!s.payments.codEnabled && !s.payments.onlineEnabled) return { tab: 'payments', message: 'Enable at least one payment method' };
     if (s.commerce.gstRate < 0 || s.commerce.gstRate > 28) return { tab: 'tax', message: 'GST rate must be between 0 and 28%' };
     if (s.commerce.gstin && !/^[0-9A-Z]{15}$/.test(s.commerce.gstin)) return { tab: 'tax', message: 'GSTIN must be 15 letters/digits' };
@@ -454,6 +457,60 @@ export default function AdminSettingsPage() {
                       <IconInput id="g-tagline" icon="auto_awesome" value={d.store.tagline} onChange={(v) => set('store', 'tagline', v)} placeholder="Fine Jewellery" />
                     </div>
                   </div>
+                </>
+              )}
+
+              {tab === 'homepage' && (
+                <>
+                  <p className="text-xs text-[#2D2024]/55 -mt-2">
+                    The &ldquo;Philosophy&rdquo; band on the homepage — the large quote next to the atelier photo.
+                  </p>
+                  <div>
+                    <Label htmlFor="h-eyebrow" hint="Small label above the quote">Section Label</Label>
+                    <IconInput id="h-eyebrow" icon="label" value={d.homepage.philosophyEyebrow} onChange={(v) => set('homepage', 'philosophyEyebrow', v)} placeholder="The Philosophy" />
+                  </div>
+                  <div>
+                    <Label htmlFor="h-quote" hint={`${d.homepage.philosophyQuote.length}/220 characters — two short lines read best.`}>
+                      Philosophy Quote
+                    </Label>
+                    <IconTextarea id="h-quote" icon="format_quote" rows={3} value={d.homepage.philosophyQuote} onChange={(v) => set('homepage', 'philosophyQuote', v)} />
+                  </div>
+                  <div>
+                    <Label htmlFor="h-text" hint="Paragraph shown under the quote">Supporting Paragraph</Label>
+                    <IconTextarea id="h-text" icon="notes" rows={4} value={d.homepage.philosophyText} onChange={(v) => set('homepage', 'philosophyText', v)} />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                      <Label htmlFor="h-founder">Founder / Signature Name</Label>
+                      <IconInput id="h-founder" icon="person" value={d.homepage.founderName} onChange={(v) => set('homepage', 'founderName', v)} />
+                    </div>
+                    <div>
+                      <Label htmlFor="h-role">Founder Title</Label>
+                      <IconInput id="h-role" icon="work" value={d.homepage.founderTitle} onChange={(v) => set('homepage', 'founderTitle', v)} placeholder="Founding Atelier Artisans" />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-[#2D2024] mb-1.5">Section Photo</p>
+                    <p className="text-xs text-[#2D2024]/55 mb-3">Tall portrait image on the left. Leave empty to keep the current default photo.</p>
+                    <div className="max-w-sm">
+                      <ImageUploader
+                        value={d.homepage.philosophyImageUrl}
+                        onChange={(url) => set('homepage', 'philosophyImageUrl', url)}
+                        folder="homepage"
+                        label="Upload section photo"
+                        aspectClass="aspect-[4/5]"
+                        disabled={readOnly}
+                      />
+                    </div>
+                  </div>
+                  {d.homepage.philosophyQuote.trim() && (
+                    <div>
+                      <p className="text-sm font-medium text-[#2D2024] mb-2">Preview</p>
+                      <blockquote className="bg-white border border-[#E8D5C5] rounded-xl p-5 font-headline-lg text-[20px] leading-[1.35] text-[#2D2024]">
+                        &ldquo;{d.homepage.philosophyQuote}&rdquo;
+                      </blockquote>
+                    </div>
+                  )}
                 </>
               )}
 

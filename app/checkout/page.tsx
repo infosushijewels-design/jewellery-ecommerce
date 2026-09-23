@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import AnnouncementBar from '@/components/layout/AnnouncementBar';
 import { useCart } from '@/lib/context/CartContext';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useToast } from '@/lib/context/ToastContext';
-import { createOrder } from '@/lib/supabase/orderService';
+import { createOrder, getUserOrders } from '@/lib/supabase/orderService';
 import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 import { shippingFeeFor } from '@/lib/storeSettings';
 import Link from 'next/link';
@@ -48,6 +48,43 @@ export default function CheckoutPage() {
   // If the chosen method isn't available, fall back to the other one
   const paymentMethod: 'cod' | 'online' =
     formData.paymentMethod === 'cod' && !codAllowed ? 'online' : formData.paymentMethod === 'online' && !onlineEnabled ? 'cod' : formData.paymentMethod;
+
+  // Signed-in customers: fill the email as soon as the session loads, and reuse the
+  // name/phone/address from their most recent order so checkout is one tap.
+  const prefilledFor = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!user?.id || prefilledFor.current === user.id) return;
+    prefilledFor.current = user.id;
+    let active = true;
+
+    getUserOrders(user.id, user.email)
+      .then((orders) => {
+        const last = orders[0]?.shipping_address;
+        const metaName = (user.user_metadata?.full_name as string | undefined)?.trim();
+        const metaPhone = (user.user_metadata?.phone as string | undefined)?.trim();
+        if (!active) return;
+        const [first = '', ...rest] = (last?.full_name || metaName || '').trim().split(' ');
+        setFormData((prev) => ({
+          ...prev,
+          email: prev.email || user.email || '',
+          firstName: prev.firstName || first,
+          lastName: prev.lastName || rest.join(' '),
+          phone: prev.phone || last?.phone || metaPhone || '',
+          address: prev.address || last?.address || '',
+          city: prev.city || last?.city || '',
+          state: prev.state || last?.state || '',
+          pincode: prev.pincode || last?.pincode || '',
+        }));
+      })
+      .catch(() => {
+        if (active) setFormData((prev) => ({ ...prev, email: prev.email || user.email || '' }));
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [user]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -163,18 +200,11 @@ export default function CheckoutPage() {
                     )}
                   </div>
 
-                  {user ? (
+                  {user && (
                     <div className="flex items-center gap-2 mb-4 bg-surface-container-low border border-outline-variant/40 rounded-lg px-3.5 py-2.5">
                       <span className="material-symbols-outlined text-secondary text-[18px]">verified_user</span>
                       <span className="text-xs sm:text-sm text-primary">
                         Signed in as <span className="font-semibold">{user.email}</span>
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="flex items-start gap-2 mb-4 bg-secondary-container/40 border border-secondary/30 rounded-lg px-3.5 py-2.5">
-                      <span className="material-symbols-outlined text-secondary text-[18px] flex-shrink-0">devices</span>
-                      <span className="text-xs sm:text-sm text-primary leading-relaxed">
-                        Ordering as Guest • Order details will be saved to this device and emailed to you.
                       </span>
                     </div>
                   )}

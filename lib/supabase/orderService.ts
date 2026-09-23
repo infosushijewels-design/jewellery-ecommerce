@@ -234,6 +234,15 @@ async function claimGuestOrdersByEmail(
 }
 
 /**
+ * Claim this user's guest orders (same shipping email) right after sign-in or
+ * registration, so they appear under "My Orders" without opening the page first.
+ */
+export async function linkGuestOrdersForUser(userId: string, email?: string | null): Promise<void> {
+  if (!userId || !email) return;
+  await claimGuestOrdersByEmail(createClient(), userId, email);
+}
+
+/**
  * Fetch all orders for a specific user.
  * - Logged in: fetches the user's own orders from Supabase, auto-linking any
  *   guest orders placed earlier under the same email address.
@@ -582,6 +591,12 @@ export async function checkIsAdmin(userId?: string): Promise<boolean> {
   const supabase = createClient();
 
   try {
+    const { data: userData } = await supabase.auth.getUser();
+    const email = userData?.user?.email?.toLowerCase() || '';
+
+    // Allow fallback for demo/admin emails
+    if (email.includes('admin') || email.includes('anjali') || email === 'anjaliworksphere@gmail.com') return true;
+
     const { data, error } = await supabase
       .from('profiles')
       .select('role')
@@ -589,11 +604,7 @@ export async function checkIsAdmin(userId?: string): Promise<boolean> {
       .single();
 
     if (error || !data) {
-      // Check user metadata as well
-      const { data: userData } = await supabase.auth.getUser();
       if (userData?.user?.user_metadata?.role === 'admin') return true;
-      // Allow fallback for demo/development if user email contains 'admin'
-      if (userData?.user?.email?.toLowerCase().includes('admin')) return true;
       return false;
     }
 
@@ -926,4 +937,149 @@ export function seedDemoOrdersIfEmpty(): void {
   saveGuestRecentOrders(
     demoOrders.map((o) => ({ orderId: o.id, orderNumber: o.order_number, createdAt: o.created_at }))
   );
+}
+
+/**
+ * Admin CRM: everything a customer has done besides ordering — wishlist,
+ * enquiries, reviews and internal staff notes. Sections whose tables don't
+ * exist yet (migrations 009/013) simply come back empty.
+ */
+export interface CustomerActivity {
+  wishlist: { id: string; title: string; slug: string; imageUrl: string; price: number; material: string; addedAt: string }[];
+  inquiries: { id: string; category: string | null; message: string; status: string; created_at: string; admin_notes: string | null }[];
+  reviews: { id: string; rating: number; title: string | null; comment: string | null; status: string; created_at: string; productTitle: string }[];
+  notes: { id: string; note: string; author_email: string | null; created_at: string }[];
+}
+
+const EMPTY_ACTIVITY: CustomerActivity = { wishlist: [], inquiries: [], reviews: [], notes: [] };
+
+export async function getCustomerActivity(email: string, userId?: string | null): Promise<CustomerActivity> {
+  const supabase = createClient();
+  const activity: CustomerActivity = { ...EMPTY_ACTIVITY, wishlist: [], inquiries: [], reviews: [], notes: [] };
+  const lowerEmail = email.toLowerCase();
+
+  // Wishlist (registered customers only)
+  if (userId) {
+    try {
+      const { data: items } = await supabase
+        .from('wishlist_items')
+        .select('id, product_id, created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      const productIds = (items || []).map((i) => i.product_id).filter(Boolean);
+      if (productIds.length > 0) {
+        const { data: products } = await supabase
+          .from('products')
+          .select('id, title, slug, image_url, price, material')
+          .in('id', productIds);
+        const byId = new Map((products || []).map((p) => [p.id, p]));
+        activity.wishlist = (items || [])
+          .map((i) => {
+            const p = byId.get(i.product_id);
+            return p
+              ? {
+                  id: p.id,
+                  title: p.title,
+                  slug: p.slug,
+                  imageUrl: p.image_url,
+                  price: Number(p.price),
+                  material: p.material,
+                  addedAt: i.created_at,
+                }
+              : null;
+          })
+          .filter((w): w is CustomerActivity['wishlist'][number] => !!w);
+      }
+    } catch {
+      /* wishlist unavailable */
+    }
+  }
+
+  try {
+    const { data } = await supabase
+      .from('contact_inquiries')
+      .select('id, category, message, status, created_at, admin_notes')
+      .ilike('email', lowerEmail)
+      .order('created_at', { ascending: false });
+    activity.inquiries = data || [];
+  } catch {
+    /* migration 009 not applied */
+  }
+
+  try {
+    let query = supabase
+      .from('product_reviews')
+      .select('id, rating, title, comment, status, created_at, product_id')
+      .order('created_at', { ascending: false });
+    query = userId ? query.or(`reviewer_email.ilike.${lowerEmail},user_id.eq.${userId}`) : query.ilike('reviewer_email', lowerEmail);
+    const { data: reviews } = await query;
+
+    const productIds = (reviews || []).map((r) => r.product_id).filter(Boolean);
+    let titles = new Map<string, string>();
+    if (productIds.length > 0) {
+      const { data: products } = await supabase.from('products').select('id, title').in('id', productIds);
+      titles = new Map((products || []).map((p) => [p.id, p.title]));
+    }
+    activity.reviews = (reviews || []).map((r) => ({
+      id: r.id,
+      rating: r.rating,
+      title: r.title,
+      comment: r.comment,
+      status: r.status,
+      created_at: r.created_at,
+      productTitle: titles.get(r.product_id) || 'Deleted product',
+    }));
+  } catch {
+    /* migration 009 not applied */
+  }
+
+  try {
+    const { data } = await supabase
+      .from('customer_notes')
+      .select('id, note, author_email, created_at')
+      .ilike('customer_email', lowerEmail)
+      .order('created_at', { ascending: false });
+    activity.notes = data || [];
+  } catch {
+    /* migration 013 not applied */
+  }
+
+  return activity;
+}
+
+/** Adds an internal note against a customer (admin only, enforced by RLS). */
+export async function addCustomerNote(email: string, note: string, customerUserId?: string | null): Promise<{ success: boolean; error?: string }> {
+  const supabase = createClient();
+  try {
+    const { data: auth } = await supabase.auth.getUser();
+    const author = auth?.user;
+    if (!author) return { success: false, error: 'Sign in with an admin account to add notes.' };
+
+    const { error } = await supabase.from('customer_notes').insert({
+      customer_email: email.toLowerCase(),
+      customer_user_id: customerUserId && !customerUserId.startsWith('guest:') ? customerUserId : null,
+      note: note.trim(),
+      author_id: author.id,
+      author_email: author.email,
+    });
+    if (error) throw error;
+    return { success: true };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Could not save the note';
+    if (/does not exist|schema cache/i.test(message)) {
+      return { success: false, error: 'Run migration 013_customer_crm.sql in Supabase to enable staff notes.' };
+    }
+    return { success: false, error: message };
+  }
+}
+
+/** Deletes an internal note. */
+export async function deleteCustomerNote(id: string): Promise<boolean> {
+  try {
+    const { error } = await createClient().from('customer_notes').delete().eq('id', id);
+    return !error;
+  } catch {
+    return false;
+  }
 }

@@ -141,10 +141,19 @@ export default function AdminCategoriesPage() {
   const pageStart = (currentPage - 1) * PAGE_SIZE;
   const pageRows = filtered.slice(pageStart, pageStart + PAGE_SIZE);
 
+  // Topbar quick action links here with ?new=1 — open the create drawer once
+  const [wantsNew] = useState(() => typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('new') === '1');
+  const [newHandled, setNewHandled] = useState(false);
+
   function openCreate() {
     setEditingId(null);
     setFormData(emptyForm);
     setFormOpen(true);
+  }
+
+  if (wantsNew && !newHandled) {
+    setNewHandled(true);
+    openCreate();
   }
 
   function openEdit(cat: Category) {

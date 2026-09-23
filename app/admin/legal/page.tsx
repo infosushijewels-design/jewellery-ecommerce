@@ -110,10 +110,19 @@ export default function AdminLegalPagesPage() {
       .sort((a, b) => (a.kind === 'saved' ? a.page.title : a.title).localeCompare(b.kind === 'saved' ? b.page.title : b.title));
   }, [pages, searchQuery]);
 
+  // Topbar quick action links here with ?new=1 — open the create drawer once
+  const [wantsNew] = useState(() => typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('new') === '1');
+  const [newHandled, setNewHandled] = useState(false);
+
   function openCreate() {
     setEditingId(null);
     setForm(emptyForm);
     setFormOpen(true);
+  }
+
+  if (wantsNew && !newHandled && !missingTable) {
+    setNewHandled(true);
+    openCreate();
   }
 
   function openCustomise(slug: string, title: string) {

@@ -74,7 +74,11 @@ export default function ProductActions({ product }: ProductActionsProps) {
             <button
               key={metal}
               onClick={() => setSelectedMetal(metal)}
-              className={`px-4 py-2 rounded border transition-colors ${selectedMetal === metal ? 'border-primary bg-primary-container text-on-primary-container' : 'border-outline-variant text-on-surface-variant hover:border-secondary hover:text-primary'}`}
+              className={`px-4 py-2 rounded-lg border transition-all duration-200 ${
+                selectedMetal === metal
+                  ? 'bg-white text-primary border-2 border-primary font-semibold shadow-sm ring-1 ring-primary'
+                  : 'bg-white/80 text-on-surface-variant border-outline-variant hover:border-secondary hover:text-primary'
+              }`}
             >
               {metal}
             </button>
