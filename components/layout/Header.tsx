@@ -4,6 +4,7 @@ import CartButton from '@/components/cart/CartButton';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/context/AuthContext';
+import { useWishlist } from '@/lib/context/WishlistContext';
 import { Suspense, useEffect, useState } from 'react';
 import SearchBox from './SearchBox';
 
