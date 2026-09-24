@@ -8,7 +8,7 @@ import Campaign from '@/components/home/Campaign';
 import Bestsellers from '@/components/home/Bestsellers';
 import Editorial from '@/components/home/Editorial';
 import Materials from '@/components/home/Materials';
-import SignatureEdit from '@/components/home/SignatureEdit';
+import FestiveOffer from '@/components/home/FestiveOffer';
 import GiftFinder from '@/components/home/GiftFinder';
 import Heritage from '@/components/home/Heritage';
 import TrustMatrix from '@/components/home/TrustMatrix';
@@ -32,7 +32,7 @@ export default function Home() {
         <Bestsellers />
         <Editorial />
         <Materials />
-        <SignatureEdit />
+        <FestiveOffer />
         <GiftFinder />
         <Heritage />
         <TrustMatrix />
