@@ -132,14 +132,26 @@ export default function OrderTrackingPage() {
               ) : (
                 <div className="py-6 sm:py-8">
                   <div className="relative">
-                    {/* Background track line (aligned with circle center top-6) */}
-                    <div className="hidden sm:block absolute top-6 left-12 right-12 h-0.5 bg-outline-variant/40 -translate-y-1/2 z-0"></div>
-                    
-                    {/* Active progress track line */}
-                    <div 
-                      className="hidden sm:block absolute top-6 left-12 h-0.5 bg-primary -translate-y-1/2 z-0 transition-all duration-500"
-                      style={{ width: `calc(${(currentStepIndex / (steps.length - 1)) * 100}% - 3rem)` }}
-                    ></div>
+                    {/* Connecting line segments with clean 8px gap between circle edges */}
+                    <div className="hidden sm:block absolute inset-0 z-0 pointer-events-none">
+                      {steps.slice(0, -1).map((_, idx) => {
+                        const isSegmentDone = idx < currentStepIndex;
+                        const leftPercent = ((idx + 0.5) / steps.length) * 100;
+                        const colWidthPercent = 100 / steps.length;
+                        return (
+                          <div
+                            key={idx}
+                            className={`absolute top-6 h-0.5 -translate-y-1/2 transition-colors duration-500 ${
+                              isSegmentDone ? 'bg-primary' : 'bg-outline-variant/40'
+                            }`}
+                            style={{
+                              left: `calc(${leftPercent}% + 32px)`,
+                              width: `calc(${colWidthPercent}% - 64px)`,
+                            }}
+                          />
+                        );
+                      })}
+                    </div>
 
                     {/* Step Nodes */}
                     <div className="grid grid-cols-1 sm:grid-cols-4 gap-6 relative z-10">
