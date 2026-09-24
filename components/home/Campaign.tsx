@@ -13,6 +13,8 @@ export default function Campaign() {
           alt="Jewellery that Blooms with You — Natural Diamonds, timeless pieces for your every special moment"
           fill
           className="object-cover object-center"
+        />
+        {/* Overlay CTA removed so the banner remains clean */}
       </Link>
     </section>
   );
