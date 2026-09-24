@@ -4,12 +4,19 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import { useCart } from '@/lib/context/CartContext';
 import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
+import { useToast } from '@/lib/context/ToastContext';
 
 const inr = (n: number) => `₹${n.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
 
 export default function CartSidebar() {
   const { isCartOpen, closeCart, items, updateQuantity, removeFromCart, subtotal, tax, total } = useCart();
   const storeSettings = useStoreSettings();
+  const { showToast } = useToast();
+
+  const handleRemove = (id: string) => {
+    removeFromCart(id);
+    showToast('Item removed from your bag.', 'info');
+  };
 
   // Esc closes the drawer; the page behind doesn't scroll while it's open
   useEffect(() => {
@@ -113,7 +120,7 @@ export default function CartSidebar() {
                       <div className="flex justify-between items-start gap-2">
                         <h3 className="font-label-md text-label-md text-primary leading-snug line-clamp-2">{item.title}</h3>
                         <button
-                          onClick={() => removeFromCart(item.id)}
+                          onClick={() => handleRemove(item.id)}
                           className="text-on-surface-variant hover:text-error flex-shrink-0 p-0.5"
                           aria-label={`Remove ${item.title}`}
                         >

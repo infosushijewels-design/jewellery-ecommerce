@@ -198,6 +198,7 @@ export interface Database {
           id: string
           email: string
           full_name: string | null
+          phone: string | null
           role: 'customer' | 'admin'
           staff_role_id: string | null
           created_at: string
@@ -207,6 +208,7 @@ export interface Database {
           id: string
           email: string
           full_name?: string | null
+          phone?: string | null
           role?: 'customer' | 'admin'
           staff_role_id?: string | null
           created_at?: string
@@ -216,8 +218,53 @@ export interface Database {
           id?: string
           email?: string
           full_name?: string | null
+          phone?: string | null
           role?: 'customer' | 'admin'
           staff_role_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      customer_addresses: {
+        Row: {
+          id: string
+          user_id: string
+          label: string
+          full_name: string
+          phone: string
+          address: string
+          city: string
+          state: string
+          pincode: string
+          is_default: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          label?: string
+          full_name: string
+          phone: string
+          address: string
+          city: string
+          state: string
+          pincode: string
+          is_default?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          label?: string
+          full_name?: string
+          phone?: string
+          address?: string
+          city?: string
+          state?: string
+          pincode?: string
+          is_default?: boolean
           created_at?: string
           updated_at?: string
         }

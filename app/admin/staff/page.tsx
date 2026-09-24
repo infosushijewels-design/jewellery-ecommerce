@@ -262,7 +262,7 @@ export default function AdminStaffPage() {
     const email = memberEmail.trim().toLowerCase();
     if (!email) return;
     if (memberRoleValue === SUPER_ADMIN_VALUE && !access.isSuperAdmin) {
-      showToast('Only a Super Admin can grant Super Admin access', 'error');
+      showToast('Only an Admin can grant Admin access', 'error');
       return;
     }
     setSavingMember(true);
@@ -294,7 +294,7 @@ export default function AdminStaffPage() {
 
   async function changeMemberRole(member: StaffMember, roleValue: string) {
     if (roleValue === SUPER_ADMIN_VALUE && !access.isSuperAdmin) {
-      showToast('Only a Super Admin can grant Super Admin access', 'error');
+      showToast('Only an Admin can grant Admin access', 'error');
       return;
     }
     setUpdatingMemberId(member.id);
@@ -333,7 +333,7 @@ export default function AdminStaffPage() {
 
   const superAdminCount = members.filter((m) => !m.staff_role_id).length;
   const roleOptions = [
-    ...(access.isSuperAdmin ? [{ value: SUPER_ADMIN_VALUE, label: 'Super Admin (full access)' }] : []),
+    ...(access.isSuperAdmin ? [{ value: SUPER_ADMIN_VALUE, label: 'Admin (full access)' }] : []),
     ...roles.map((r) => ({ value: r.id, label: r.name })),
   ];
   const totalPossible = PERMISSION_MODULES.reduce((acc, m) => acc + m.actions.length, 0);
@@ -393,7 +393,7 @@ export default function AdminStaffPage() {
             {/* Super Admin (implicit) */}
             <div className="bg-[#FFFCF7] border border-[#E8D5C5] rounded-2xl p-5 shadow-[0_2px_10px_rgba(45,32,36,0.05)] flex flex-col">
               <div className="flex items-start justify-between gap-3">
-                <h3 className="font-headline-sm text-lg text-[#2D2024] uppercase tracking-wide">Super Admin</h3>
+                <h3 className="font-headline-sm text-lg text-[#2D2024] uppercase tracking-wide">Admin</h3>
                 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#4B2949]/10 text-[#4B2949] border border-[#4B2949]/20">Owner</span>
               </div>
               <p className="text-sm text-[#2D2024]/65 mt-1">Unrestricted access to every section, including Staff & Roles.</p>
@@ -404,7 +404,7 @@ export default function AdminStaffPage() {
                   <p className="text-[#2D2024] font-medium">{superAdminCount} member(s)</p>
                 </div>
               </div>
-              <p className="text-xs text-[#2D2024]/55 mt-4">Admins without a staff role are Super Admins. Built in — cannot be edited.</p>
+              <p className="text-xs text-[#2D2024]/55 mt-4">Admins without a staff role are Admins. Built in — cannot be edited.</p>
             </div>
 
             {roles.map((role) => {
@@ -520,7 +520,7 @@ export default function AdminStaffPage() {
                                   isSuper ? 'bg-[#4B2949]/10 text-[#4B2949] border-[#4B2949]/20' : 'bg-[#B99A62]/12 text-[#8A6F3C] border-[#B99A62]/30'
                                 }`}
                               >
-                                {isSuper ? 'Super Admin' : roleNameById.get(m.staff_role_id!) || 'Unknown role'}
+                                {isSuper ? 'Admin' : roleNameById.get(m.staff_role_id!) || 'Unknown role'}
                               </span>
                             ) : (
                               <select

@@ -49,6 +49,8 @@ export interface StoreSettings {
     codEnabled: boolean;
     onlineEnabled: boolean;
     codMaxOrderValue: number; // 0 = no limit
+    razorpayKeyId: string;
+    razorpayKeySecret: string;
   };
   announcement: {
     enabled: boolean;
@@ -107,6 +109,8 @@ export const DEFAULT_STORE_SETTINGS: StoreSettings = {
     codEnabled: true,
     onlineEnabled: true,
     codMaxOrderValue: 0,
+    razorpayKeyId: '',
+    razorpayKeySecret: '',
   },
   announcement: {
     enabled: true,

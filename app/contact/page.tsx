@@ -42,7 +42,7 @@ export default function ContactPage() {
           message: form.message.trim(),
         });
       if (error) throw error;
-      showToast('Thank you. Our concierge team will reach out within 24 hours.', 'success');
+      showToast('💬 Message sent! Our team will respond shortly.', 'success');
       setForm({ name: '', email: '', phone: '', category: categories[0], message: '' });
     } catch (err) {
       console.error('Failed to submit enquiry:', err);
@@ -203,15 +203,7 @@ export default function ContactPage() {
                   <span className="material-symbols-outlined text-secondary text-[22px]">mail</span>
                   concierge@sushijewels.com
                 </a>
-                <a
-                  href="https://wa.me/918001234567"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 mt-4 w-full bg-[#25D366] text-white py-3 rounded-full font-label-md uppercase tracking-wide hover:opacity-90 transition-opacity"
-                >
-                  <span className="material-symbols-outlined text-[20px]">chat</span>
-                  WhatsApp Concierge
-                </a>
+
               </div>
             </div>
 

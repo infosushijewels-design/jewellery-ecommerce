@@ -162,16 +162,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Sidebar Navigation */}
       <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-[#FFFCF7] border-r border-[#E8D5C5]/70 flex flex-col transition-all duration-300 lg:translate-x-0 lg:fixed lg:inset-y-0 lg:h-screen flex-shrink-0 ${collapsed ? 'lg:w-[84px]' : 'lg:w-72'} ${mobileNavOpen ? 'translate-x-0' : '-translate-x-full'
         }`}>
-        {/* Collapse handle (desktop) */}
-        <button
-          type="button"
-          onClick={toggleCollapsed}
-          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          className="hidden lg:flex absolute -right-3 top-6 z-10 w-6 h-6 rounded-full bg-[#FFFCF7] border border-[#E8D5C5] items-center justify-center text-[#2D2024]/60 hover:text-[#2D2024] hover:bg-[#F5EEE7] shadow-sm"
-        >
-          <span className={`material-symbols-outlined text-[16px] transition-transform ${collapsed ? 'rotate-180' : ''}`}>chevron_left</span>
-        </button>
+
         <div className="flex-1 min-h-0 flex flex-col">
           {/* Brand Header */}
           <div className={`py-3.5 border-b border-[#E8D5C5]/70 flex-shrink-0 ${collapsed ? 'lg:px-0' : ''} px-5`}>
@@ -300,7 +291,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <ProfileMenu
             name={(user?.user_metadata?.full_name as string | undefined)?.trim() || user?.email?.split('@')[0] || (getDemoAdminEmail() ? getDemoAdminEmail()!.split('@')[0] : 'Anjali (Admin)')}
             email={user?.email || getDemoAdminEmail() || 'anjaliworksphere@gmail.com'}
-            roleName={access?.roleName || 'Super Admin'}
+            roleName={access?.roleName || 'Admin'}
             showSettings={!access || access.can('settings', 'view')}
             onSignOut={handleSignOut}
           />
@@ -325,7 +316,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </div>
               <h1 className="font-headline-sm text-2xl text-[#2D2024]">No access</h1>
               <p className="text-sm text-[#2D2024]/60 mt-2 max-w-sm">
-                Your role ({access?.roleName}) doesn&apos;t include this section. Ask a Super Admin to update your permissions.
+                Your role ({access?.roleName}) doesn&apos;t include this section. Ask an Admin to update your permissions.
               </p>
               <Link
                 href={firstAllowedHref}

@@ -13,7 +13,7 @@ export default function Newsletter() {
     if (!email) return;
     // In production: save email to Supabase newsletter table
     setSubmitted(true);
-    showToast("You're now part of the Inner Circle! 🎉", 'success');
+    showToast('✉️ Subscribed! Enjoy exclusive access to new arrivals.', 'success');
     setEmail('');
     setTimeout(() => setSubmitted(false), 5000);
   };

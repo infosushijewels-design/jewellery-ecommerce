@@ -15,7 +15,6 @@ import {
 type Origin = { kind: 'pincode'; pincode: string } | { kind: 'location'; lat: number; lng: number } | null;
 
 function StoreCard({ store, distance, whatsappFallback }: { store: StoreBranch; distance: number | null; whatsappFallback: string }) {
-  const wa = storeWhatsappUrl(store, whatsappFallback);
   const actionClass =
     'flex flex-col items-center justify-center gap-1 py-3 text-[11px] font-label-md uppercase tracking-wider text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors';
 
@@ -58,12 +57,7 @@ function StoreCard({ store, distance, whatsappFallback }: { store: StoreBranch; 
       </div>
 
       <div className="grid grid-cols-3 border-t border-outline-variant/40 divide-x divide-outline-variant/40">
-        {wa ? (
-          <a href={wa} target="_blank" rel="noopener noreferrer" className={actionClass}>
-            <span className="material-symbols-outlined text-[20px]">chat</span>
-            Chat
-          </a>
-        ) : store.phone ? (
+        {store.phone ? (
           <a href={`tel:${store.phone.replace(/[^\d+]/g, '')}`} className={actionClass}>
             <span className="material-symbols-outlined text-[20px]">call</span>
             Call

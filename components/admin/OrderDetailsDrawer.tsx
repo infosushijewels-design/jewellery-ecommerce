@@ -5,7 +5,7 @@ import Link from 'next/link';
 import type { FullOrder } from '@/lib/supabase/orderService';
 import { printOrderInvoice } from '@/lib/utils/printInvoice';
 import { useToast } from '@/lib/context/ToastContext';
-import { CHEVRON_BG, Drawer, formatDateTime, formatINR, getInitials, whatsappLink } from './AdminUI';
+import { CHEVRON_BG, Drawer, formatDateTime, formatINR, getInitials } from './AdminUI';
 
 type OrderStatus = FullOrder['status'];
 
@@ -33,10 +33,7 @@ export function paymentLabel(method?: string) {
   return method === 'cod' ? 'Cash on Delivery' : method === 'online' ? 'Online' : method || '—';
 }
 
-export function orderWhatsappMessage(order: FullOrder) {
-  const name = order.shipping_address?.full_name?.split(' ')[0] || 'there';
-  return `Hello ${name}, this is Sushi Jewels regarding your order #${order.order_number} (${formatINR(order.total)}). Current status: ${orderStatusLabel(order.status)}.`;
-}
+
 
 const TIMELINE: OrderStatus[] = ['placed', 'processing', 'shipped', 'delivered'];
 
@@ -67,7 +64,7 @@ export default function OrderDetailsDrawer({
   if (!order) return null;
 
   const addr = order.shipping_address;
-  const wa = whatsappLink(addr?.phone, orderWhatsappMessage(order));
+
   const currentStep = TIMELINE.indexOf(order.status);
   const itemsSubtotal = (order.items || []).reduce((acc, i) => acc + Number(i.price) * i.quantity, 0);
   const subtotal = Number(order.subtotal) || itemsSubtotal;
@@ -287,21 +284,7 @@ export default function OrderDetailsDrawer({
             <span className="material-symbols-outlined text-base">print</span>
             Print Invoice
           </button>
-          {wa ? (
-            <a
-              href={wa}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-colors"
-            >
-              <span className="material-symbols-outlined text-base">chat</span>
-              WhatsApp
-            </a>
-          ) : (
-            <span className="flex items-center justify-center gap-2 bg-[#2D2024]/5 text-[#2D2024]/40 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider">
-              No phone
-            </span>
-          )}
+
           {addr?.email && (
             <a
               href={`mailto:${addr.email}?subject=${encodeURIComponent(`Your Sushi Jewels order #${order.order_number}`)}`}

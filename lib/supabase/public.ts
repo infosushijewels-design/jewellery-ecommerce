@@ -24,7 +24,12 @@ export async function getPublicStoreSettings(): Promise<StoreSettings> {
   try {
     const { data, error } = await createPublicClient().from('store_settings').select('settings').eq('id', 1).maybeSingle();
     if (error || !data) return DEFAULT_STORE_SETTINGS;
-    return mergeStoreSettings(data.settings);
+    const settings = mergeStoreSettings(data.settings);
+    // Security: Never expose the Razorpay secret to the frontend.
+    if (settings.payments?.razorpayKeySecret) {
+      settings.payments.razorpayKeySecret = '';
+    }
+    return settings;
   } catch {
     return DEFAULT_STORE_SETTINGS;
   }

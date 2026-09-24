@@ -91,20 +91,7 @@ export default function CheckoutPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handlePlaceOrder = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (items.length === 0) return;
-    if (belowMinimum) {
-      showToast(`The minimum order value is ₹${minOrderValue.toLocaleString('en-IN')}.`, 'error');
-      return;
-    }
-    if (noPaymentMethod) {
-      showToast('No payment method is available for this order. Please contact us to complete your purchase.', 'error');
-      return;
-    }
-
-    setIsProcessing(true);
-
+  const submitOrderToDb = async (status: 'pending' | 'paid', razorpayPaymentId?: string) => {
     try {
       const res = await createOrder({
         userId: user?.id || null,
@@ -131,13 +118,13 @@ export default function CheckoutPage() {
         shippingFee,
         total: calculatedTotal,
         paymentMethod,
-        paymentStatus: paymentMethod === 'online' ? 'paid' : 'pending',
-        notes: formData.notes,
+        paymentStatus: status,
+        notes: razorpayPaymentId ? `${formData.notes}\n[Razorpay Payment ID: ${razorpayPaymentId}]`.trim() : formData.notes,
       });
 
       if (res.success) {
         clearCart();
-        showToast('Your order has been placed with Sushi Jewels!', 'success');
+        showToast('🎉 Order placed successfully! Confirmation sent to your email.', 'success');
         const targetId = res.orderNumber || res.orderId || 'latest';
         router.push(`/orders/${targetId}`);
       } else {
@@ -145,9 +132,104 @@ export default function CheckoutPage() {
         setIsProcessing(false);
       }
     } catch (err: any) {
-      console.error('Checkout error:', err);
+      console.error('Order creation error:', err);
       showToast('An unexpected error occurred while placing your order.', 'error');
       setIsProcessing(false);
+    }
+  };
+
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      if ((window as any).Razorpay) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const handlePlaceOrder = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (items.length === 0) return;
+    if (formData.address.trim().length < 5 || !formData.city.trim() || !formData.pincode.trim()) {
+      showToast('⚠️ Please enter a valid delivery address.', 'warning');
+      return;
+    }
+    if (belowMinimum) {
+      showToast(`The minimum order value is ₹${minOrderValue.toLocaleString('en-IN')}.`, 'error');
+      return;
+    }
+    if (noPaymentMethod) {
+      showToast('No payment method is available for this order. Please contact us to complete your purchase.', 'error');
+      return;
+    }
+
+    setIsProcessing(true);
+
+    if (paymentMethod === 'online') {
+      const isLoaded = await loadRazorpayScript();
+      if (!isLoaded) {
+        showToast('Razorpay SDK failed to load. Are you online?', 'error');
+        setIsProcessing(false);
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/razorpay/create-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount: calculatedTotal }),
+        });
+        const orderData = await response.json();
+        
+        if (!response.ok || !orderData.id) {
+          showToast(orderData.error || 'Failed to initialize payment gateway.', 'error');
+          setIsProcessing(false);
+          return;
+        }
+
+        const options = {
+          key: orderData.keyId,
+          amount: orderData.amount,
+          currency: orderData.currency,
+          name: storeSettings.store.name,
+          description: storeSettings.store.tagline,
+          image: storeSettings.store.logoUrl,
+          order_id: orderData.id,
+          handler: async function (response: any) {
+            await submitOrderToDb('paid', response.razorpay_payment_id);
+          },
+          prefill: {
+            name: `${formData.firstName} ${formData.lastName}`.trim(),
+            email: formData.email,
+            contact: formData.phone,
+          },
+          theme: {
+            color: '#B99A62',
+          },
+          modal: {
+            ondismiss: function () {
+              setIsProcessing(false);
+            },
+          },
+        };
+
+        const rzp = new (window as any).Razorpay(options);
+        rzp.on('payment.failed', function (response: any) {
+          showToast(`Payment failed: ${response.error.description}`, 'error');
+        });
+        rzp.open();
+      } catch (err) {
+        console.error('Razorpay init error:', err);
+        showToast('Error setting up payment. Please try again.', 'error');
+        setIsProcessing(false);
+      }
+    } else {
+      await submitOrderToDb('pending');
     }
   };
 
@@ -383,19 +465,9 @@ export default function CheckoutPage() {
                           <span className="font-label-md text-primary font-semibold">Credit / Debit Card / UPI</span>
                           <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded font-medium">Instant Confirmation</span>
                         </div>
-                        <p className="text-xs text-on-surface-variant mt-1">Simulated instant card checkout (Demo mode enabled).</p>
+                        <p className="text-xs text-on-surface-variant mt-1">Pay securely via Razorpay (Credit/Debit Card, UPI, NetBanking).</p>
                         
-                        {paymentMethod === 'online' && (
-                          <div className="mt-3 pt-3 border-t border-outline-variant/30 space-y-2">
-                            <label className="text-[11px] uppercase tracking-wider text-on-surface-variant block">Simulated Card Number</label>
-                            <input 
-                              type="text" 
-                              disabled 
-                              value="4111 •••• •••• 1111 (Test Card)" 
-                              className="w-full bg-surface border border-outline-variant/60 rounded px-3 py-1.5 text-xs text-on-surface"
-                            />
-                          </div>
-                        )}
+
                       </div>
                     </label>
                     )}

@@ -21,7 +21,7 @@ export default function FooterContact() {
     { key: 'facebook', title: 'Facebook', href: social.facebook },
     { key: 'instagram', title: 'Instagram', href: social.instagram },
     { key: 'youtube', title: 'YouTube', href: social.youtube },
-    { key: 'whatsapp', title: 'WhatsApp', href: waNumber ? `https://wa.me/${waNumber}` : '' },
+
     { key: 'pinterest', title: 'Pinterest', href: social.pinterest },
   ].filter((l) => l.href.trim());
 

@@ -46,7 +46,7 @@ export default function ProductCard({
   isFeatured,
   slug
 }: ProductCardProps) {
-  const { wishlistIds, toggleWishlist } = useWishlist();
+  const { wishlistIds, toggleWishlist: toggleWishlistBase } = useWishlist();
   const { addToCart, openCart } = useCart();
   const { showToast } = useToast();
   const isSaved = wishlistIds.has(id);
@@ -74,10 +74,16 @@ export default function ProductCard({
       size: 'Standard',
     });
     openCart();
-    showToast(`Added ${title} to your jewellery bag`, 'success');
+    showToast('✨ Added to your shopping bag!', 'success');
 
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 1800);
+  };
+
+  const toggleWishlist = async (productId: string) => {
+    const result = await toggleWishlistBase(productId);
+    if (result === 'added') showToast('❤️ Saved to your Wishlist!', 'success');
+    else if (result === 'removed') showToast('Removed from Wishlist.', 'info');
   };
 
   return (

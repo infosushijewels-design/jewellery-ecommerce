@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 
-export type ToastType = 'success' | 'error' | 'info';
+export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
 export interface ToastMessage {
   id: string;
@@ -43,7 +43,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         {toasts.map((toast) => {
           const isSuccess = toast.type === 'success';
           const isError = toast.type === 'error';
-          
+          const isWarning = toast.type === 'warning';
+
           return (
             <div
               key={toast.id}
@@ -53,12 +54,14 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                   ? 'bg-primary text-surface border-tertiary/40'
                   : isError
                   ? 'bg-[#2A0E0E] text-[#FFB4AB] border-[#FF5449]/40'
+                  : isWarning
+                  ? 'bg-[#3A2B0E] text-[#FFDCA8] border-[#B99A62]/50'
                   : 'bg-surface text-on-surface border-outline-variant/60'
               }`}
             >
               <div className="flex items-center gap-2.5">
                 <span className="material-symbols-outlined text-lg sm:text-xl">
-                  {isSuccess ? 'check_circle' : isError ? 'error' : 'info'}
+                  {isSuccess ? 'check_circle' : isError ? 'error' : isWarning ? 'warning' : 'info'}
                 </span>
                 <p className="text-xs sm:text-sm font-medium leading-snug">{toast.message}</p>
               </div>

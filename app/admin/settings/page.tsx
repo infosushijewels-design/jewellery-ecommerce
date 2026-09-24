@@ -518,6 +518,16 @@ export default function AdminSettingsPage() {
                 <>
                   <SwitchRow title="Cash on Delivery (COD)" hint="Customers pay in cash or UPI when the order arrives." checked={d.payments.codEnabled} onChange={(v) => set('payments', 'codEnabled', v)} disabled={readOnly} />
                   <SwitchRow title="Online Payment (Card / UPI)" hint="Instant payment at checkout." checked={d.payments.onlineEnabled} onChange={(v) => set('payments', 'onlineEnabled', v)} disabled={readOnly} />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5 mt-4">
+                    <div>
+                      <Label htmlFor="p-rzp-key" hint="Razorpay Key ID (Public)">Razorpay Key ID</Label>
+                      <IconInput id="p-rzp-key" icon="key" value={d.payments.razorpayKeyId || ''} onChange={(v) => set('payments', 'razorpayKeyId', v)} />
+                    </div>
+                    <div>
+                      <Label htmlFor="p-rzp-secret" hint="Razorpay Key Secret (Private)">Razorpay Key Secret</Label>
+                      <IconInput id="p-rzp-secret" icon="vpn_key" type="password" value={d.payments.razorpayKeySecret || ''} onChange={(v) => set('payments', 'razorpayKeySecret', v)} />
+                    </div>
+                  </div>
                   <div className="max-w-md">
                     <Label htmlFor="p-codmax" hint="Orders above this must be paid online. 0 = no limit.">Max Order Value for COD</Label>
                     <IconInput id="p-codmax" icon="payments" prefix="₹" type="number" min={0} value={d.payments.codMaxOrderValue} onChange={(v) => set('payments', 'codMaxOrderValue', num(v))} />

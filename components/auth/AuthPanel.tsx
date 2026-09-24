@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
+import { useToast } from '@/lib/context/ToastContext';
 
 type Mode = 'login' | 'register';
 
@@ -93,6 +94,7 @@ export default function AuthPanel({ initialMode }: { initialMode: Mode }) {
   const next = safeNext(searchParams.get('next'));
   const { store } = useStoreSettings();
   const [supabase] = useState(() => createClient());
+  const { showToast } = useToast();
 
   const [mode, setMode] = useState<Mode>(initialMode);
   const [showPassword, setShowPassword] = useState(false);
@@ -109,6 +111,16 @@ export default function AuthPanel({ initialMode }: { initialMode: Mode }) {
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  // Sign-out redirects here with a full page load (not client-side routing), so
+  // the toast has to be re-triggered on arrival instead of firing before the
+  // navigation, where it would never be seen.
+  useEffect(() => {
+    if (searchParams.get('signedOut') !== '1') return;
+    void Promise.resolve().then(() => showToast('You have been signed out successfully.', 'info'));
+    window.history.replaceState(null, '', '/login');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function switchMode(nextMode: Mode) {
     setMode(nextMode);
@@ -129,6 +141,7 @@ export default function AuthPanel({ initialMode }: { initialMode: Mode }) {
       setLoading(false);
       return;
     }
+    showToast('Welcome back!', 'success');
     router.push(next);
     router.refresh();
   }
@@ -163,6 +176,7 @@ export default function AuthPanel({ initialMode }: { initialMode: Mode }) {
       const msg = signUpError.message.toLowerCase();
       if (msg.includes('already registered') || msg.includes('already exists') || msg.includes('user_already_exists')) {
         setError('An account with this email already exists. Please Sign In instead.');
+        showToast('⚠️ An account with this email already exists. Please Sign In instead.', 'error');
       } else {
         setError(signUpError.message);
       }
@@ -170,11 +184,13 @@ export default function AuthPanel({ initialMode }: { initialMode: Mode }) {
     }
     if (data.session) {
       // Email confirmation is off — the user is signed in already
+      showToast('🎉 Welcome! Account created successfully.', 'success');
       router.push(next);
       router.refresh();
       return;
     }
     setNotice(`Almost there! We've sent a confirmation link to ${email.trim()}. Open it to activate your account.`);
+    showToast('🎉 Welcome! Account created successfully.', 'success');
   }
 
   async function handleGoogle() {

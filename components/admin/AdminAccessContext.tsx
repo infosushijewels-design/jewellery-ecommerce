@@ -28,7 +28,7 @@ export function buildAccess(isSuperAdmin: boolean, roleName: string, permissions
   };
 }
 
-export const SUPER_ADMIN_ACCESS = buildAccess(true, 'Super Admin', FULL_PERMISSIONS);
+export const SUPER_ADMIN_ACCESS = buildAccess(true, 'Admin', FULL_PERMISSIONS);
 
 /**
  * Resolves the signed-in admin's staff role. Falls back to full access when the

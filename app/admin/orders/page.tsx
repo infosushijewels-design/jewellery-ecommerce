@@ -8,7 +8,6 @@ import OrderDetailsDrawer, {
   ORDER_STATUS_OPTIONS,
   ORDER_STATUS_STYLES,
   orderStatusLabel,
-  orderWhatsappMessage,
   paymentLabel,
 } from '@/components/admin/OrderDetailsDrawer';
 import {
@@ -27,7 +26,6 @@ import {
   formatDateTime,
   formatINR,
   getInitials,
-  whatsappLink,
 } from '@/components/admin/AdminUI';
 
 type OrderStatus = FullOrder['status'];
@@ -328,7 +326,6 @@ export default function AdminOrdersPage() {
                   {pageOrders.map((order) => {
                     const addr = order.shipping_address;
                     const qty = itemCount(order);
-                    const wa = whatsappLink(addr?.phone, orderWhatsappMessage(order));
                     return (
                       <tr key={order.id} className="hover:bg-[#F5EEE7]/50 transition-colors">
                         <td className="py-4 px-5">
@@ -401,7 +398,6 @@ export default function AdminOrdersPage() {
                         </td>
                         <td className="py-4 px-5 text-right whitespace-nowrap">
                           <div className="inline-flex items-center gap-0.5">
-                            {wa && <IconButton icon="chat" title="WhatsApp customer" tone="whatsapp" href={wa} external />}
                             <IconButton icon="visibility" title="View order details" onClick={() => setSelectedId(order.id)} />
                             <IconButton icon="print" title="Print invoice" onClick={() => handlePrint(order)} />
                           </div>

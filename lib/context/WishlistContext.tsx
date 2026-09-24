@@ -7,7 +7,8 @@ import { useRouter } from 'next/navigation';
 
 interface WishlistContextType {
   wishlistIds: Set<string>;
-  toggleWishlist: (productId: string) => Promise<void>;
+  // Resolves to 'added' | 'removed', or null if the user was redirected to log in first.
+  toggleWishlist: (productId: string) => Promise<'added' | 'removed' | null>;
   isLoading: boolean;
 }
 
@@ -48,7 +49,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   const toggleWishlist = async (productId: string) => {
     if (!user) {
       router.push('/login');
-      return;
+      return null;
     }
 
     const newSet = new Set(wishlistIds);
@@ -90,6 +91,8 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
         setWishlistIds(revertSet);
       }
     }
+
+    return isAdding ? 'added' : 'removed';
   };
 
   return (
