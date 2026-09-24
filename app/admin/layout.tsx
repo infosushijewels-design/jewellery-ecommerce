@@ -32,50 +32,36 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     async function verifyAdmin() {
       if (authLoading) return;
 
-      if (isDemoAdminActive()) {
-        setAccess(await loadAdminAccess(null));
-        setIsAdmin(true);
-        return;
-      }
-
       if (!user) {
+        if (isDemoAdminActive()) {
+          setAccess(await loadAdminAccess(null));
+          setIsAdmin(true);
+          return;
+        }
         setIsAdmin(false);
         router.replace('/admin/login');
         return;
       }
 
+      // Authenticated user exists: check profiles.role strictly
       const adminStatus = await checkIsAdmin(user.id);
-      if (adminStatus) setAccess(await loadAdminAccess(user.id));
-      setIsAdmin(adminStatus);
-      if (!adminStatus) {
+      if (adminStatus) {
+        setAccess(await loadAdminAccess(user.id));
+        setIsAdmin(true);
+      } else {
+        // Customer account attempting to access admin — clear any demo flags and bounce to login
+        clearDemoAdmin();
+        setIsAdmin(false);
         router.replace('/admin/login');
       }
     }
     verifyAdmin();
   }, [user, authLoading, isLoginRoute, router]);
 
-  // Remember the collapsed sidebar between visits
-  useEffect(() => {
-    let stored = false;
-    try {
-      stored = localStorage.getItem('sj_admin_sidebar_collapsed') === '1';
-    } catch {
-      return; // storage blocked — keep it expanded
-    }
-    if (stored) Promise.resolve().then(() => setCollapsed(true));
-  }, []);
-
-  const toggleCollapsed = () => {
-    setCollapsed((prev) => {
-      const next = !prev;
-      try {
-        localStorage.setItem('sj_admin_sidebar_collapsed', next ? '1' : '0');
-      } catch {
-        /* ignore */
-      }
-      return next;
-    });
-  };
+  // The sidebar always starts expanded on desktop — no restoring a collapsed
+  // state from a previous visit. The toggle button still works for the
+  // current session, it just isn't remembered on the next load.
+  const toggleCollapsed = () => setCollapsed((prev) => !prev);
 
   // Ctrl/Cmd + K opens the command palette
   useEffect(() => {

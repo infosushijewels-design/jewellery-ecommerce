@@ -14,7 +14,7 @@ function createPublicClient() {
     {
       auth: { persistSession: false, autoRefreshToken: false },
       global: {
-        fetch: (input, init) => fetch(input, { ...init, next: { revalidate: 300 } }),
+        fetch: (input, init) => fetch(input, { ...init, next: { revalidate: 10 } }),
       },
     }
   );
