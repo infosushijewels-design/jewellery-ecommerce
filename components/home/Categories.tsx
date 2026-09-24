@@ -42,14 +42,6 @@ export default function Categories() {
     return () => clearInterval(interval);
   }, [isPaused]);
 
-  const scrollLeft = () => {
-    containerRef.current?.scrollBy({ left: -140, behavior: 'smooth' });
-  };
-
-  const scrollRight = () => {
-    containerRef.current?.scrollBy({ left: 140, behavior: 'smooth' });
-  };
-
   return (
     <section className="py-10 sm:py-16 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-16 relative" id="categories">
       <div className="text-center max-w-xl mx-auto mb-8 sm:mb-12">
@@ -59,23 +51,6 @@ export default function Categories() {
       </div>
 
       <div className="relative group">
-        {/* Navigation Arrows for Mobile & Tablet */}
-        <button
-          onClick={scrollLeft}
-          className="sm:hidden absolute -left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-surface/90 border border-outline-variant shadow-md flex items-center justify-center text-primary active:scale-95 transition-transform"
-          aria-label="Previous Category"
-        >
-          <span className="material-symbols-outlined text-lg">chevron_left</span>
-        </button>
-
-        <button
-          onClick={scrollRight}
-          className="sm:hidden absolute -right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-surface/90 border border-outline-variant shadow-md flex items-center justify-center text-primary active:scale-95 transition-transform"
-          aria-label="Next Category"
-        >
-          <span className="material-symbols-outlined text-lg">chevron_right</span>
-        </button>
-
         {/* Carousel Container */}
         <div
           ref={containerRef}
