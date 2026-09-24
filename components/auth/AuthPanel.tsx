@@ -160,7 +160,12 @@ export default function AuthPanel({ initialMode }: { initialMode: Mode }) {
     });
     setLoading(false);
     if (signUpError) {
-      setError(signUpError.message);
+      const msg = signUpError.message.toLowerCase();
+      if (msg.includes('already registered') || msg.includes('already exists') || msg.includes('user_already_exists')) {
+        setError('An account with this email already exists. Please Sign In instead.');
+      } else {
+        setError(signUpError.message);
+      }
       return;
     }
     if (data.session) {
