@@ -62,11 +62,7 @@ export default function Hero() {
                 className="object-cover object-right md:object-center"
                 priority={slide.id === 1}
               />
-              {/* CTA — a span, since the whole banner is already the link */}
-              <span className="absolute z-10 bottom-[14%] right-4 sm:bottom-[5%] sm:left-[75.5%] sm:right-auto sm:-translate-x-1/2 inline-flex items-center gap-1 sm:gap-2 rounded-full bg-primary/85 sm:bg-primary backdrop-blur-sm border border-surface/20 sm:border-transparent text-surface px-3.5 py-1.5 sm:px-6 sm:py-2.5 xl:py-3 font-label-sm sm:font-label-md text-[10px] sm:text-label-md uppercase tracking-wider sm:tracking-[0.15em] shadow-lg transition-colors hover:bg-tertiary whitespace-nowrap">
-                {slide.cta}
-                <span className="material-symbols-outlined text-[13px] sm:text-[18px]">arrow_forward</span>
-              </span>
+              {/* CTA button removed — the full banner is clickable */}
             </Link>
           </div>
         ))}
