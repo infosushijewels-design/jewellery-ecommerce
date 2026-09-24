@@ -190,7 +190,7 @@ const navLinks: NavItem[] = [
     ],
   },
   { label: 'Collections', href: '/collections' },
-  { label: 'Offers', href: '/#campaign', highlight: true },
+  { label: 'Offers', href: '/#festive-offer', highlight: true },
 ];
 
 export default function Header() {
@@ -250,10 +250,13 @@ export default function Header() {
                 </button>
                 <div className="absolute right-0 mt-1 w-52 bg-surface rounded-xl shadow-xl border border-outline-variant/30 hidden group-hover:block z-50 overflow-hidden py-1">
                   <div className="px-4 py-2.5 border-b border-outline-variant/30 text-xs text-on-surface-variant truncate font-medium">{user.email}</div>
+                  <Link href="/account" className="flex items-center gap-2.5 px-4 py-2.5 text-xs hover:bg-surface-container-low transition-colors text-primary font-medium">
+                    <span className="material-symbols-outlined text-[18px] text-tertiary">account_circle</span>My Profile
+                  </Link>
                   <Link href="/orders" className="flex items-center gap-2.5 px-4 py-2.5 text-xs hover:bg-surface-container-low transition-colors text-primary font-medium">
                     <span className="material-symbols-outlined text-[18px] text-tertiary">package_2</span>My Orders
                   </Link>
-                  <button onClick={async () => { await signOut(); window.location.href = '/login'; }} className="w-full flex items-center gap-2.5 text-left px-4 py-2.5 text-xs hover:bg-surface-container-low transition-colors text-error border-t border-outline-variant/20">
+                  <button onClick={async () => { await signOut(); window.location.href = '/login?signedOut=1'; }} className="w-full flex items-center gap-2.5 text-left px-4 py-2.5 text-xs hover:bg-surface-container-low transition-colors text-error border-t border-outline-variant/20">
                     <span className="material-symbols-outlined text-[18px]">logout</span>Sign Out
                   </button>
                 </div>
@@ -404,10 +407,13 @@ export default function Header() {
 
             {user ? (
               <>
+                <Link href="/account" onClick={closeMobileMenu} className="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-label-lg text-label-lg hover:bg-surface-container-low hover:text-primary transition-colors">
+                  <span className="material-symbols-outlined text-secondary text-[20px]">account_circle</span>My Profile
+                </Link>
                 <Link href="/orders" onClick={closeMobileMenu} className="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-label-lg text-label-lg hover:bg-surface-container-low hover:text-primary transition-colors">
                   <span className="material-symbols-outlined text-secondary text-[20px]">package_2</span>My Orders
                 </Link>
-                <button onClick={async () => { await signOut(); closeMobileMenu(); window.location.href = '/login'; }} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-error font-label-lg text-label-lg hover:bg-error-container/20 transition-colors">
+                <button onClick={async () => { await signOut(); closeMobileMenu(); window.location.href = '/login?signedOut=1'; }} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-error font-label-lg text-label-lg hover:bg-error-container/20 transition-colors">
                   <span className="material-symbols-outlined text-[20px]">logout</span>Sign Out
                 </button>
               </>
