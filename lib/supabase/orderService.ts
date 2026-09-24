@@ -591,22 +591,17 @@ export async function checkIsAdmin(userId?: string): Promise<boolean> {
   const supabase = createClient();
 
   try {
-    const { data: userData } = await supabase.auth.getUser();
-    const email = userData?.user?.email?.toLowerCase() || '';
-
-    // Allow fallback for demo/admin emails
-    if (email.includes('admin') || email.includes('anjali') || email === 'anjaliworksphere@gmail.com') return true;
-
+    // profiles.role is the only source of truth. It is guarded by the
+    // guard_profile_privileges trigger (migration 010), so it cannot be set by
+    // the client. Never trust the email address or user_metadata here — both
+    // are attacker-controlled at sign-up time.
     const { data, error } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
 
-    if (error || !data) {
-      if (userData?.user?.user_metadata?.role === 'admin') return true;
-      return false;
-    }
+    if (error || !data) return false;
 
     return data.role === 'admin';
   } catch {

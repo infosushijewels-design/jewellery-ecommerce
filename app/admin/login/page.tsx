@@ -10,6 +10,9 @@ import { activateDemoAdmin, clearDemoAdmin } from '@/lib/utils/adminDemoAccess';
 
 const REMEMBERED_EMAIL_KEY = 'sushi_admin_remembered_email';
 
+// The demo bypass skips Supabase auth entirely, so it must never ship to production.
+const DEMO_ACCESS_ENABLED = process.env.NODE_ENV !== 'production';
+
 interface FieldErrors {
   email?: string;
   password?: string;
@@ -26,6 +29,7 @@ export default function AdminLoginPage() {
   const [rememberMe, setRememberMe] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
+  const [unconfirmedEmail, setUnconfirmedEmail] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const { showToast } = useToast();
@@ -60,6 +64,7 @@ export default function AdminLoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
+    setUnconfirmedEmail(null);
 
     if (!validate()) return;
 
@@ -96,46 +101,37 @@ export default function AdminLoginPage() {
         return;
       }
 
-      // Try automatic registration for admin user if account doesn't exist in Supabase Auth yet
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email: cleanEmail,
-        password,
-        options: {
-          data: {
-            role: 'admin',
-            full_name: cleanEmail.split('@')[0],
-          },
-        },
-      });
-
-      if (!signUpError && signUpData.user) {
-        clearDemoAdmin();
-        showToast('Admin Account Created & Logged In', 'success');
-        router.push('/admin');
-        return;
+      // Sign-in failed. This screen never creates accounts: signing up here
+      // returned a user without a session (the project requires email
+      // confirmation), so the old code pushed to /admin with no session and
+      // the layout bounced straight back here with no error shown.
+      if (error?.message?.toLowerCase().includes('email not confirmed')) {
+        setUnconfirmedEmail(cleanEmail);
+        setFormError('This email has not been confirmed yet. Check your inbox, or resend the confirmation link below.');
+      } else {
+        setFormError(error?.message || 'Invalid credentials. Please check your email and password.');
       }
-
-      // Fallback: Enable seamless admin access for Anjali / custom credentials
-      if (cleanEmail === 'anjaliworksphere@gmail.com' || cleanEmail.toLowerCase().includes('admin') || password === '12345678') {
-        activateDemoAdmin(cleanEmail);
-        showToast(`Welcome, Administrator (${cleanEmail.split('@')[0]})`, 'success');
-        router.push('/admin');
-        return;
-      }
-
-      setFormError(error?.message || 'Invalid credentials. Please check your email and password.');
       setIsSubmitting(false);
     } catch (err) {
       console.error('Admin login error:', err);
-
-      if (cleanEmail === 'anjaliworksphere@gmail.com' || cleanEmail.toLowerCase().includes('admin') || password === '12345678') {
-        activateDemoAdmin(cleanEmail);
-        showToast(`Welcome, Administrator (${cleanEmail.split('@')[0]})`, 'success');
-        router.push('/admin');
-        return;
-      }
-
       setFormError('An unexpected error occurred. Please try again.');
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleResendConfirmation = async () => {
+    if (!unconfirmedEmail) return;
+    setIsSubmitting(true);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.resend({ type: 'signup', email: unconfirmedEmail });
+      if (error) {
+        setFormError(error.message);
+      } else {
+        setFormError(null);
+        showToast(`Confirmation link sent to ${unconfirmedEmail}`, 'success');
+      }
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -175,6 +171,17 @@ export default function AdminLoginPage() {
                 <span className="material-symbols-outlined text-[18px] flex-shrink-0">error</span>
                 <span>{formError}</span>
               </div>
+            )}
+
+            {unconfirmedEmail && (
+              <button
+                type="button"
+                onClick={handleResendConfirmation}
+                disabled={isSubmitting}
+                className="w-full border border-secondary/50 text-secondary hover:bg-secondary-container/20 py-2.5 rounded-md font-label-sm text-label-sm uppercase tracking-wider transition-colors disabled:opacity-50"
+              >
+                Resend confirmation email
+              </button>
             )}
 
             <div className="space-y-1">
@@ -268,6 +275,8 @@ export default function AdminLoginPage() {
             </button>
           </form>
 
+          {DEMO_ACCESS_ENABLED && (
+          <>
           <div className="flex items-center gap-3 my-6">
             <div className="flex-1 h-px bg-outline-variant/40" />
             <span className="font-label-sm text-label-sm uppercase tracking-widest text-outline">or</span>
@@ -282,6 +291,8 @@ export default function AdminLoginPage() {
             <span className="material-symbols-outlined text-[16px]">science</span>
             <span>Quick Demo Admin Access (Dev Only)</span>
           </button>
+          </>
+          )}
         </div>
 
         {/* Return link */}

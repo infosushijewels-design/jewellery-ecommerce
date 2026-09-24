@@ -77,7 +77,7 @@ export default function OrderTrackingPage() {
             <span className="material-symbols-outlined text-5xl text-outline-variant mb-4">search_off</span>
             <h2 className="text-xl font-headline-sm text-primary mb-2">Order Not Found</h2>
             <p className="text-sm text-on-surface-variant mb-6">
-              We couldn't locate an order with the reference "{orderId}". Please check your order reference number.
+              We couldn&apos;t locate an order with the reference &ldquo;{orderId}&rdquo;. Please check your order reference number.
             </p>
             <Link
               href="/orders"
