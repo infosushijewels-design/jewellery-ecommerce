@@ -90,7 +90,7 @@ export default function FestiveOffer() {
             <div className="lg:col-span-5 relative">
               <div className="relative aspect-[4/3] sm:aspect-[16/10] lg:aspect-square rounded-2xl overflow-hidden border border-secondary/30 shadow-2xl group">
                 <img
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-H9Xvu3YmPXsf6OF_Qrys1lz3BoPTufC3vXf9bOM0RXDIT6zQPix_VCRp4mjk5kFPMl2iRWofjkSbb8bm-THKprCk07xVq4XlIjOi8Tx4ffcq815fp26tn8ENmKTctiFTPngpHmaLkB25aahzaTvuJD7IGbwsGqe7yYKY3ECHuSRfmd-9iSnpWUS5B3rnX2lP6d7J4RnTjR0VAEaJJCbAzAbOh_vzpWAn86HOKkdzDAoKVvLXhbuz8A"
+                  src="https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=1000&q=80"
                   alt="Festive Gold Collection"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />

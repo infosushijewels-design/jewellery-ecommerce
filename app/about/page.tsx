@@ -167,7 +167,7 @@ export default function AboutPage() {
               Book a private consultation with our concierge team to explore bespoke commissions and heirloom collections.
             </p>
             <Link href="/contact" className="inline-block bg-secondary text-primary px-8 py-3.5 rounded-full font-label-md uppercase tracking-wide hover:bg-secondary-fixed-dim transition-colors">
-              Book an Appointment
+              Book a Personalized Appointment
             </Link>
           </div>
         </section>

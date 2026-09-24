@@ -20,7 +20,7 @@ export default function Collections() {
           {/* Collection 1 */}
           <Link href="/collections/best-sellers" className="group relative bg-surface rounded-xl overflow-hidden border border-outline-variant/50 hover:shadow-[0_8px_24px_-4px_rgba(45,32,36,0.08)] transition-all duration-300 flex flex-col">
             <div className="aspect-[4/3] sm:aspect-[4/5] overflow-hidden bg-surface-container">
-              <img className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBGBHMckxZb5c0fQWJYYTSyVRHsBc9fXIHCFnuING2mfSghzq6v1g7vKlhEyCx15n58bXutss2o6UA8x_69znxMJvPUQ70rxhrRkLw0WQlHJFDccdObrMwEFGSkennoUsWJaN_nm4S1Tu_lxGzpxbtKYr8Xjz3erODoJ4U9tkcpLT09pgFI4cj6LueTHxAiRdJRY-6CNp5ho3LDlBUectANLrTn3sWDqARr8NAOb7WEGjVsXW-bXKcS3Q" alt="Everyday Luxury" />
+              <img className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?auto=format&fit=crop&w=1000&q=80" alt="Everyday Luxury" />
             </div>
             <div className="p-5 sm:p-8 flex flex-col flex-grow justify-between">
               <div>
@@ -39,7 +39,7 @@ export default function Collections() {
           {/* Collection 2 */}
           <Link href="/collections/festive-collection" className="group relative bg-surface rounded-xl overflow-hidden border border-outline-variant/50 hover:shadow-[0_8px_24px_-4px_rgba(45,32,36,0.08)] transition-all duration-300 flex flex-col">
             <div className="aspect-[4/3] sm:aspect-[4/5] overflow-hidden bg-surface-container">
-              <img className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-H9Xvu3YmPXsf6OF_Qrys1lz3BoPTufC3vXf9bOM0RXDIT6zQPix_VCRp4mjk5kFPMl2iRWofjkSbb8bm-THKprCk07xVq4XlIjOi8Tx4ffcq815fp26tn8ENmKTctiFTPngpHmaLkB25aahzaTvuJD7IGbwsGqe7yYKY3ECHuSRfmd-9iSnpWUS5B3rnX2lP6d7J4RnTjR0VAEaJJCbAzAbOh_vzpWAn86HOKkdzDAoKVvLXhbuz8A" alt="Royal Provenance" />
+              <img className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=1000&q=80" alt="Royal Provenance" />
             </div>
             <div className="p-5 sm:p-8 flex flex-col flex-grow justify-between">
               <div>
@@ -58,7 +58,7 @@ export default function Collections() {
           {/* Collection 3 */}
           <Link href="/collections/bridal-collection" className="group relative bg-surface rounded-xl overflow-hidden border border-outline-variant/50 hover:shadow-[0_8px_24px_-4px_rgba(45,32,36,0.08)] transition-all duration-300 flex flex-col sm:col-span-2 md:col-span-1">
             <div className="aspect-[4/3] sm:aspect-[4/5] overflow-hidden bg-surface-container">
-              <img className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD9ZzGg3JyVot2TgX45PNawp2Ve3a69LYtU3LStvvsed6VIzq9znShKly7gQuaXx6h8eAWs9BqWhu2TMh9j8Dlpg6WFqhyvo_i_dZ-lBYU8gyzXzZZZGWcsh4iWRAfqnPeXRlZz4DCBWLicQFwjINfqPkKPSKVBsfydqgwBtqxLkqA9M803ykOvDJIla8mDeBYCXpwJOHaMZExT7UnkAATLxs-BwZyTk6dm4OKs7CKjD1U2ThTNmK69gw" alt="The Vivaha Suite" />
+              <img className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://images.unsplash.com/photo-1543294001-f7cd5d7fb516?auto=format&fit=crop&w=1000&q=80" alt="The Vivaha Suite" />
             </div>
             <div className="p-5 sm:p-8 flex flex-col flex-grow justify-between">
               <div>
