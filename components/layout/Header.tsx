@@ -4,9 +4,7 @@ import CartButton from '@/components/cart/CartButton';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/context/AuthContext';
-import { useWishlist } from '@/lib/context/WishlistContext';
 import { Suspense, useEffect, useState } from 'react';
-import { checkIsAdmin } from '@/lib/supabase/orderService';
 import SearchBox from './SearchBox';
 
 interface DropdownColumn {
@@ -199,24 +197,7 @@ export default function Header() {
   const { user, signOut } = useAuth();
   const { wishlistIds } = useWishlist();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
 
-  // Only admins see the Admin Panel shortcut
-  useEffect(() => {
-    let active = true;
-    if (!user) {
-      void Promise.resolve().then(() => active && setIsAdmin(false));
-      return () => {
-        active = false;
-      };
-    }
-    checkIsAdmin(user.id)
-      .then((result) => active && setIsAdmin(result))
-      .catch(() => active && setIsAdmin(false));
-    return () => {
-      active = false;
-    };
-  }, [user]);
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
@@ -271,11 +252,6 @@ export default function Header() {
                   <Link href="/orders" className="flex items-center gap-2.5 px-4 py-2.5 text-xs hover:bg-surface-container-low transition-colors text-primary font-medium">
                     <span className="material-symbols-outlined text-[18px] text-tertiary">package_2</span>My Orders
                   </Link>
-                  {isAdmin && (
-                    <Link href="/admin" className="flex items-center gap-2.5 px-4 py-2.5 text-xs hover:bg-surface-container-low transition-colors text-primary font-medium">
-                      <span className="material-symbols-outlined text-[18px] text-tertiary">admin_panel_settings</span>Admin Panel
-                    </Link>
-                  )}
                   <button onClick={async () => { await signOut(); window.location.href = '/login'; }} className="w-full flex items-center gap-2.5 text-left px-4 py-2.5 text-xs hover:bg-surface-container-low transition-colors text-error border-t border-outline-variant/20">
                     <span className="material-symbols-outlined text-[18px]">logout</span>Sign Out
                   </button>
