@@ -13,9 +13,9 @@ export default async function NewArrivals() {
     <section className="py-12 sm:py-20 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-16" id="new-arrivals">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 sm:mb-12 gap-3">
         <div>
-          <span className="font-label-sm text-label-sm text-secondary tracking-widest uppercase">The Atelier Release</span>
+          <span className="font-label-sm text-label-sm text-secondary tracking-widest uppercase">Latest Collections</span>
           <h2 className="font-headline-lg text-[24px] sm:text-headline-lg text-primary mt-1">New Arrivals</h2>
-          <p className="font-body-md text-body-md text-on-surface-variant mt-1">Fresh creations hand-set by master artisans, ready for your moments.</p>
+          <p className="font-body-md text-body-md text-on-surface-variant mt-1">Fresh gold and diamond designs, ready for your special moments.</p>
         </div>
       </div>
 

@@ -25,7 +25,7 @@ export default async function StoreLocator() {
           </Link>
           <span className="hidden sm:block w-px h-4 bg-outline-variant" />
           <Link href="/contact" className="font-label-lg text-label-lg text-primary underline underline-offset-4 hover:text-secondary">
-            Book a Private Appointment
+            Book A Personalized Appointment
           </Link>
         </div>
       </div>

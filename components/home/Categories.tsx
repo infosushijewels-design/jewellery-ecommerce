@@ -45,9 +45,9 @@ export default function Categories() {
   return (
     <section className="py-10 sm:py-16 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-16 relative" id="categories">
       <div className="text-center max-w-xl mx-auto mb-8 sm:mb-12">
-        <span className="font-label-sm text-label-sm text-secondary tracking-widest uppercase">The Silhouettes</span>
+        <span className="font-label-sm text-label-sm text-secondary tracking-widest uppercase">Explore Categories</span>
         <h2 className="font-headline-lg text-[24px] sm:text-headline-lg text-primary mt-1">Shop by Category</h2>
-        <p className="font-body-md text-body-md text-on-surface-variant mt-2">Curated silhouettes for everyday indulgence and grand celebration.</p>
+        <p className="font-body-md text-body-md text-on-surface-variant mt-2">Discover beautiful jewellery designed for every day and special occasions.</p>
       </div>
 
       <div className="relative group">

@@ -91,12 +91,12 @@ export const DEFAULT_STORE_SETTINGS: StoreSettings = {
     shippingFee: 99,
   },
   homepage: {
-    philosophyEyebrow: 'The Philosophy',
-    philosophyQuote: 'Jewellery That Feels Like You — Crafted with BIS 916 hallmarked gold and certified diamonds to accompany every milestone.',
+    philosophyEyebrow: 'Our Promise',
+    philosophyQuote: 'Jewellery That Feels Like You — Crafted with BIS 916 hallmarked gold and certified diamonds to celebrate every milestone.',
     philosophyText:
-      'At Sushi Jewels, we believe precious metals are living archives. Each curve is carved by master karigars with generational precision, honouring India’s artisanal lineage while speaking fluent contemporary grace.',
+      'At Sushi Jewels, we believe jewellery should be timeless and pure. Every piece is handcrafted by master Indian artisans with 100% hallmarked gold and certified natural diamonds.',
     founderName: 'Vipul & Meera Singhania',
-    founderTitle: 'Founding Atelier Artisans',
+    founderTitle: 'Founders & Craftsmen',
     philosophyImageUrl: '',
   },
   orders: {

@@ -68,39 +68,6 @@ export default function Hero() {
         ))}
       </div>
 
-      {/* Prev Button */}
-      <button 
-        onClick={prevSlide}
-        className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 w-9 h-9 md:w-12 md:h-12 bg-white/85 hover:bg-white backdrop-blur-sm rounded-full flex items-center justify-center text-primary shadow-md opacity-100 md:opacity-0 md:group-hover:opacity-100 md:-translate-x-2 md:group-hover:translate-x-0 focus-visible:opacity-100 transition-all duration-300 focus:outline-none z-10"
-        aria-label="Previous Slide"
-      >
-        <span className="material-symbols-outlined text-xl md:text-2xl leading-none">chevron_left</span>
-      </button>
-
-      {/* Next Button */}
-      <button 
-        onClick={nextSlide}
-        className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 w-9 h-9 md:w-12 md:h-12 bg-white/85 hover:bg-white backdrop-blur-sm rounded-full flex items-center justify-center text-primary shadow-md opacity-100 md:opacity-0 md:group-hover:opacity-100 md:translate-x-2 md:group-hover:translate-x-0 focus-visible:opacity-100 transition-all duration-300 focus:outline-none z-10"
-        aria-label="Next Slide"
-      >
-        <span className="material-symbols-outlined text-xl md:text-2xl leading-none">chevron_right</span>
-      </button>
-
-      {/* Pagination Dots */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2">
-        {slides.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrent(index)}
-            className={`transition-all duration-300 rounded-full ${
-              current === index 
-                ? 'w-6 h-1.5 bg-primary' 
-                : 'w-2 h-1.5 bg-primary/40 hover:bg-primary/60'
-            }`}
-            aria-label={`Go to slide ${index + 1}`}
-          />
-        ))}
-      </div>
       </div>
     </section>
   );

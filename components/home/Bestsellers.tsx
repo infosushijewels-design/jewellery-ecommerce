@@ -11,9 +11,9 @@ export default async function Bestsellers() {
   return (
     <section className="py-12 sm:py-20 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-16">
       <div className="text-center max-w-xl mx-auto mb-8 sm:mb-12">
-        <span className="font-label-sm text-label-sm text-secondary tracking-widest uppercase">Iconic Signatures</span>
+        <span className="font-label-sm text-label-sm text-secondary tracking-widest uppercase">Customer Favorites</span>
         <h2 className="font-headline-lg text-[24px] sm:text-headline-lg text-primary mt-1">Most Loved Creations</h2>
-        <p className="font-body-md text-body-md text-on-surface-variant mt-2">Icons embraced by thousands of discerning patrons across India and beyond.</p>
+        <p className="font-body-md text-body-md text-on-surface-variant mt-2">Top-selling designs loved by thousands of happy customers across India.</p>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {products.map((product) => (

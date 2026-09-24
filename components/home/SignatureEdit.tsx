@@ -19,14 +19,14 @@ export default function SignatureEdit() {
   const handleAddToSalonBag = () => {
     addToCart(highlightPiece);
     openCart();
-    showToast(`Added ${highlightPiece.title} to your jewellery bag`, 'success');
+    showToast('✨ Added to your shopping bag!', 'success');
   };
   return (
     <section className="py-12 sm:py-20 bg-surface-container-low border-y border-outline-variant/30">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-16">
         <div className="mb-8 sm:mb-12">
-          <span className="font-label-sm text-label-sm text-secondary tracking-widest uppercase">The Editorial Selection</span>
-          <h2 className="font-headline-lg text-[24px] sm:text-headline-lg text-primary mt-1">The Signature Edit — Quiet Luxury</h2>
+          <span className="font-label-sm text-label-sm text-secondary tracking-widest uppercase">Featured Choice</span>
+          <h2 className="font-headline-lg text-[24px] sm:text-headline-lg text-primary mt-1">Handpicked Premium Jewellery</h2>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-stretch">
           {/* Large Hero Feature (Left) */}
@@ -39,7 +39,7 @@ export default function SignatureEdit() {
                 <span className="font-label-sm text-label-sm text-secondary font-semibold uppercase tracking-wider">Highlight Piece</span>
                 <h3 className="font-headline-md text-headline-md text-primary mt-2">The Zoya Pavé Arch Collar</h3>
                 <p className="font-body-sm text-body-sm text-on-surface-variant mt-3 leading-relaxed">
-                  Sculpted from 28.4 grams of solid 18K gold and set with 1.8 carats of micro-pavé natural diamonds. Conceived to sit seamlessly along the collarbone.
+                  Crafted with 28.4 grams of pure 18K gold and set with 1.8 carats of natural diamonds. Designed for an elegant, comfortable fit.
                 </p>
                 <div className="mt-4 flex items-baseline gap-3">
                   <span className="font-headline-sm text-headline-sm text-primary font-semibold">₹1,94,000</span>
@@ -51,7 +51,7 @@ export default function SignatureEdit() {
                   onClick={handleAddToSalonBag}
                   className="w-full py-3 bg-primary-container hover:bg-tertiary-container text-surface rounded-full font-label-md text-label-md transition-all active:scale-95"
                 >
-                  Add to Salon Bag
+                  Add to Bag
                 </button>
               </div>
             </div>

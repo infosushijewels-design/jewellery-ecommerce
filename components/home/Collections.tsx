@@ -6,12 +6,12 @@ export default function Collections() {
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-16">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 sm:mb-12 gap-4">
           <div>
-            <span className="font-label-sm text-label-sm text-secondary tracking-widest uppercase">Signature Anthologies</span>
+            <span className="font-label-sm text-label-sm text-secondary tracking-widest uppercase">Featured Collections</span>
             <h2 className="font-headline-lg text-[24px] sm:text-headline-lg text-primary mt-1">Curated Collections</h2>
-            <p className="font-body-md text-body-md text-on-surface-variant mt-1">Themes woven in precious metal, telling stories across generations.</p>
+            <p className="font-body-md text-body-md text-on-surface-variant mt-1">Handcrafted gold and diamond jewellery for every special occasion.</p>
           </div>
           <Link className="font-label-lg text-label-lg text-primary hover:text-secondary flex items-center gap-1 group flex-shrink-0" href="/collections">
-            View All Anthologies
+            View All Collections
             <span className="material-symbols-outlined text-[16px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
           </Link>
         </div>
@@ -24,9 +24,9 @@ export default function Collections() {
             </div>
             <div className="p-5 sm:p-8 flex flex-col flex-grow justify-between">
               <div>
-                <span className="font-label-sm text-label-sm text-secondary tracking-widest uppercase">Everyday Luxury</span>
+                <span className="font-label-sm text-label-sm text-secondary tracking-widest uppercase">Daily Wear</span>
                 <h3 className="font-headline-md text-headline-md text-primary mt-1">The Everyday Edit</h3>
-                <p className="font-body-sm text-body-sm text-on-surface-variant mt-2">Weightless 18K gold forms designed to glide effortlessly from boardroom cadence to private evenings.</p>
+                <p className="font-body-sm text-body-sm text-on-surface-variant mt-2">Lightweight 18K gold jewellery designed for work, home, and daily elegance.</p>
               </div>
               <div className="pt-4 sm:pt-6">
                 <span className="font-label-md text-label-md font-semibold text-primary group-hover:text-secondary transition-colors inline-flex items-center gap-1">
@@ -43,9 +43,9 @@ export default function Collections() {
             </div>
             <div className="p-5 sm:p-8 flex flex-col flex-grow justify-between">
               <div>
-                <span className="font-label-sm text-label-sm text-secondary tracking-widest uppercase">Royal Provenance</span>
+                <span className="font-label-sm text-label-sm text-secondary tracking-widest uppercase">Royal &amp; Antique</span>
                 <h3 className="font-headline-md text-headline-md text-primary mt-1">Modern Heirlooms</h3>
-                <p className="font-body-sm text-body-sm text-on-surface-variant mt-2">Timeless Jadau and antique polish silhouettes re-imagined through contemporary European minimalism.</p>
+                <p className="font-body-sm text-body-sm text-on-surface-variant mt-2">Classic Jadau and antique designs crafted for festive celebrations and weddings.</p>
               </div>
               <div className="pt-4 sm:pt-6">
                 <span className="font-label-md text-label-md font-semibold text-primary group-hover:text-secondary transition-colors inline-flex items-center gap-1">
@@ -62,9 +62,9 @@ export default function Collections() {
             </div>
             <div className="p-5 sm:p-8 flex flex-col flex-grow justify-between">
               <div>
-                <span className="font-label-sm text-label-sm text-secondary tracking-widest uppercase">The Vivaha Suite</span>
+                <span className="font-label-sm text-label-sm text-secondary tracking-widest uppercase">Bridal Special</span>
                 <h3 className="font-headline-md text-headline-md text-primary mt-1">Celebration &amp; Bridal</h3>
-                <p className="font-body-sm text-body-sm text-on-surface-variant mt-2">Sculptural opulence consecrated for grand vows, featuring certified natural diamonds of rare grading.</p>
+                <p className="font-body-sm text-body-sm text-on-surface-variant mt-2">Stunning bridal sets with certified natural diamonds designed for your wedding day.</p>
               </div>
               <div className="pt-4 sm:pt-6">
                 <span className="font-label-md text-label-md font-semibold text-primary group-hover:text-secondary transition-colors inline-flex items-center gap-1">

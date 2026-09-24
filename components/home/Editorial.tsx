@@ -55,7 +55,7 @@ export default function Editorial() {
               className="px-5 sm:px-6 py-2.5 sm:py-3 border border-primary text-primary hover:bg-primary hover:text-surface font-label-md text-label-md rounded-full transition-all duration-200 flex-shrink-0 text-center"
               href="/about"
             >
-              Discover Our Heritage
+              Read Our Story
             </Link>
           </div>
         </div>

@@ -31,9 +31,9 @@ export default function GiftFinder() {
     <section className="py-12 sm:py-20 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-16" id="gift-finder">
       <div className="bg-surface rounded-2xl border border-outline-variant/60 p-5 sm:p-8 lg:p-16 shadow-[0_8px_24px_-4px_rgba(45,32,36,0.04)]">
         <div className="text-center max-w-xl mx-auto mb-8 sm:mb-10">
-          <span className="font-label-sm text-label-sm text-secondary tracking-widest uppercase">The Concierge Assistant</span>
+          <span className="font-label-sm text-label-sm text-secondary tracking-widest uppercase">Gift Finder</span>
           <h2 className="font-headline-lg text-[22px] sm:text-headline-lg text-primary mt-1">Find Something They&apos;ll Treasure Forever</h2>
-          <p className="font-body-md text-body-md text-on-surface-variant mt-2">Select the chapter and investment range to reveal tailor-made curations.</p>
+          <p className="font-body-md text-body-md text-on-surface-variant mt-2">Select the occasion and price range to find the perfect jewellery gifts.</p>
         </div>
         <div className="max-w-3xl mx-auto space-y-6 sm:space-y-8">
           {/* Occasion Selectors */}
@@ -58,7 +58,7 @@ export default function GiftFinder() {
 
           {/* Budget Selectors */}
           <div>
-            <label className="block font-label-md text-label-md text-primary mb-3 text-center sm:text-left">2. Choose Investment Range</label>
+            <label className="block font-label-md text-label-md text-primary mb-3 text-center sm:text-left">2. Choose Price Range</label>
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-3">
               {budgets.map((b, i) => (
                 <button
