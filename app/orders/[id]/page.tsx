@@ -132,13 +132,13 @@ export default function OrderTrackingPage() {
               ) : (
                 <div className="py-6 sm:py-8">
                   <div className="relative">
-                    {/* Background track line */}
-                    <div className="hidden sm:block absolute top-1/2 left-0 right-0 h-1 bg-outline-variant/30 -translate-y-1/2 z-0"></div>
+                    {/* Background track line (aligned with circle center top-6) */}
+                    <div className="hidden sm:block absolute top-6 left-12 right-12 h-0.5 bg-outline-variant/40 -translate-y-1/2 z-0"></div>
                     
                     {/* Active progress track line */}
                     <div 
-                      className="hidden sm:block absolute top-1/2 left-0 h-1 bg-primary -translate-y-1/2 z-0 transition-all duration-500"
-                      style={{ width: `${(currentStepIndex / (steps.length - 1)) * 100}%` }}
+                      className="hidden sm:block absolute top-6 left-12 h-0.5 bg-primary -translate-y-1/2 z-0 transition-all duration-500"
+                      style={{ width: `calc(${(currentStepIndex / (steps.length - 1)) * 100}% - 3rem)` }}
                     ></div>
 
                     {/* Step Nodes */}
