@@ -48,7 +48,7 @@ export default function FestiveOffer() {
                 {/* Coupon Code Pill */}
                 <button
                   onClick={handleCopyCoupon}
-                  className="flex items-center justify-between gap-3 px-5 py-3 rounded-full bg-surface/10 hover:bg-surface/20 border border-secondary/40 text-surface text-sm font-mono transition-all group active:scale-95"
+                  className="hidden"
                   title="Click to copy coupon code"
                 >
                   <span className="text-secondary font-bold tracking-wider">{couponCode}</span>

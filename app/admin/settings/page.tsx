@@ -204,6 +204,232 @@ function BrandImagePicker({
   );
 }
 
+/**
+ * Shiprocket credentials live in their own table (public.shiprocket_credentials),
+ * never inside store_settings — that table is intentionally public-readable so
+ * the storefront can show contact/shipping info, which would otherwise expose
+ * this password to anyone with the anon key. This panel therefore loads and
+ * saves independently of the rest of the Settings page's draft/save flow.
+ */
+const SHIPROCKET_MIGRATION = '015_shiprocket_integration.sql';
+
+function ShiprocketPanel({ readOnly }: { readOnly: boolean }) {
+  const { showToast } = useToast();
+  const [loading, setLoading] = useState(true);
+  const [missingTable, setMissingTable] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [enabled, setEnabled] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [pickupLocationName, setPickupLocationName] = useState('');
+  const [savedAt, setSavedAt] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    createClient()
+      .from('shiprocket_credentials')
+      .select('enabled, email, password, pickup_location_name, updated_at')
+      .eq('id', 1)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (!active) return;
+        if (error) {
+          if (isMissingTableError(error)) setMissingTable(true);
+          // A non-admin viewer can't read this table (RLS) — treat that like "not set up yet" rather than an error toast.
+          return;
+        }
+        if (data) {
+          setEnabled(data.enabled);
+          setEmail(data.email);
+          setPassword(data.password);
+          setPickupLocationName(data.pickup_location_name);
+          setSavedAt(data.updated_at);
+        }
+      })
+      .then(() => active && setLoading(false));
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  async function handleSave() {
+    if (enabled && (!email.trim() || !password.trim() || !pickupLocationName.trim())) {
+      showToast('Fill in email, password and pickup location before enabling Shiprocket', 'error');
+      return;
+    }
+    setSaving(true);
+    try {
+      const { data, error } = await createClient()
+        .from('shiprocket_credentials')
+        .upsert({ id: 1, enabled, email: email.trim(), password, pickup_location_name: pickupLocationName.trim() })
+        .select('updated_at');
+      if (error) throw error;
+      if (!data?.length) throw new Error('permission denied');
+      setSavedAt(data[0].updated_at);
+      showToast('Shiprocket settings saved', 'success');
+    } catch (err) {
+      showToast(friendlyDbError(err, SHIPROCKET_MIGRATION), 'error');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (loading) return <div className="py-6"><LoadingState label="Loading Shiprocket settings..." /></div>;
+
+  return (
+    <div>
+      <h3 className="text-sm font-semibold text-[#2D2024] mb-1 flex items-center gap-2">
+        <span className="material-symbols-outlined text-[18px] text-[#8A6F3C]">local_shipping</span>
+        Courier Integration — Shiprocket
+      </h3>
+      <p className="text-xs text-[#2D2024]/55 mb-4">
+        Connect your Shiprocket account to create shipments and fetch tracking numbers automatically. Leave this switched off
+        until you have a Shiprocket account — the rest of the store works normally either way.
+        {savedAt && <span className="text-[#2D2024]/40"> Last saved {formatDateTime(savedAt)}.</span>}
+      </p>
+
+      <MigrationNotice migration={SHIPROCKET_MIGRATION} show={missingTable} />
+
+      {!missingTable && (
+        <fieldset disabled={readOnly} className="space-y-5">
+          <SwitchRow
+            title="Enable Shiprocket"
+            hint="Turn on once the email, password and pickup location below are filled in correctly."
+            checked={enabled}
+            onChange={setEnabled}
+            disabled={readOnly}
+          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+              <Label htmlFor="sr-email" hint="The email used to log into your Shiprocket account.">Shiprocket Email</Label>
+              <IconInput id="sr-email" icon="mail" type="email" inputMode="email" value={email} onChange={setEmail} placeholder="you@sushijewels.com" />
+            </div>
+            <div>
+              <Label htmlFor="sr-password" hint="Stored securely — never shown on the storefront.">Shiprocket Password</Label>
+              <IconInput id="sr-password" icon="vpn_key" type="password" value={password} onChange={setPassword} />
+            </div>
+            <div className="md:col-span-2">
+              <Label htmlFor="sr-pickup" hint="Must exactly match a pickup location already added in your Shiprocket dashboard.">
+                Pickup Location Name
+              </Label>
+              <IconInput id="sr-pickup" icon="store" value={pickupLocationName} onChange={setPickupLocationName} placeholder="Primary" />
+            </div>
+          </div>
+          {enabled && (!email.trim() || !password.trim() || !pickupLocationName.trim()) && (
+            <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5">
+              Fill in email, password and pickup location before enabling Shiprocket.
+            </p>
+          )}
+          {!readOnly && (
+            <PrimaryButton icon={saving ? undefined : 'save'} onClick={handleSave} disabled={saving}>
+              {saving ? 'Saving…' : 'Save Shiprocket Settings'}
+            </PrimaryButton>
+          )}
+        </fieldset>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Razorpay key ID/secret live in their own table (public.razorpay_credentials,
+ * migration 017) — never inside store_settings, for the same reason as
+ * ShiprocketPanel above: that table is intentionally public-readable, which
+ * would otherwise expose the secret key to anyone with the anon key.
+ */
+const RAZORPAY_MIGRATION = '017_razorpay_credentials.sql';
+
+function RazorpayPanel({ readOnly }: { readOnly: boolean }) {
+  const { showToast } = useToast();
+  const [loading, setLoading] = useState(true);
+  const [missingTable, setMissingTable] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [keyId, setKeyId] = useState('');
+  const [keySecret, setKeySecret] = useState('');
+  const [savedAt, setSavedAt] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    createClient()
+      .from('razorpay_credentials')
+      .select('key_id, key_secret, updated_at')
+      .eq('id', 1)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (!active) return;
+        if (error) {
+          if (isMissingTableError(error)) setMissingTable(true);
+          // A non-admin viewer can't read this table (RLS) — treat that like "not set up yet".
+          return;
+        }
+        if (data) {
+          setKeyId(data.key_id);
+          setKeySecret(data.key_secret);
+          setSavedAt(data.updated_at);
+        }
+      })
+      .then(() => active && setLoading(false));
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  async function handleSave() {
+    setSaving(true);
+    try {
+      const { data, error } = await createClient()
+        .from('razorpay_credentials')
+        .upsert({ id: 1, key_id: keyId.trim(), key_secret: keySecret.trim() })
+        .select('updated_at');
+      if (error) throw error;
+      if (!data?.length) throw new Error('permission denied');
+      setSavedAt(data[0].updated_at);
+      showToast('Razorpay keys saved', 'success');
+    } catch (err) {
+      showToast(friendlyDbError(err, RAZORPAY_MIGRATION), 'error');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (loading) return <div className="py-6"><LoadingState label="Loading Razorpay settings..." /></div>;
+
+  return (
+    <div>
+      <h3 className="text-sm font-semibold text-[#2D2024] mb-1 flex items-center gap-2">
+        <span className="material-symbols-outlined text-[18px] text-[#8A6F3C]">credit_card</span>
+        Razorpay API Keys
+      </h3>
+      <p className="text-xs text-[#2D2024]/55 mb-4">
+        Required for the &ldquo;Online Payment&rdquo; option above to work. Get these from your Razorpay Dashboard → Settings → API Keys.
+        {savedAt && <span className="text-[#2D2024]/40"> Last saved {formatDateTime(savedAt)}.</span>}
+      </p>
+
+      <MigrationNotice migration={RAZORPAY_MIGRATION} show={missingTable} />
+
+      {!missingTable && (
+        <fieldset disabled={readOnly} className="space-y-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+              <Label htmlFor="rzp-key" hint="Safe to expose to the browser — this is the public half.">Razorpay Key ID</Label>
+              <IconInput id="rzp-key" icon="key" value={keyId} onChange={setKeyId} placeholder="rzp_live_xxxxxxxxxxxx" />
+            </div>
+            <div>
+              <Label htmlFor="rzp-secret" hint="Never shown to the storefront — used only server-side.">Razorpay Key Secret</Label>
+              <IconInput id="rzp-secret" icon="vpn_key" type="password" value={keySecret} onChange={setKeySecret} />
+            </div>
+          </div>
+          {!readOnly && (
+            <PrimaryButton icon={saving ? undefined : 'save'} onClick={handleSave} disabled={saving}>
+              {saving ? 'Saving…' : 'Save Razorpay Keys'}
+            </PrimaryButton>
+          )}
+        </fieldset>
+      )}
+    </div>
+  );
+}
+
 // ---------------------------------------------------------------------------
 
 export default function AdminSettingsPage() {
@@ -517,17 +743,7 @@ export default function AdminSettingsPage() {
               {tab === 'payments' && (
                 <>
                   <SwitchRow title="Cash on Delivery (COD)" hint="Customers pay in cash or UPI when the order arrives." checked={d.payments.codEnabled} onChange={(v) => set('payments', 'codEnabled', v)} disabled={readOnly} />
-                  <SwitchRow title="Online Payment (Card / UPI)" hint="Instant payment at checkout." checked={d.payments.onlineEnabled} onChange={(v) => set('payments', 'onlineEnabled', v)} disabled={readOnly} />
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5 mt-4">
-                    <div>
-                      <Label htmlFor="p-rzp-key" hint="Razorpay Key ID (Public)">Razorpay Key ID</Label>
-                      <IconInput id="p-rzp-key" icon="key" value={d.payments.razorpayKeyId || ''} onChange={(v) => set('payments', 'razorpayKeyId', v)} />
-                    </div>
-                    <div>
-                      <Label htmlFor="p-rzp-secret" hint="Razorpay Key Secret (Private)">Razorpay Key Secret</Label>
-                      <IconInput id="p-rzp-secret" icon="vpn_key" type="password" value={d.payments.razorpayKeySecret || ''} onChange={(v) => set('payments', 'razorpayKeySecret', v)} />
-                    </div>
-                  </div>
+                  <SwitchRow title="Online Payment (Card / UPI)" hint="Instant payment at checkout via Razorpay — configure the keys below." checked={d.payments.onlineEnabled} onChange={(v) => set('payments', 'onlineEnabled', v)} disabled={readOnly} />
                   <div className="max-w-md">
                     <Label htmlFor="p-codmax" hint="Orders above this must be paid online. 0 = no limit.">Max Order Value for COD</Label>
                     <IconInput id="p-codmax" icon="payments" prefix="₹" type="number" min={0} value={d.payments.codMaxOrderValue} onChange={(v) => set('payments', 'codMaxOrderValue', num(v))} />
@@ -535,6 +751,10 @@ export default function AdminSettingsPage() {
                   {!d.payments.codEnabled && !d.payments.onlineEnabled && (
                     <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5">At least one payment method must stay enabled.</p>
                   )}
+
+                  <div className="border-t border-[#E8D5C5] pt-5 mt-2">
+                    <RazorpayPanel readOnly={readOnly} />
+                  </div>
                 </>
               )}
 
@@ -568,6 +788,10 @@ export default function AdminSettingsPage() {
                     {1500 >= d.commerce.freeShippingThreshold || d.commerce.shippingFee === 0 ? 'no shipping' : formatINR(d.commerce.shippingFee)}; orders of{' '}
                     {formatINR(d.commerce.freeShippingThreshold)} or more ship free.
                   </p>
+
+                  <div className="border-t border-[#E8D5C5] pt-5 mt-2">
+                    <ShiprocketPanel readOnly={readOnly} />
+                  </div>
                 </>
               )}
 

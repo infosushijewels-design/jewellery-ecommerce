@@ -105,7 +105,7 @@ export default function CheckoutPage() {
           pincode: formData.pincode,
         },
         items: items.map((item) => ({
-          productId: item.id.length === 36 ? item.id : null,
+          productId: item.productId.length === 36 ? item.productId : null,
           title: item.title,
           imageUrl: item.imageUrl,
           price: item.price,
@@ -123,9 +123,22 @@ export default function CheckoutPage() {
       });
 
       if (res.success) {
+        // Send order confirmation email (non-blocking)
+        const targetId = res.orderNumber || res.orderId || 'latest';
+        fetch('/api/send-order-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            orderId: targetId,
+            email: formData.email,
+            firstName: formData.firstName,
+            items: items,
+            total: calculatedTotal
+          })
+        }).catch(err => console.error("Failed to send order email", err));
+
         clearCart();
         showToast('🎉 Order placed successfully! Confirmation sent to your email.', 'success');
-        const targetId = res.orderNumber || res.orderId || 'latest';
         router.push(`/orders/${targetId}`);
       } else {
         showToast(res.error || 'Could not place order. Please try again.', 'error');
@@ -185,7 +198,7 @@ export default function CheckoutPage() {
           body: JSON.stringify({ amount: calculatedTotal }),
         });
         const orderData = await response.json();
-        
+
         if (!response.ok || !orderData.id) {
           showToast(orderData.error || 'Failed to initialize payment gateway.', 'error');
           setIsProcessing(false);
@@ -201,6 +214,31 @@ export default function CheckoutPage() {
           image: storeSettings.store.logoUrl,
           order_id: orderData.id,
           handler: async function (response: any) {
+            // Checkout reporting "success" here is just client-side JS — verify the
+            // signature server-side before ever marking the order paid, otherwise
+            // anyone could call this handler from dev tools without paying at all.
+            try {
+              const verifyRes = await fetch('/api/razorpay/verify-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                }),
+              });
+              const verifyBody = await verifyRes.json();
+              if (!verifyRes.ok || !verifyBody.verified) {
+                showToast('❌ Payment could not be verified. If money was debited, contact support with your payment ID: ' + response.razorpay_payment_id, 'error');
+                setIsProcessing(false);
+                return;
+              }
+            } catch (err) {
+              console.error('Payment verification error:', err);
+              showToast('❌ Payment could not be verified. If money was debited, contact support with your payment ID: ' + response.razorpay_payment_id, 'error');
+              setIsProcessing(false);
+              return;
+            }
             await submitOrderToDb('paid', response.razorpay_payment_id);
           },
           prefill: {
@@ -248,14 +286,14 @@ export default function CheckoutPage() {
             <span>256-Bit SSL Encrypted</span>
           </div>
         </div>
-        
+
         {items.length === 0 ? (
           <div className="text-center py-20 bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-8 max-w-lg mx-auto">
             <span className="material-symbols-outlined text-5xl text-outline mb-4">shopping_bag</span>
             <h2 className="text-title-lg font-title-lg text-primary mb-2">Your Jewellery Bag is Empty</h2>
             <p className="text-body-md text-on-surface-variant mb-6">Explore our curated collections of diamond and gold high jewellery.</p>
-            <Link 
-              href="/new-arrivals" 
+            <Link
+              href="/new-arrivals"
               className="inline-block bg-primary text-surface px-8 py-3 rounded-full font-label-lg uppercase tracking-wider hover:bg-tertiary transition-colors"
             >
               Discover High Jewellery
@@ -263,11 +301,11 @@ export default function CheckoutPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12">
-            
+
             {/* Left: Checkout Form */}
             <div className="lg:col-span-7">
               <form id="checkout-form" onSubmit={handlePlaceOrder} className="space-y-8">
-                
+
                 {/* Contact Information */}
                 <section className="bg-surface-container-lowest border border-outline-variant/40 rounded-xl p-5 sm:p-6">
                   <div className="flex items-center justify-between mb-4">
@@ -294,26 +332,26 @@ export default function CheckoutPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="sm:col-span-2">
                       <label className="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-1.5 block">Email Address *</label>
-                      <input 
-                        type="email" 
+                      <input
+                        type="email"
                         name="email"
-                        required 
+                        required
                         value={formData.email}
                         onChange={handleChange}
                         placeholder="your.email@domain.com"
-                        className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2.5 text-on-surface focus:outline-none focus:border-primary transition-colors text-sm" 
+                        className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2.5 text-on-surface focus:outline-none focus:border-primary transition-colors text-sm"
                       />
                     </div>
                     <div className="sm:col-span-2">
                       <label className="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-1.5 block">Mobile Number *</label>
-                      <input 
-                        type="tel" 
+                      <input
+                        type="tel"
                         name="phone"
-                        required 
+                        required
                         value={formData.phone}
                         onChange={handleChange}
                         placeholder="+91 98765 43210"
-                        className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2.5 text-on-surface focus:outline-none focus:border-primary transition-colors text-sm" 
+                        className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2.5 text-on-surface focus:outline-none focus:border-primary transition-colors text-sm"
                       />
                     </div>
                   </div>
@@ -328,75 +366,75 @@ export default function CheckoutPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-1.5 block">First Name *</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         name="firstName"
-                        required 
+                        required
                         value={formData.firstName}
                         onChange={handleChange}
                         placeholder="Aditi"
-                        className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2.5 text-on-surface focus:outline-none focus:border-primary transition-colors text-sm" 
+                        className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2.5 text-on-surface focus:outline-none focus:border-primary transition-colors text-sm"
                       />
                     </div>
                     <div>
                       <label className="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-1.5 block">Last Name *</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         name="lastName"
-                        required 
+                        required
                         value={formData.lastName}
                         onChange={handleChange}
                         placeholder="Sharma"
-                        className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2.5 text-on-surface focus:outline-none focus:border-primary transition-colors text-sm" 
+                        className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2.5 text-on-surface focus:outline-none focus:border-primary transition-colors text-sm"
                       />
                     </div>
                     <div className="sm:col-span-2">
                       <label className="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-1.5 block">Street Address / Suite *</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         name="address"
-                        required 
+                        required
                         value={formData.address}
                         onChange={handleChange}
                         placeholder="House / Flat No., Luxury Avenue, Landmark"
-                        className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2.5 text-on-surface focus:outline-none focus:border-primary transition-colors text-sm" 
+                        className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2.5 text-on-surface focus:outline-none focus:border-primary transition-colors text-sm"
                       />
                     </div>
                     <div>
                       <label className="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-1.5 block">City *</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         name="city"
-                        required 
+                        required
                         value={formData.city}
                         onChange={handleChange}
                         placeholder="Mumbai"
-                        className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2.5 text-on-surface focus:outline-none focus:border-primary transition-colors text-sm" 
+                        className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2.5 text-on-surface focus:outline-none focus:border-primary transition-colors text-sm"
                       />
                     </div>
                     <div>
                       <label className="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-1.5 block">State *</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         name="state"
-                        required 
+                        required
                         value={formData.state}
                         onChange={handleChange}
                         placeholder="Maharashtra"
-                        className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2.5 text-on-surface focus:outline-none focus:border-primary transition-colors text-sm" 
+                        className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2.5 text-on-surface focus:outline-none focus:border-primary transition-colors text-sm"
                       />
                     </div>
                     <div className="sm:col-span-2">
                       <label className="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-1.5 block">PIN Code *</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         name="pincode"
-                        required 
+                        required
                         value={formData.pincode}
                         onChange={handleChange}
                         placeholder="400001"
                         maxLength={6}
-                        className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2.5 text-on-surface focus:outline-none focus:border-primary transition-colors text-sm" 
+                        className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2.5 text-on-surface focus:outline-none focus:border-primary transition-colors text-sm"
                       />
                     </div>
                   </div>
@@ -408,7 +446,7 @@ export default function CheckoutPage() {
                     <span className="w-6 h-6 rounded-full bg-primary text-surface text-xs flex items-center justify-center font-bold">3</span>
                     Payment Method
                   </h2>
-                  
+
                   <div className="space-y-3 mb-4">
                     {noPaymentMethod && (
                       <p className="text-sm text-error bg-error-container/40 rounded-lg px-4 py-3">
@@ -422,54 +460,52 @@ export default function CheckoutPage() {
                     )}
                     {/* Option 1: COD */}
                     {codAllowed && (
-                    <label className={`flex items-start gap-3.5 p-4 rounded-xl border cursor-pointer transition-all ${
-                      paymentMethod === 'cod' 
-                        ? 'border-primary bg-surface-container-low shadow-sm' 
-                        : 'border-outline-variant/50 hover:border-outline-variant'
-                    }`}>
-                      <input 
-                        type="radio" 
-                        name="paymentMethod" 
-                        value="cod"
-                        checked={paymentMethod === 'cod'} 
-                        onChange={handleChange}
-                        className="mt-1 accent-primary" 
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <span className="font-label-md text-primary font-semibold">Cash on Delivery (COD)</span>
-                          <span className="text-xs bg-tertiary/10 text-tertiary px-2 py-0.5 rounded font-medium">Safe & Convenient</span>
+                      <label className={`flex items-start gap-3.5 p-4 rounded-xl border cursor-pointer transition-all ${paymentMethod === 'cod'
+                          ? 'border-primary bg-surface-container-low shadow-sm'
+                          : 'border-outline-variant/50 hover:border-outline-variant'
+                        }`}>
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          value="cod"
+                          checked={paymentMethod === 'cod'}
+                          onChange={handleChange}
+                          className="mt-1 accent-primary"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <span className="font-label-md text-primary font-semibold">Cash on Delivery (COD)</span>
+                            <span className="text-xs bg-tertiary/10 text-tertiary px-2 py-0.5 rounded font-medium">Safe & Convenient</span>
+                          </div>
+                          <p className="text-xs text-on-surface-variant mt-1">Pay with cash or UPI at your doorstep upon delivery verification.</p>
                         </div>
-                        <p className="text-xs text-on-surface-variant mt-1">Pay with cash or UPI at your doorstep upon delivery verification.</p>
-                      </div>
-                    </label>
+                      </label>
                     )}
 
                     {/* Option 2: Online / Card */}
                     {onlineEnabled && (
-                    <label className={`flex items-start gap-3.5 p-4 rounded-xl border cursor-pointer transition-all ${
-                      paymentMethod === 'online' 
-                        ? 'border-primary bg-surface-container-low shadow-sm' 
-                        : 'border-outline-variant/50 hover:border-outline-variant'
-                    }`}>
-                      <input 
-                        type="radio" 
-                        name="paymentMethod" 
-                        value="online"
-                        checked={paymentMethod === 'online'} 
-                        onChange={handleChange}
-                        className="mt-1 accent-primary" 
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <span className="font-label-md text-primary font-semibold">Credit / Debit Card / UPI</span>
-                          <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded font-medium">Instant Confirmation</span>
-                        </div>
-                        <p className="text-xs text-on-surface-variant mt-1">Pay securely via Razorpay (Credit/Debit Card, UPI, NetBanking).</p>
-                        
+                      <label className={`flex items-start gap-3.5 p-4 rounded-xl border cursor-pointer transition-all ${paymentMethod === 'online'
+                          ? 'border-primary bg-surface-container-low shadow-sm'
+                          : 'border-outline-variant/50 hover:border-outline-variant'
+                        }`}>
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          value="online"
+                          checked={paymentMethod === 'online'}
+                          onChange={handleChange}
+                          className="mt-1 accent-primary"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <span className="font-label-md text-primary font-semibold">Credit / Debit Card / UPI</span>
+                            <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded font-medium">Instant Confirmation</span>
+                          </div>
+                          <p className="text-xs text-on-surface-variant mt-1">Pay securely via Razorpay (Credit/Debit Card, UPI, NetBanking).</p>
 
-                      </div>
-                    </label>
+
+                        </div>
+                      </label>
                     )}
                   </div>
                 </section>
@@ -480,7 +516,7 @@ export default function CheckoutPage() {
             <div className="lg:col-span-5">
               <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-xl p-5 sm:p-6 sticky top-24 shadow-sm">
                 <h2 className="text-title-md font-title-lg text-primary mb-4 uppercase tracking-widest border-b border-outline-variant/30 pb-3">Order Bag ({items.length})</h2>
-                
+
                 <div className="space-y-3.5 mb-6 max-h-[35vh] overflow-y-auto pr-1">
                   {items.map((item) => (
                     <div key={item.id} className="flex gap-3.5 pb-3 border-b border-outline-variant/20 last:border-none">
@@ -528,7 +564,7 @@ export default function CheckoutPage() {
                   </p>
                 )}
 
-                <button 
+                <button
                   type="submit"
                   form="checkout-form"
                   disabled={isProcessing || noPaymentMethod || belowMinimum}
@@ -546,7 +582,7 @@ export default function CheckoutPage() {
                     </>
                   )}
                 </button>
-                
+
                 <p className="text-[11px] text-center text-on-surface-variant mt-3 flex items-center justify-center gap-1.5">
                   <span className="material-symbols-outlined text-[14px] text-tertiary">workspace_premium</span>
                   100% BIS Hallmarked & Certified Authentic

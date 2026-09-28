@@ -50,7 +50,7 @@ export default function Categories() {
         <p className="font-body-md text-body-md text-on-surface-variant mt-2">Discover beautiful jewellery designed for every day and special occasions.</p>
       </div>
 
-      <div className="relative group">
+      <div className="relative">
         {/* Carousel Container */}
         <div
           ref={containerRef}

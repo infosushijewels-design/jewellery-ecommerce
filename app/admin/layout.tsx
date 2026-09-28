@@ -102,7 +102,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     {
       title: 'Engagement',
       links: [
-        { href: '/admin/coupons', label: 'Coupons', icon: 'sell', module: 'coupons' },
         { href: '/admin/reviews', label: 'Reviews', icon: 'star', module: 'reviews' },
         { href: '/admin/inquiries', label: 'Contact Inquiries', icon: 'mail', module: 'inquiries' },
       ],
@@ -132,8 +131,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const QUICK_ACTIONS: Partial<Record<PermissionModule, { label: string; href: string; action: 'create' }>> = {
     products: { label: 'Add Product', href: '/admin/products/new', action: 'create' },
     categories: { label: 'Add Category', href: '/admin/categories?new=1', action: 'create' },
-    coupons: { label: 'Create Coupon', href: '/admin/coupons?new=1', action: 'create' },
-    stores: { label: 'Add Store', href: '/admin/stores?new=1', action: 'create' },
     legal: { label: 'Add Page', href: '/admin/legal?new=1', action: 'create' },
   };
   const quickAction = currentLink?.module ? QUICK_ACTIONS[currentLink.module] : undefined;
@@ -292,7 +289,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             name={(user?.user_metadata?.full_name as string | undefined)?.trim() || user?.email?.split('@')[0] || (getDemoAdminEmail() ? getDemoAdminEmail()!.split('@')[0] : 'Anjali (Admin)')}
             email={user?.email || getDemoAdminEmail() || 'anjaliworksphere@gmail.com'}
             roleName={access?.roleName || 'Admin'}
-            showSettings={!access || access.can('settings', 'view')}
             onSignOut={handleSignOut}
           />
           </div>

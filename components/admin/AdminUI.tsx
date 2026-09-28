@@ -234,6 +234,8 @@ export function IconButton({
   tone = 'default',
   href,
   external,
+  disabled,
+  spinning,
 }: {
   icon: string;
   title: string;
@@ -241,16 +243,20 @@ export function IconButton({
   tone?: 'default' | 'danger' | 'whatsapp';
   href?: string;
   external?: boolean;
+  disabled?: boolean;
+  spinning?: boolean;
 }) {
-  const toneClass =
-    tone === 'danger'
+  const toneClass = disabled
+    ? 'text-[#2D2024]/30 cursor-not-allowed'
+    : tone === 'danger'
       ? 'text-[#2D2024]/55 hover:text-red-600 hover:bg-red-50'
       : tone === 'whatsapp'
         ? 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50'
         : 'text-[#2D2024]/60 hover:text-[#2D2024] hover:bg-[#E8D5C5]/50';
   const className = `p-2 rounded-full inline-flex transition-colors ${toneClass}`;
+  const iconEl = <span className={`material-symbols-outlined text-[20px] ${spinning ? 'animate-spin' : ''}`}>{icon}</span>;
 
-  if (href) {
+  if (href && !disabled) {
     return (
       <a
         href={href}
@@ -259,13 +265,13 @@ export function IconButton({
         className={className}
         {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
       >
-        <span className="material-symbols-outlined text-[20px]">{icon}</span>
+        {iconEl}
       </a>
     );
   }
   return (
-    <button type="button" onClick={onClick} title={title} aria-label={title} className={className}>
-      <span className="material-symbols-outlined text-[20px]">{icon}</span>
+    <button type="button" onClick={onClick} disabled={disabled} title={title} aria-label={title} className={className}>
+      {iconEl}
     </button>
   );
 }

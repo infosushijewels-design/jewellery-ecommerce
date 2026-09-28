@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useWishlist } from '@/lib/context/WishlistContext';
 import { useCart } from '@/lib/context/CartContext';
 import { useToast } from '@/lib/context/ToastContext';
@@ -49,9 +50,11 @@ export default function ProductCard({
   const { wishlistIds, toggleWishlist: toggleWishlistBase } = useWishlist();
   const { addToCart, openCart } = useCart();
   const { showToast } = useToast();
+  const router = useRouter();
   const isSaved = wishlistIds.has(id);
   const [justAdded, setJustAdded] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   const hasDiscount = !!mrp && mrp > price;
   const discountPercent = hasDiscount ? Math.round(((mrp! - price) / mrp!) * 100) : 0;
@@ -65,19 +68,8 @@ export default function ProductCard({
 
     if (isSoldOut) return;
 
-    addToCart({
-      productId: id,
-      title,
-      price,
-      imageUrl: imageSrc,
-      metal: material,
-      size: 'Standard',
-    });
-    openCart();
-    showToast('✨ Added to your shopping bag!', 'success');
-
-    setJustAdded(true);
-    setTimeout(() => setJustAdded(false), 1800);
+    setIsNavigating(true);
+    router.push(`/product/${slug}`);
   };
 
   const toggleWishlist = async (productId: string) => {
@@ -142,9 +134,19 @@ export default function ProductCard({
               <div className="absolute inset-x-0 bottom-0 flex items-end justify-center pb-2.5 sm:pb-3 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300 pointer-events-auto sm:pointer-events-none sm:group-hover:pointer-events-auto z-10">
                 <button
                   onClick={handleAcquire}
-                  className="bg-primary/95 backdrop-blur-xs text-surface text-[9px] sm:text-xs font-semibold uppercase tracking-widest px-4 sm:px-5 py-1.5 sm:py-2 rounded-full shadow-lg hover:bg-tertiary active:scale-95 transition-all duration-200 border border-outline-variant/30"
+                  disabled={isNavigating}
+                  className="bg-primary/95 backdrop-blur-xs text-surface text-[9px] sm:text-xs font-semibold uppercase tracking-widest px-4 sm:px-5 py-1.5 sm:py-2 rounded-full shadow-lg hover:bg-tertiary active:scale-95 transition-all duration-200 border border-outline-variant/30 flex items-center justify-center gap-1.5 disabled:opacity-80 disabled:cursor-wait"
                 >
-                  {justAdded ? '✓ Added' : 'Quick Add'}
+                  {isNavigating ? (
+                    <>
+                      <span className="material-symbols-outlined text-[14px] sm:text-[16px] animate-spin">progress_activity</span>
+                      Loading...
+                    </>
+                  ) : justAdded ? (
+                    '✓ Added'
+                  ) : (
+                    'Select Options'
+                  )}
                 </button>
               </div>
             )}
@@ -197,16 +199,18 @@ export default function ProductCard({
         </div>
         <button
           onClick={handleAcquire}
-          disabled={isSoldOut}
-          className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-label-sm text-[9px] sm:text-label-sm uppercase tracking-wider transition-all duration-200 flex-shrink-0 active:scale-95 flex items-center gap-1 ${
+          disabled={isSoldOut || isNavigating}
+          className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-label-sm text-[9px] sm:text-label-sm uppercase tracking-wider transition-all duration-200 flex-shrink-0 active:scale-95 flex items-center justify-center gap-1 min-w-[100px] ${
             isSoldOut
               ? 'bg-surface-container text-on-surface-variant cursor-not-allowed'
               : justAdded
               ? 'bg-secondary text-primary'
-              : 'bg-primary text-surface hover:bg-tertiary'
+              : 'bg-primary text-surface hover:bg-tertiary disabled:opacity-80 disabled:cursor-wait'
           }`}
         >
-          {isSoldOut ? (
+          {isNavigating ? (
+            <span className="material-symbols-outlined text-[14px] sm:text-[16px] animate-spin">progress_activity</span>
+          ) : isSoldOut ? (
             'Sold Out'
           ) : justAdded ? (
             <>
@@ -214,7 +218,7 @@ export default function ProductCard({
               Added
             </>
           ) : (
-            'Buy Now'
+            'Select Options'
           )}
         </button>
       </div>

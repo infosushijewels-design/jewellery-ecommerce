@@ -87,6 +87,10 @@ export interface Database {
           collection_id: string | null
           is_featured: boolean
           is_new_arrival: boolean
+          length_cm: number
+          breadth_cm: number
+          height_cm: number
+          weight_kg: number
           created_at: string
           updated_at: string
         }
@@ -109,6 +113,10 @@ export interface Database {
           collection_id?: string | null
           is_featured?: boolean
           is_new_arrival?: boolean
+          length_cm?: number
+          breadth_cm?: number
+          height_cm?: number
+          weight_kg?: number
           created_at?: string
           updated_at?: string
         }
@@ -131,6 +139,10 @@ export interface Database {
           collection_id?: string | null
           is_featured?: boolean
           is_new_arrival?: boolean
+          length_cm?: number
+          breadth_cm?: number
+          height_cm?: number
+          weight_kg?: number
           created_at?: string
           updated_at?: string
         }
@@ -291,6 +303,12 @@ export interface Database {
             pincode: string
           }
           notes: string | null
+          shiprocket_order_id: string | null
+          shiprocket_shipment_id: string | null
+          awb_code: string | null
+          courier_name: string | null
+          tracking_url: string | null
+          shipment_status: string | null
           created_at: string
           updated_at: string
         }
@@ -315,6 +333,12 @@ export interface Database {
             pincode: string
           }
           notes?: string | null
+          shiprocket_order_id?: string | null
+          shiprocket_shipment_id?: string | null
+          awb_code?: string | null
+          courier_name?: string | null
+          tracking_url?: string | null
+          shipment_status?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -339,6 +363,12 @@ export interface Database {
             pincode: string
           }
           notes?: string | null
+          shiprocket_order_id?: string | null
+          shiprocket_shipment_id?: string | null
+          awb_code?: string | null
+          courier_name?: string | null
+          tracking_url?: string | null
+          shipment_status?: string | null
           created_at?: string
           updated_at?: string
         }

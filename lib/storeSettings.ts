@@ -49,8 +49,9 @@ export interface StoreSettings {
     codEnabled: boolean;
     onlineEnabled: boolean;
     codMaxOrderValue: number; // 0 = no limit
-    razorpayKeyId: string;
-    razorpayKeySecret: string;
+    // Razorpay key ID/secret live in public.razorpay_credentials (migration 017),
+    // never here — this JSON blob is public-readable so the storefront can show
+    // contact/shipping/tax info, which would otherwise expose the secret key.
   };
   announcement: {
     enabled: boolean;
@@ -109,8 +110,6 @@ export const DEFAULT_STORE_SETTINGS: StoreSettings = {
     codEnabled: true,
     onlineEnabled: true,
     codMaxOrderValue: 0,
-    razorpayKeyId: '',
-    razorpayKeySecret: '',
   },
   announcement: {
     enabled: true,

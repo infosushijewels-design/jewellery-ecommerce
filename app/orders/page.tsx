@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/context/AuthContext';
 import { getUserOrders, seedDemoOrdersIfEmpty, FullOrder } from '@/lib/supabase/orderService';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import ReviewForm from '@/components/orders/ReviewForm';
 
 export default function MyOrdersPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -210,6 +211,15 @@ export default function MyOrdersPage() {
                           </div>
                           <div className="min-w-0">
                             <h4 className="text-sm font-semibold text-primary truncate">{item.title}</h4>
+                            {order.status === 'delivered' && item.product_id && (
+                              <ReviewForm
+                                productId={item.product_id}
+                                productTitle={item.title}
+                                userId={user?.id}
+                                reviewerName={order.shipping_address?.full_name || (user?.user_metadata?.full_name as string) || 'Verified customer'}
+                                reviewerEmail={order.shipping_address?.email || user?.email}
+                              />
+                            )}
                             <p className="text-xs text-on-surface-variant mt-0.5">
                               Quantity: {item.quantity} {item.metal && `• ${item.metal}`} {item.size && `• Size ${item.size}`}
                             </p>

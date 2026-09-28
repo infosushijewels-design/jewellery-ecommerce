@@ -1,20 +1,17 @@
 "use client";
 
 import { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
 import { getInitials } from './AdminUI';
 
 export default function ProfileMenu({
   name,
   email,
   roleName,
-  showSettings,
   onSignOut,
 }: {
   name: string;
   email: string;
   roleName: string;
-  showSettings: boolean;
   onSignOut: () => void | Promise<void>;
 }) {
   const [open, setOpen] = useState(false);
@@ -74,20 +71,10 @@ export default function ProfileMenu({
             </span>
           </div>
           <div className="py-1.5">
-            {showSettings && (
-              <Link href="/admin/settings" role="menuitem" onClick={() => setOpen(false)} className={itemClass}>
-                <span className="material-symbols-outlined text-[20px] text-[#8A6F3C]">settings</span>
-                Store Settings
-              </Link>
-            )}
-            <Link href="/forgot-password" role="menuitem" onClick={() => setOpen(false)} className={itemClass}>
+            <a href="/forgot-password" role="menuitem" onClick={() => setOpen(false)} className={itemClass}>
               <span className="material-symbols-outlined text-[20px] text-[#8A6F3C]">lock_reset</span>
               Change Password
-            </Link>
-            <Link href="/" target="_blank" role="menuitem" onClick={() => setOpen(false)} className={itemClass}>
-              <span className="material-symbols-outlined text-[20px] text-[#8A6F3C]">storefront</span>
-              View Store
-            </Link>
+            </a>
           </div>
           <div className="border-t border-[#E8D5C5] py-1.5">
             <button
