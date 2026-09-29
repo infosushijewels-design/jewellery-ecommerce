@@ -109,62 +109,10 @@ export default function AdminOrdersPage() {
   const [page, setPage] = useState(1);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
-  // null while loading — the button stays disabled either way until we know for sure.
-  const [shiprocketConfigured, setShiprocketConfigured] = useState<boolean | null>(null);
-  const [creatingShipmentId, setCreatingShipmentId] = useState<string | null>(null);
 
   useEffect(() => {
     loadOrders();
-    fetch('/api/shiprocket/status')
-      .then((res) => res.json())
-      .then((body) => setShiprocketConfigured(!!body.configured))
-      .catch(() => setShiprocketConfigured(false));
   }, []);
-
-  /**
-   * Shared by the manual "Create Shipment" button and the automatic trigger
-   * when an order is marked "shipped" — one place saves the AWB/tracking back
-   * onto the order and reports the outcome, whichever path called it.
-   */
-  async function createShipmentFor(order: FullOrder, { silentIfUnconfigured = false } = {}) {
-    setCreatingShipmentId(order.id);
-    try {
-      const res = await fetch('/api/shiprocket/create-shipment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId: order.id }),
-      });
-      const body = await res.json();
-      if (res.ok && body.success) {
-        setOrders((prev) =>
-          prev.map((o) =>
-            o.id === order.id
-              ? {
-                  ...o,
-                  shiprocket_order_id: body.shiprocketOrderId,
-                  shiprocket_shipment_id: body.shipmentId,
-                  awb_code: body.awbCode,
-                  courier_name: body.courierName,
-                  tracking_url: body.trackingUrl,
-                }
-              : o
-          )
-        );
-        if (body.alreadyExists) showToast(`Shipment already exists — AWB ${body.awbCode || 'pending'}`, 'info');
-        else if (body.awbCode) showToast(`Shiprocket shipment created — AWB ${body.awbCode}`, 'success');
-        else showToast('Shiprocket order created — awaiting courier assignment', 'success');
-      } else if (res.status === 400 && /not set up/i.test(body.error || '')) {
-        if (!silentIfUnconfigured) showToast(body.error, 'error');
-      } else {
-        showToast(`Shiprocket: ${body.error || 'Could not create shipment'}`, 'error');
-      }
-    } catch (err) {
-      console.error('Failed to create Shiprocket shipment', err);
-      if (!silentIfUnconfigured) showToast('Could not reach the Shiprocket service', 'error');
-    } finally {
-      setCreatingShipmentId(null);
-    }
-  }
 
   async function loadOrders(isRefresh = false) {
     if (isRefresh) setRefreshing(true);
@@ -188,18 +136,6 @@ export default function AdminOrdersPage() {
       await updateOrderStatus(orderId, newStatus);
       setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o)));
       showToast(`Order status updated to ${orderStatusLabel(newStatus)}`, 'success');
-
-      // Marking an order "shipped" is what actually books the courier — create
-      // the Shiprocket shipment now and save the AWB/tracking number it returns.
-      // Silent when Shiprocket isn't configured yet — that's an expected,
-      // optional state here, not a failure (the manual button below still
-      // shows the real reason if an admin clicks it directly).
-      if (newStatus === 'shipped') {
-        const order = orders.find((o) => o.id === orderId);
-        if (order && !order.awb_code) {
-          await createShipmentFor(order, { silentIfUnconfigured: true });
-        }
-      }
 
       // Send status update email (non-blocking)
       if (newStatus === 'shipped' || newStatus === 'delivered') {
@@ -483,17 +419,6 @@ export default function AdminOrdersPage() {
                           <div className="inline-flex items-center gap-0.5">
                             <IconButton icon="visibility" title="View order details" onClick={() => setSelectedId(order.id)} />
                             <IconButton icon="print" title="Print invoice" onClick={() => handlePrint(order)} />
-                            {order.awb_code ? (
-                              <IconButton icon="local_shipping" title={`Track shipment — AWB ${order.awb_code}`} href={order.tracking_url || undefined} external />
-                            ) : (
-                              <IconButton
-                                icon="local_shipping"
-                                title={shiprocketConfigured ? 'Create Shiprocket shipment' : 'Configure Shiprocket in Settings first'}
-                                disabled={!shiprocketConfigured || creatingShipmentId === order.id}
-                                spinning={creatingShipmentId === order.id}
-                                onClick={() => createShipmentFor(order)}
-                              />
-                            )}
                           </div>
                         </td>
                       </tr>
@@ -520,9 +445,6 @@ export default function AdminOrdersPage() {
         onClose={() => setSelectedId(null)}
         onStatusChange={handleStatusChange}
         updating={!!selectedOrder && updatingId === selectedOrder.id}
-        shiprocketConfigured={shiprocketConfigured}
-        creatingShipment={!!selectedOrder && creatingShipmentId === selectedOrder.id}
-        onCreateShipment={() => selectedOrder && createShipmentFor(selectedOrder)}
       />
     </div>
   );

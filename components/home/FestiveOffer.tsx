@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -16,18 +16,79 @@ export default function FestiveOffer() {
     setTimeout(() => setCopied(false), 3000);
   };
 
+  const trustBadges = [
+    { icon: 'verified', label: '100% BIS 916 Hallmarked Gold' },
+    { icon: 'local_shipping', label: 'Free Insured Express Delivery' },
+    { icon: 'currency_exchange', label: 'Lifetime Buyback Guarantee' },
+  ];
+
   return (
     <section className="py-12 sm:py-20 bg-surface-container-low border-y border-outline-variant/30" id="festive-offer">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-16">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#2D2024] via-[#3D2B31] to-[#1A1215] text-surface p-6 sm:p-10 lg:p-16 shadow-xl border border-secondary/30">
-          
-          {/* Subtle Background Glow Decorative Pattern */}
-          <div className="absolute top-0 right-0 -mt-10 -mr-10 w-72 h-72 rounded-full bg-secondary/10 blur-3xl pointer-events-none"></div>
-          <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-72 h-72 rounded-full bg-secondary/10 blur-3xl pointer-events-none"></div>
+
+        {/* ── MOBILE: Option A — Image top, content + button below ── */}
+        <div className="sm:hidden rounded-3xl overflow-hidden bg-gradient-to-br from-[#2D2024] via-[#3D2B31] to-[#1A1215] border border-secondary/30 shadow-xl">
+
+          {/* Full-width image on top */}
+          <div className="aspect-[4/3] overflow-hidden">
+            <img
+              src="https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80"
+              alt="Festive Gold Collection"
+              className="w-full h-full object-cover"
+            />
+          </div>
+
+          {/* Content block */}
+          <div className="p-5 space-y-4">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/20 border border-secondary/40 text-secondary text-[11px] font-medium uppercase tracking-widest">
+              <span className="material-symbols-outlined text-[14px] animate-pulse">auto_awesome</span>
+              Festive Celebration Offer
+            </div>
+
+            {/* Title */}
+            <h2 className="font-headline-lg text-[26px] font-serif text-surface leading-tight">
+              Flat 10% OFF on Making Charges
+            </h2>
+
+            {/* Description */}
+            <p className="text-sm text-surface-variant/90 leading-relaxed">
+              Celebrate your cherished moments with pure 100% BIS Hallmarked gold and certified diamonds. Enjoy zero insurance fee and insured delivery nationwide.
+            </p>
+
+            {/* Trust badges — horizontal row */}
+            <div className="pt-2 border-t border-surface/10 grid grid-cols-3 gap-2 text-center">
+              {trustBadges.map((b) => (
+                <div key={b.icon} className="flex flex-col items-center gap-1">
+                  <span className="material-symbols-outlined text-secondary text-[22px]">{b.icon}</span>
+                  <span className="text-[9px] text-surface-variant/80 leading-tight">{b.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Button — clearly outside content, at the very bottom */}
+          <div className="px-5 pb-6 pt-1">
+            <Link
+              href="/collections/festive-collection"
+              className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-secondary hover:bg-secondary-fixed text-on-secondary font-semibold text-base transition-all duration-200 shadow-md active:scale-95"
+            >
+              Shop Festive Offer
+              <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
+            </Link>
+          </div>
+        </div>
+
+        {/* ── DESKTOP: Original two-column layout ── */}
+        <div className="hidden sm:block relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#2D2024] via-[#3D2B31] to-[#1A1215] text-surface p-10 lg:p-16 shadow-xl border border-secondary/30">
+
+          {/* Glow decorations */}
+          <div className="absolute top-0 right-0 -mt-10 -mr-10 w-72 h-72 rounded-full bg-secondary/10 blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-72 h-72 rounded-full bg-secondary/10 blur-3xl pointer-events-none" />
 
           <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            
-            {/* Left Column: Offer Info & Copy */}
+
+            {/* Left: text */}
             <div className="lg:col-span-7 space-y-4 sm:space-y-6">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-secondary/20 border border-secondary/40 text-secondary text-xs sm:text-sm font-medium uppercase tracking-widest">
                 <span className="material-symbols-outlined text-[16px] animate-pulse">auto_awesome</span>
@@ -42,51 +103,27 @@ export default function FestiveOffer() {
                 Celebrate your cherished moments with pure 100% BIS Hallmarked gold and certified diamonds. Enjoy zero insurance fee and insured delivery nationwide.
               </p>
 
-              {/* Coupon Box & CTA Buttons */}
-              <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
-                
-                {/* Coupon Code Pill */}
-                <button
-                  onClick={handleCopyCoupon}
-                  className="hidden"
-                  title="Click to copy coupon code"
-                >
-                  <span className="text-secondary font-bold tracking-wider">{couponCode}</span>
-                  <span className="text-xs text-outline-variant group-hover:text-surface flex items-center gap-1">
-                    <span className="material-symbols-outlined text-sm">{copied ? 'done' : 'content_copy'}</span>
-                    {copied ? 'Copied!' : 'Copy Code'}
-                  </span>
-                </button>
-
-                {/* Primary Button */}
+              <div className="pt-2">
                 <Link
                   href="/collections/festive-collection"
-                  className="px-7 py-3.5 rounded-full bg-secondary hover:bg-secondary-fixed text-on-secondary font-label-lg text-sm sm:text-base font-semibold text-center transition-all duration-200 shadow-md hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
+                  className="px-7 py-3.5 rounded-full bg-secondary hover:bg-secondary-fixed text-on-secondary font-label-lg text-sm sm:text-base font-semibold text-center transition-all duration-200 shadow-md hover:scale-[1.02] active:scale-95 inline-flex items-center gap-2"
                 >
                   Shop Festive Offer
                   <span className="material-symbols-outlined text-lg">arrow_forward</span>
                 </Link>
               </div>
 
-              {/* Small Guarantee Highlights */}
               <div className="pt-4 border-t border-surface/10 flex flex-wrap gap-4 text-xs text-surface-variant/80">
-                <span className="flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-secondary text-sm">verified</span>
-                  100% BIS 916 Hallmarked Gold
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-secondary text-sm">local_shipping</span>
-                  Free Insured Express Delivery
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-secondary text-sm">currency_exchange</span>
-                  Lifetime Buyback Guarantee
-                </span>
+                {trustBadges.map((b) => (
+                  <span key={b.icon} className="flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-secondary text-sm">{b.icon}</span>
+                    {b.label}
+                  </span>
+                ))}
               </div>
-
             </div>
 
-            {/* Right Column: Visual Product Showcase */}
+            {/* Right: image */}
             <div className="lg:col-span-5 relative">
               <div className="relative aspect-[4/3] sm:aspect-[16/10] lg:aspect-square rounded-2xl overflow-hidden border border-secondary/30 shadow-2xl group">
                 <img
@@ -108,6 +145,7 @@ export default function FestiveOffer() {
 
           </div>
         </div>
+
       </div>
     </section>
   );

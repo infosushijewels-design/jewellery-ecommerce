@@ -205,137 +205,10 @@ function BrandImagePicker({
 }
 
 /**
- * Shiprocket credentials live in their own table (public.shiprocket_credentials),
- * never inside store_settings — that table is intentionally public-readable so
- * the storefront can show contact/shipping info, which would otherwise expose
- * this password to anyone with the anon key. This panel therefore loads and
- * saves independently of the rest of the Settings page's draft/save flow.
- */
-const SHIPROCKET_MIGRATION = '015_shiprocket_integration.sql';
-
-function ShiprocketPanel({ readOnly }: { readOnly: boolean }) {
-  const { showToast } = useToast();
-  const [loading, setLoading] = useState(true);
-  const [missingTable, setMissingTable] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [enabled, setEnabled] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [pickupLocationName, setPickupLocationName] = useState('');
-  const [savedAt, setSavedAt] = useState<string | null>(null);
-
-  useEffect(() => {
-    let active = true;
-    createClient()
-      .from('shiprocket_credentials')
-      .select('enabled, email, password, pickup_location_name, updated_at')
-      .eq('id', 1)
-      .maybeSingle()
-      .then(({ data, error }) => {
-        if (!active) return;
-        if (error) {
-          if (isMissingTableError(error)) setMissingTable(true);
-          // A non-admin viewer can't read this table (RLS) — treat that like "not set up yet" rather than an error toast.
-          return;
-        }
-        if (data) {
-          setEnabled(data.enabled);
-          setEmail(data.email);
-          setPassword(data.password);
-          setPickupLocationName(data.pickup_location_name);
-          setSavedAt(data.updated_at);
-        }
-      })
-      .then(() => active && setLoading(false));
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  async function handleSave() {
-    if (enabled && (!email.trim() || !password.trim() || !pickupLocationName.trim())) {
-      showToast('Fill in email, password and pickup location before enabling Shiprocket', 'error');
-      return;
-    }
-    setSaving(true);
-    try {
-      const { data, error } = await createClient()
-        .from('shiprocket_credentials')
-        .upsert({ id: 1, enabled, email: email.trim(), password, pickup_location_name: pickupLocationName.trim() })
-        .select('updated_at');
-      if (error) throw error;
-      if (!data?.length) throw new Error('permission denied');
-      setSavedAt(data[0].updated_at);
-      showToast('Shiprocket settings saved', 'success');
-    } catch (err) {
-      showToast(friendlyDbError(err, SHIPROCKET_MIGRATION), 'error');
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  if (loading) return <div className="py-6"><LoadingState label="Loading Shiprocket settings..." /></div>;
-
-  return (
-    <div>
-      <h3 className="text-sm font-semibold text-[#2D2024] mb-1 flex items-center gap-2">
-        <span className="material-symbols-outlined text-[18px] text-[#8A6F3C]">local_shipping</span>
-        Courier Integration — Shiprocket
-      </h3>
-      <p className="text-xs text-[#2D2024]/55 mb-4">
-        Connect your Shiprocket account to create shipments and fetch tracking numbers automatically. Leave this switched off
-        until you have a Shiprocket account — the rest of the store works normally either way.
-        {savedAt && <span className="text-[#2D2024]/40"> Last saved {formatDateTime(savedAt)}.</span>}
-      </p>
-
-      <MigrationNotice migration={SHIPROCKET_MIGRATION} show={missingTable} />
-
-      {!missingTable && (
-        <fieldset disabled={readOnly} className="space-y-5">
-          <SwitchRow
-            title="Enable Shiprocket"
-            hint="Turn on once the email, password and pickup location below are filled in correctly."
-            checked={enabled}
-            onChange={setEnabled}
-            disabled={readOnly}
-          />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div>
-              <Label htmlFor="sr-email" hint="The email used to log into your Shiprocket account.">Shiprocket Email</Label>
-              <IconInput id="sr-email" icon="mail" type="email" inputMode="email" value={email} onChange={setEmail} placeholder="you@sushijewels.com" />
-            </div>
-            <div>
-              <Label htmlFor="sr-password" hint="Stored securely — never shown on the storefront.">Shiprocket Password</Label>
-              <IconInput id="sr-password" icon="vpn_key" type="password" value={password} onChange={setPassword} />
-            </div>
-            <div className="md:col-span-2">
-              <Label htmlFor="sr-pickup" hint="Must exactly match a pickup location already added in your Shiprocket dashboard.">
-                Pickup Location Name
-              </Label>
-              <IconInput id="sr-pickup" icon="store" value={pickupLocationName} onChange={setPickupLocationName} placeholder="Primary" />
-            </div>
-          </div>
-          {enabled && (!email.trim() || !password.trim() || !pickupLocationName.trim()) && (
-            <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5">
-              Fill in email, password and pickup location before enabling Shiprocket.
-            </p>
-          )}
-          {!readOnly && (
-            <PrimaryButton icon={saving ? undefined : 'save'} onClick={handleSave} disabled={saving}>
-              {saving ? 'Saving…' : 'Save Shiprocket Settings'}
-            </PrimaryButton>
-          )}
-        </fieldset>
-      )}
-    </div>
-  );
-}
-
-/**
  * Razorpay key ID/secret live in their own table (public.razorpay_credentials,
- * migration 017) — never inside store_settings, for the same reason as
- * ShiprocketPanel above: that table is intentionally public-readable, which
- * would otherwise expose the secret key to anyone with the anon key.
+ * migration 017) — never inside store_settings, since that table is
+ * intentionally public-readable, which would otherwise expose the secret key
+ * to anyone with the anon key.
  */
 const RAZORPAY_MIGRATION = '017_razorpay_credentials.sql';
 
@@ -788,10 +661,6 @@ export default function AdminSettingsPage() {
                     {1500 >= d.commerce.freeShippingThreshold || d.commerce.shippingFee === 0 ? 'no shipping' : formatINR(d.commerce.shippingFee)}; orders of{' '}
                     {formatINR(d.commerce.freeShippingThreshold)} or more ship free.
                   </p>
-
-                  <div className="border-t border-[#E8D5C5] pt-5 mt-2">
-                    <ShiprocketPanel readOnly={readOnly} />
-                  </div>
                 </>
               )}
 
@@ -922,21 +791,27 @@ export default function AdminSettingsPage() {
         </div>
       )}
 
-      {/* Sticky save bar */}
+      {/* Save bar — always visible (not just once something changes), so the
+          button is never hidden off-screen or easy to miss; Discard/Save just
+          stay disabled when there's nothing to save. */}
       {canEdit && !missingTable && !loading && (
-        <div
-          className={`fixed bottom-0 right-0 left-0 lg:left-72 z-30 border-t border-[#E8D5C5] bg-[#FFFCF7]/95 backdrop-blur-sm px-4 sm:px-8 lg:px-10 py-3 flex items-center justify-end gap-3 transition-transform ${
-            dirty ? 'translate-y-0' : 'translate-y-full'
-          }`}
-        >
+        <div className="fixed bottom-0 right-0 left-0 lg:left-72 z-30 border-t border-[#E8D5C5] bg-[#FFFCF7]/95 backdrop-blur-sm px-4 sm:px-8 lg:px-10 py-3 flex items-center justify-end gap-3">
           <span className="mr-auto text-sm text-[#2D2024]/70 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-amber-500" />
-            You have unsaved changes
+            {dirty ? (
+              <>
+                <span className="w-2 h-2 rounded-full bg-amber-500" />
+                You have unsaved changes
+              </>
+            ) : readOnly ? (
+              'Unlock System Access to edit'
+            ) : (
+              'No changes to save'
+            )}
           </span>
-          <SecondaryButton onClick={() => setDraft(saved)} disabled={saving}>
+          <SecondaryButton onClick={() => setDraft(saved)} disabled={saving || !dirty}>
             Discard
           </SecondaryButton>
-          <PrimaryButton icon={saving ? undefined : 'save'} onClick={handleSave} disabled={saving}>
+          <PrimaryButton icon={saving ? undefined : 'save'} onClick={handleSave} disabled={saving || readOnly}>
             {saving ? 'Saving…' : 'Save Changes'}
           </PrimaryButton>
         </div>

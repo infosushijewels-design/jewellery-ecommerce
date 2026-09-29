@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 
-import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useState } from 'react';
 
 const categoriesData = [
   { name: 'Rings', href: '/category/rings', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCOYxVJY_ToSSiEr0r7EOQKbys6_0lQsg7mW41f1zRoVjobYjjhqg1IEQooTvhcgx2mswkzGUinEv6sUPppwFYHvgURIusQq0fmH_u8oj5K1IbhvGNx3RJ4b0a8t7Hk6-D1PQCCz05oUfBxfLzNyfuwCP0RiEvDoZj0BtEpnIHeQho0HEvsl27g41kpoiKFRl4HefuKsmW7v_S8L_3811k_iqcVWvlZMmkO2sFBz-Twd6N1-qRz3q0anQ', bold: true },
@@ -11,75 +11,101 @@ const categoriesData = [
   { name: 'Bangles', href: '/category/bangles', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAl3UixI1cR0dZvSdyZO3g2ogohppy2eabEyxywfLKHADYpkKSXWPTb_gFzRD9OO_pPTWRf-wnbsxwiwLAIYQUCBhz_66GMkpY-lrxSv3UUKv1LsbWKE0ycoZin1bK_qoeZhUJKRsCilP7N9Duwqpsp_DM4thOr7fB-6Yk0bmN_YMpffbKI92X9SlkS_mJEzZPKkrh9TIfbkzL5Tir-sStvssUsU5AzR0AIHNu5efGCqCrajbKC_q4xKg' },
   { name: 'Solitaires', href: '/search?q=solitaire', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAYaFTGzA8QjnJ4sd8JPMjITqQ-LuydJBs8Y0mKciPl4t2hHGx9c7CaXWLCrod9RC_lnHX5ElH_fXKjVsTpK72-RlqoXAiQpaqPMOzhtqZat2tF3DJgpogAV-Mf6zn_5tq40aB9mqGl8vYa65O7lgIOpQlB98kREKS8Id7cDFHRx0gQmS4qyilcfwo_aCmb3peyI0mb485mu_Dsk91uhIbk5B8CvGzbIR1DKi-1e4YPuzNTAyq8RVZamQ' },
   { name: 'Mangalsutras', href: '/category/necklaces?style=mangalsutra', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDbTDRspPlaZdrt95j9IdK0vFArW_cjhYuuq-_OOoAoAHMD9-W-EwaMe839rg5ziZOf2nYNBaM5AMSnoKxGJ8Ryo6Dan-OCcf8XDjTgEPLJjFGAi73gNszawfDgQ234-xm4uVu643VXBrj9euiTvAoS76jwNmCvicXXEDEzht017mFmVjQGiF7hYkWqYDJAt6m-QYmIJgP3GmyVP3zylg7GqZM6RlE3zxL5G2R7kvd5KErY8QPih0QpBg' },
-  { name: 'Gold Coins', href: '/search?q=gold%20coin', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB5T1brtItLcP7aO6m991RgQsRe8t8Gqi6DAL71CdF5QgJbUbcQ2eFJ6plkTo3NGu4V8QRUI32xPD_dLN7d5KPJbjnZxN6DPdOJ2u7YJflOocIMwBea0xTk6sfo4M5i65V4OkuTuglnyNi526jvoW5u7RSE_wsQttKS_oB_lyHXfPHK4Md94BDcTeHtLntLQcjmpWmehWofM1dWesE1Hf6NktoTvTgNxmq8xP2bPPe9MCzpxx-8_37NSA' },
+  { name: 'Gold Coins', href: '/search?q=gold%20coin', image: 'https://images.unsplash.com/photo-1708714290523-e9f76878bf53?auto=format&fit=crop&q=80&w=300' },
 ];
 
-export default function Categories() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [isPaused, setIsPaused] = useState(false);
+// Duplicated for seamless infinite loop
+const marqueeItems = [...categoriesData, ...categoriesData];
 
-  // Auto-scroll loop on mobile
-  useEffect(() => {
-    if (isPaused) return;
-
-    const interval = setInterval(() => {
-      const container = containerRef.current;
-      if (!container) return;
-
-      // Only auto-scroll if the container has scrollable content (mobile screen)
-      if (container.scrollWidth > container.clientWidth) {
-        const step = 110;
-        const maxScroll = container.scrollWidth - container.clientWidth;
-
-        if (container.scrollLeft >= maxScroll - 10) {
-          container.scrollTo({ left: 0, behavior: 'smooth' });
-        } else {
-          container.scrollBy({ left: step, behavior: 'smooth' });
-        }
-      }
-    }, 3200);
-
-    return () => clearInterval(interval);
-  }, [isPaused]);
+/**
+ * These category photos are hosted on a third-party "aida-public" preview
+ * URL, not our own storage, so any of them can go missing or hang without
+ * ever firing `onError`. Rendering the letter fallback underneath from the
+ * start (instead of only creating it once `onError` fires) means a slow or
+ * silently-failing image never leaves the browser's raw broken-image + alt
+ * text showing on top of the circle — the photo simply fades in over the
+ * fallback once (if) it actually loads.
+ */
+function CatImg({ src, alt }: { src: string; alt: string }) {
+  const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   return (
+    <div className="relative w-full h-full rounded-full overflow-hidden">
+      <div
+        className="absolute inset-0 flex items-center justify-center text-sm font-semibold text-amber-800"
+        style={{ background: 'linear-gradient(135deg, #f5e6c8 0%, #e8c97a 100%)' }}
+      >
+        {alt.charAt(0)}
+      </div>
+      {!failed && (
+        <img
+          className={`absolute inset-0 w-full h-full object-cover rounded-full group-hover:scale-105 transition-all duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+          src={src}
+          alt={alt}
+          loading="lazy"
+          onLoad={() => setLoaded(true)}
+          onError={() => setFailed(true)}
+        />
+      )}
+    </div>
+  );
+}
+
+export default function Categories() {
+  return (
     <section className="py-10 sm:py-16 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-16 relative" id="categories">
+      {/* Header */}
       <div className="text-center max-w-xl mx-auto mb-8 sm:mb-12">
         <span className="font-label-sm text-label-sm text-secondary tracking-widest uppercase">Explore Categories</span>
         <h2 className="font-headline-lg text-[24px] sm:text-headline-lg text-primary mt-1">Shop by Category</h2>
         <p className="font-body-md text-body-md text-on-surface-variant mt-2">Discover beautiful jewellery designed for every day and special occasions.</p>
       </div>
 
-      <div className="relative">
-        {/* Carousel Container */}
+      {/* Marquee — works on both mobile & desktop */}
+      <div className="relative overflow-hidden">
+        {/* Left fade edge */}
         <div
-          ref={containerRef}
-          onTouchStart={() => setIsPaused(true)}
-          onTouchEnd={() => setIsPaused(false)}
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
-          className="flex sm:grid sm:grid-cols-4 lg:grid-cols-8 overflow-x-auto sm:overflow-visible gap-4 sm:gap-6 text-center no-scrollbar pb-2 pt-1 -mx-2 px-2 sm:mx-0 sm:px-0 scroll-smooth snap-x snap-mandatory"
-        >
-          {categoriesData.map((cat, idx) => (
+          className="pointer-events-none absolute left-0 top-0 h-full w-12 sm:w-20 z-10"
+          style={{ background: 'linear-gradient(to right, var(--color-surface, #fffaf5), transparent)' }}
+        />
+        {/* Right fade edge */}
+        <div
+          className="pointer-events-none absolute right-0 top-0 h-full w-12 sm:w-20 z-10"
+          style={{ background: 'linear-gradient(to left, var(--color-surface, #fffaf5), transparent)' }}
+        />
+
+        {/* Scrolling track */}
+        <div className="marquee-track flex gap-4 sm:gap-8 w-max py-2">
+          {marqueeItems.map((cat, idx) => (
             <Link
               key={idx}
               href={cat.href}
-              className="group flex flex-col items-center flex-shrink-0 snap-start w-[82px] sm:w-auto"
+              className="group flex flex-col items-center flex-shrink-0 w-[72px] sm:w-[110px]"
             >
-              <div className="w-16 h-16 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-full overflow-hidden bg-surface-container border border-outline-variant/60 p-1 group-hover:border-secondary transition-colors duration-300">
-                <img
-                  className="w-full h-full object-cover rounded-full group-hover:scale-105 transition-transform duration-300"
-                  src={cat.image}
-                  alt={cat.name}
-                />
+              <div className="w-[60px] h-[60px] sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-full overflow-hidden bg-surface-container border border-outline-variant/60 p-0.5 sm:p-1 group-hover:border-secondary transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg">
+                <CatImg src={cat.image} alt={cat.name} />
               </div>
-              <span className={`font-label-sm sm:font-label-lg text-[11px] sm:text-label-lg text-primary mt-2 sm:mt-3 group-hover:text-secondary transition-colors ${cat.bold ? 'font-semibold' : ''}`}>
+              <span className={`text-[10px] sm:text-label-lg text-primary mt-1.5 sm:mt-3 group-hover:text-secondary transition-colors text-center leading-tight w-full ${cat.bold ? 'font-semibold' : ''}`}>
                 {cat.name}
               </span>
             </Link>
           ))}
         </div>
       </div>
+
+      <style jsx>{`
+        .marquee-track {
+          animation: marquee-scroll 18s linear infinite;
+        }
+        .marquee-track:hover {
+          animation-play-state: paused;
+        }
+        @keyframes marquee-scroll {
+          0%   { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+      `}</style>
     </section>
   );
 }

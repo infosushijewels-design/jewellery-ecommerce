@@ -75,9 +75,9 @@ export const DEFAULT_STORE_SETTINGS: StoreSettings = {
   },
   contact: {
     email: 'concierge@sushijewels.com',
-    phone: '+91 800 123 4567',
-    whatsapp: '918001234567',
-    address: '',
+    phone: '+91 91669 67234',
+    whatsapp: '919166967234',
+    address: '2Ch4 Dadabari Main Road, 3rd Floor, Pukhraj Prime',
     hoursWeekdays: 'Mon – Sat: 10:00 AM – 7:00 PM (IST)',
     hoursSunday: '',
   },

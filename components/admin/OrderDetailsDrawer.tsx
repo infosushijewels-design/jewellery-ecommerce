@@ -54,18 +54,11 @@ export default function OrderDetailsDrawer({
   onClose,
   onStatusChange,
   updating,
-  shiprocketConfigured = null,
-  creatingShipment = false,
-  onCreateShipment,
 }: {
   order: FullOrder | null;
   onClose: () => void;
   onStatusChange: (orderId: string, status: OrderStatus) => void;
   updating: boolean;
-  /** null while still being checked — the button stays disabled either way. */
-  shiprocketConfigured?: boolean | null;
-  creatingShipment?: boolean;
-  onCreateShipment?: () => void;
 }) {
   const { showToast } = useToast();
   if (!order) return null;
@@ -153,56 +146,6 @@ export default function OrderDetailsDrawer({
             </select>
           </div>
         </Section>
-
-        {/* Shipment */}
-        {order.status !== 'cancelled' && (
-          <Section title="Shipment" icon="local_shipping">
-            {order.awb_code ? (
-              <div className="text-sm space-y-1.5">
-                <div className="flex justify-between">
-                  <dt className="text-[#2D2024]/65">AWB Number</dt>
-                  <dd className="font-mono text-[#2D2024]">{order.awb_code}</dd>
-                </div>
-                {order.courier_name && (
-                  <div className="flex justify-between">
-                    <dt className="text-[#2D2024]/65">Courier</dt>
-                    <dd className="text-[#2D2024]">{order.courier_name}</dd>
-                  </div>
-                )}
-                {order.tracking_url && (
-                  <a
-                    href={order.tracking_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-2 flex items-center justify-center gap-2 border border-[#E8D5C5] bg-white hover:bg-[#E8D5C5]/40 text-[#2D2024] py-2 rounded-full text-xs font-semibold uppercase tracking-wider transition-colors"
-                  >
-                    <span className="material-symbols-outlined text-base">open_in_new</span>
-                    Track Shipment
-                  </a>
-                )}
-              </div>
-            ) : (
-              <div>
-                <p className="text-sm text-[#2D2024]/65 mb-3">No shipment has been booked with Shiprocket for this order yet.</p>
-                <button
-                  type="button"
-                  onClick={onCreateShipment}
-                  disabled={!shiprocketConfigured || creatingShipment}
-                  title={shiprocketConfigured ? undefined : 'Configure Shiprocket in Settings first'}
-                  className="w-full flex items-center justify-center gap-2 bg-[#2D2024] hover:bg-[#2D2024]/90 disabled:bg-[#2D2024]/25 disabled:cursor-not-allowed text-white py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-colors"
-                >
-                  <span className={`material-symbols-outlined text-base ${creatingShipment ? 'animate-spin' : ''}`}>
-                    {creatingShipment ? 'progress_activity' : 'local_shipping'}
-                  </span>
-                  {creatingShipment ? 'Creating…' : 'Create Shipment'}
-                </button>
-                {shiprocketConfigured === false && (
-                  <p className="text-xs text-[#2D2024]/50 mt-2 text-center">Configure Shiprocket in Settings first.</p>
-                )}
-              </div>
-            )}
-          </Section>
-        )}
 
         {/* Customer */}
         <Section title="Customer Info" icon="person">
