@@ -24,8 +24,9 @@ export interface SendResult {
   error?: string;
 }
 
-// Change to a verified-domain address once one is set up in Resend (e.g. concierge@sushijewels.com).
-const FROM = 'Sushi Jewels <onboarding@resend.dev>';
+// Resend's shared "onboarding@resend.dev" sender can only deliver to the Resend account owner's own
+// address. Once a domain is verified in Resend, set RESEND_FROM_EMAIL (e.g. "Sushi Jewels <concierge@yourdomain.com>").
+const FROM = process.env.RESEND_FROM_EMAIL || 'Sushi Jewels <onboarding@resend.dev>';
 
 function esc(value: string | null | undefined) {
   return (value ?? '')

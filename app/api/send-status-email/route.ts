@@ -13,7 +13,7 @@ export async function POST(request: Request) {
   try {
     const { orderId, orderNumber, email, firstName, status } = await request.json();
 
-    const storeUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://sushijewels.com';
+    const storeUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.sushijewels.in';
     const trackingLink = `${storeUrl}/orders/${orderId}`;
 
     let statusMessage = '';

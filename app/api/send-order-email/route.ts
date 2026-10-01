@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     `).join('');
 
     // Generate tracking link
-    const storeUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://sushijewels.com';
+    const storeUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.sushijewels.in';
     const trackingLink = `${storeUrl}/orders/${orderId}`;
 
     // Send the email using Resend

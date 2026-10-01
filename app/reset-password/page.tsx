@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import AnnouncementBar from '@/components/layout/AnnouncementBar';
@@ -17,6 +17,26 @@ export default function ResetPasswordPage() {
 
   const [supabase] = useState(() => createClient());
   const router = useRouter();
+
+  // The emailed link carries a one-time code that Supabase turns into a short "recovery" session when this page
+  // loads. Without one (expired / already-used link, or opened in a different browser than the one that asked
+  // for the reset) there is nothing to authorise the change, so say so instead of showing a form that will fail.
+  const [linkStatus, setLinkStatus] = useState<'checking' | 'ready' | 'invalid'>('checking');
+
+  useEffect(() => {
+    let active = true;
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      if (active && (event === 'PASSWORD_RECOVERY' || session)) setLinkStatus('ready');
+    });
+    // getSession() waits for the code in the URL to finish being exchanged, so this runs after it settles.
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (active) setLinkStatus(session ? 'ready' : 'invalid');
+    });
+    return () => {
+      active = false;
+      data.subscription.unsubscribe();
+    };
+  }, [supabase]);
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,9 +64,11 @@ export default function ResetPasswordPage() {
       setIsLoading(false);
     } else {
       setMessage('Your password has been successfully updated! Redirecting to login...');
+      // End the temporary recovery session so /login (which signed-in users are bounced away from) really opens.
+      await supabase.auth.signOut();
       setTimeout(() => {
         router.push('/login');
-      }, 2000);
+      }, 1500);
     }
   };
 
@@ -64,7 +86,28 @@ export default function ResetPasswordPage() {
             </p>
           </div>
 
-          <form onSubmit={handleUpdatePassword} className="space-y-5">
+          {linkStatus === 'checking' && (
+            <p className="text-center text-body-sm text-on-surface-variant py-6">Verifying your reset link...</p>
+          )}
+
+          {linkStatus === 'invalid' && (
+            <div className="text-center space-y-4 py-2">
+              <div className="bg-error-container text-on-error-container p-3 rounded-md text-body-sm font-medium">
+                This password reset link is invalid or has expired.
+              </div>
+              <p className="text-body-sm text-on-surface-variant">
+                Reset links work once and must be opened in the same browser you requested them from. Please request a new one.
+              </p>
+              <Link
+                href="/forgot-password"
+                className="block w-full bg-primary text-surface py-3.5 rounded-full font-label-lg uppercase tracking-wider hover:bg-tertiary transition-colors"
+              >
+                Request a New Link
+              </Link>
+            </div>
+          )}
+
+          <form onSubmit={handleUpdatePassword} className={linkStatus === 'ready' ? 'space-y-5' : 'hidden'}>
             {error && (
               <div className="bg-error-container text-on-error-container p-3 rounded-md text-body-sm font-medium">
                 {error}
