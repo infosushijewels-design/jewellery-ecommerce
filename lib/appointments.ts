@@ -12,6 +12,9 @@ import { DEFAULT_STORE_SETTINGS, type StoreSettings } from '@/lib/storeSettings'
 export const TIME_ZONE = 'Asia/Kolkata';
 const IST_OFFSET = '+05:30';
 
+/** Slot lengths (minutes) the store owner can choose in Admin → Settings. */
+export const SLOT_LENGTH_OPTIONS = [2, 3, 5, 15, 30, 45, 60] as const;
+
 export const APPOINTMENT_TOPICS = ['Shopping consultation', 'Product demo', 'Custom / bespoke inquiry'] as const;
 
 export type AppointmentStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';
@@ -40,7 +43,7 @@ function parseTime(value: string, fallback: number) {
 
 /** Turns the (already type-merged) settings JSON into a sane config, clamping anything out of range. */
 export function appointmentConfigFrom(s: StoreSettings['appointments']): AppointmentConfig {
-  const slotMinutes = [15, 30, 45, 60].includes(s.slotMinutes) ? s.slotMinutes : 30;
+  const slotMinutes = (SLOT_LENGTH_OPTIONS as readonly number[]).includes(s.slotMinutes) ? s.slotMinutes : 30;
   const startMinutes = parseTime(s.startTime, 11 * 60);
   let endMinutes = parseTime(s.endTime, 20 * 60);
   if (endMinutes - startMinutes < slotMinutes) endMinutes = Math.min(24 * 60, startMinutes + slotMinutes);

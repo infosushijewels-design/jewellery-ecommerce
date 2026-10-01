@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/lib/context/ToastContext';
 import { useAdminAccess } from '@/components/admin/AdminAccessContext';
 import { publishStoreSettings } from '@/lib/hooks/useStoreSettings';
+import { SLOT_LENGTH_OPTIONS } from '@/lib/appointments';
 import { DEFAULT_STORE_SETTINGS, mergeStoreSettings, type StoreSettings } from '@/lib/storeSettings';
 import { ACCEPTED_ICON_TYPES, ACCEPTED_IMAGE_TYPES, uploadImage } from '@/lib/storage';
 import { ImageUploader } from '@/components/admin/ImageUploader';
@@ -374,7 +375,7 @@ export default function AdminSettingsPage() {
     const endMin = toMin(ap.endTime);
     if (Number.isNaN(startMin) || Number.isNaN(endMin)) return { tab: 'appointments', message: 'Enter a valid start and end time' };
     if (endMin - startMin < ap.slotMinutes) return { tab: 'appointments', message: 'End time must be later than start time by at least one slot' };
-    if (![15, 30, 45, 60].includes(ap.slotMinutes)) return { tab: 'appointments', message: 'Choose a slot length' };
+    if (!(SLOT_LENGTH_OPTIONS as readonly number[]).includes(ap.slotMinutes)) return { tab: 'appointments', message: 'Choose a slot length' };
     if (ap.daysAhead < 1 || ap.daysAhead > 60) return { tab: 'appointments', message: 'Booking window must be between 1 and 60 days' };
     if (ap.minLeadHours > 72) return { tab: 'appointments', message: 'Minimum notice can be at most 72 hours' };
     if (ap.closedDays.length >= 7) return { tab: 'appointments', message: 'Leave at least one day open for appointments' };
@@ -734,7 +735,7 @@ export default function AdminSettingsPage() {
                         onChange={(e) => set('appointments', 'slotMinutes', Number(e.target.value))}
                         className={`${fieldClass} px-4 py-2.5`}
                       >
-                        {[15, 30, 45, 60].map((m) => (
+                        {SLOT_LENGTH_OPTIONS.map((m) => (
                           <option key={m} value={m}>{m} minutes</option>
                         ))}
                       </select>
