@@ -513,6 +513,62 @@ export interface Database {
           updated_at?: string
         }
       }
+      video_appointments: {
+        Row: {
+          id: string
+          customer_name: string
+          email: string
+          phone: string
+          topic: string
+          message: string | null
+          scheduled_at: string
+          status: 'pending' | 'confirmed' | 'completed' | 'cancelled'
+          meet_link: string | null
+          admin_notes: string | null
+          confirmed_at: string | null
+          reminder_1d_sent_at: string | null
+          reminder_30m_sent_at: string | null
+          followup_sent_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          customer_name: string
+          email: string
+          phone: string
+          topic?: string
+          message?: string | null
+          scheduled_at: string
+          status?: 'pending' | 'confirmed' | 'completed' | 'cancelled'
+          meet_link?: string | null
+          admin_notes?: string | null
+          confirmed_at?: string | null
+          reminder_1d_sent_at?: string | null
+          reminder_30m_sent_at?: string | null
+          followup_sent_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          customer_name?: string
+          email?: string
+          phone?: string
+          topic?: string
+          message?: string | null
+          scheduled_at?: string
+          status?: 'pending' | 'confirmed' | 'completed' | 'cancelled'
+          meet_link?: string | null
+          admin_notes?: string | null
+          confirmed_at?: string | null
+          reminder_1d_sent_at?: string | null
+          reminder_30m_sent_at?: string | null
+          followup_sent_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
       legal_pages: {
         Row: {
           id: string
@@ -596,7 +652,10 @@ export interface Database {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_booked_slots: {
+        Args: { range_start: string; range_end: string }
+        Returns: string[]
+      }
     }
     Enums: {
       [_ in never]: never

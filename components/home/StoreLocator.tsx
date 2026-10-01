@@ -24,7 +24,7 @@ export default async function StoreLocator() {
             View all stores{stores.length > 4 ? ` (${stores.length})` : ''}
           </Link>
           <span className="hidden sm:block w-px h-4 bg-outline-variant" />
-          <Link href="/contact" className="font-label-lg text-label-lg text-primary underline underline-offset-4 hover:text-secondary">
+          <Link href="/book-appointment" className="font-label-lg text-label-lg text-primary underline underline-offset-4 hover:text-secondary">
             Book A Personalized Appointment
           </Link>
         </div>

@@ -22,7 +22,7 @@ import {
 
 const MIGRATION = '010_staff_roles_and_settings.sql';
 
-type TabKey = 'general' | 'homepage' | 'payments' | 'tax' | 'shipping' | 'orders' | 'social' | 'announcement' | 'seo';
+type TabKey = 'general' | 'homepage' | 'payments' | 'tax' | 'shipping' | 'orders' | 'appointments' | 'social' | 'announcement' | 'seo';
 
 const TABS: { key: TabKey; label: string; icon: string }[] = [
   { key: 'general', label: 'General Store Settings', icon: 'storefront' },
@@ -31,6 +31,7 @@ const TABS: { key: TabKey; label: string; icon: string }[] = [
   { key: 'tax', label: 'Tax Settings (GST)', icon: 'receipt_long' },
   { key: 'shipping', label: 'Shipping Settings', icon: 'local_shipping' },
   { key: 'orders', label: 'Order Settings', icon: 'inventory' },
+  { key: 'appointments', label: 'Video Appointments', icon: 'videocam' },
   { key: 'social', label: 'Social Media Settings', icon: 'public' },
   { key: 'announcement', label: 'Announcement Bar', icon: 'campaign' },
   { key: 'seo', label: 'SEO Settings', icon: 'search' },
@@ -364,6 +365,19 @@ export default function AdminSettingsPage() {
     if (s.commerce.gstRate < 0 || s.commerce.gstRate > 28) return { tab: 'tax', message: 'GST rate must be between 0 and 28%' };
     if (s.commerce.gstin && !/^[0-9A-Z]{15}$/.test(s.commerce.gstin)) return { tab: 'tax', message: 'GSTIN must be 15 letters/digits' };
     if (!/^[A-Z0-9]{1,6}$/.test(s.orders.numberPrefix)) return { tab: 'orders', message: 'Order prefix must be 1–6 letters or digits' };
+    const ap = s.appointments;
+    const toMin = (t: string) => {
+      const m = /^(\d{2}):(\d{2})$/.exec(t);
+      return m ? Number(m[1]) * 60 + Number(m[2]) : NaN;
+    };
+    const startMin = toMin(ap.startTime);
+    const endMin = toMin(ap.endTime);
+    if (Number.isNaN(startMin) || Number.isNaN(endMin)) return { tab: 'appointments', message: 'Enter a valid start and end time' };
+    if (endMin - startMin < ap.slotMinutes) return { tab: 'appointments', message: 'End time must be later than start time by at least one slot' };
+    if (![15, 30, 45, 60].includes(ap.slotMinutes)) return { tab: 'appointments', message: 'Choose a slot length' };
+    if (ap.daysAhead < 1 || ap.daysAhead > 60) return { tab: 'appointments', message: 'Booking window must be between 1 and 60 days' };
+    if (ap.minLeadHours > 72) return { tab: 'appointments', message: 'Minimum notice can be at most 72 hours' };
+    if (ap.closedDays.length >= 7) return { tab: 'appointments', message: 'Leave at least one day open for appointments' };
     const badUrl = Object.entries(s.social).find(([, url]) => url.trim() && !/^https?:\/\//i.test(url.trim()));
     if (badUrl) return { tab: 'social', message: `${badUrl[0]} link must start with https://` };
     if (s.seo.metaTitle.length > 70) return { tab: 'seo', message: 'Meta title should be 70 characters or fewer' };
@@ -682,6 +696,87 @@ export default function AdminSettingsPage() {
                     <IconInput id="o-min" icon="shopping_cart" prefix="₹" type="number" min={0} value={d.orders.minOrderValue} onChange={(v) => set('orders', 'minOrderValue', num(v))} />
                   </div>
                 </div>
+              )}
+
+              {tab === 'appointments' && (
+                <>
+                  <p className="text-xs text-[#2D2024]/55 -mt-2">
+                    When customers can book a video consultation on the website. All times are Indian Standard Time (IST). Existing bookings are never changed.
+                  </p>
+                  <SwitchRow
+                    title="Accept new bookings"
+                    hint="Turn off to temporarily hide the booking page's slots (e.g. during holidays)."
+                    checked={d.appointments.enabled}
+                    onChange={(v) => set('appointments', 'enabled', v)}
+                    disabled={readOnly}
+                  />
+                  <SwitchRow
+                    title="Let customers enter their own time"
+                    hint="Adds an 'Enter a different time' option on the booking page. Any time inside opening hours is accepted; you still confirm each booking."
+                    checked={d.appointments.allowCustomTime}
+                    onChange={(v) => set('appointments', 'allowCustomTime', v)}
+                    disabled={readOnly}
+                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                      <Label htmlFor="ap-start" hint="First call of the day starts at this time.">Opening Time</Label>
+                      <IconInput id="ap-start" icon="schedule" type="time" value={d.appointments.startTime} onChange={(v) => set('appointments', 'startTime', v)} />
+                    </div>
+                    <div>
+                      <Label htmlFor="ap-end" hint="The last call must finish by this time.">Closing Time</Label>
+                      <IconInput id="ap-end" icon="schedule" type="time" value={d.appointments.endTime} onChange={(v) => set('appointments', 'endTime', v)} />
+                    </div>
+                    <div>
+                      <Label htmlFor="ap-len" hint="Length of each video call.">Slot Length</Label>
+                      <select
+                        id="ap-len"
+                        value={d.appointments.slotMinutes}
+                        onChange={(e) => set('appointments', 'slotMinutes', Number(e.target.value))}
+                        className={`${fieldClass} px-4 py-2.5`}
+                      >
+                        {[15, 30, 45, 60].map((m) => (
+                          <option key={m} value={m}>{m} minutes</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <Label htmlFor="ap-days" hint="How many days ahead customers can book (1–60).">Booking Window (days)</Label>
+                      <IconInput id="ap-days" icon="date_range" type="number" min={1} max={60} value={d.appointments.daysAhead} onChange={(v) => set('appointments', 'daysAhead', Math.min(60, Math.max(1, num(v))))} />
+                    </div>
+                    <div>
+                      <Label htmlFor="ap-lead" hint="Customers can't book a slot starting sooner than this. 0 = no limit.">Minimum Notice (hours)</Label>
+                      <IconInput id="ap-lead" icon="hourglass_top" type="number" min={0} max={72} value={d.appointments.minLeadHours} onChange={(v) => set('appointments', 'minLeadHours', Math.min(72, num(v)))} />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-[#2D2024] mb-1.5">Open Days</p>
+                    <p className="text-xs text-[#2D2024]/55 mb-3">Untick the days you do not take video calls.</p>
+                    <div className="flex flex-wrap gap-2">
+                      {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((label, i) => {
+                        const closed = d.appointments.closedDays.includes(String(i));
+                        return (
+                          <button
+                            key={label}
+                            type="button"
+                            aria-pressed={!closed}
+                            onClick={() =>
+                              set(
+                                'appointments',
+                                'closedDays',
+                                closed ? d.appointments.closedDays.filter((x) => x !== String(i)) : [...d.appointments.closedDays, String(i)]
+                              )
+                            }
+                            className={`min-w-[56px] px-3 py-2 rounded-xl border text-sm font-medium transition-colors disabled:opacity-50 ${
+                              closed ? 'bg-[#FAF7F2] border-[#E8D5C5] text-[#2D2024]/45 line-through' : 'bg-[#B99A62]/15 border-[#B99A62] text-[#8A6F3C]'
+                            }`}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </>
               )}
 
               {tab === 'social' && (

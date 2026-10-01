@@ -168,7 +168,7 @@ export default function FilterSidebar({
           <p className="font-body-sm text-body-sm text-on-surface-variant leading-normal">
             Book a 1-on-1 virtual consultation with our Master Gemologists.
           </p>
-          <a href="/contact" className="inline-block pt-1 font-label-sm text-label-sm font-semibold uppercase text-secondary tracking-wider hover:text-primary">
+          <a href="/book-appointment" className="inline-block pt-1 font-label-sm text-label-sm font-semibold uppercase text-secondary tracking-wider hover:text-primary">
             Schedule Video Call →
           </a>
         </div>

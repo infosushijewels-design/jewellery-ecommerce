@@ -7,6 +7,7 @@ import { useCart } from '@/lib/context/CartContext';
 import { useWishlist } from '@/lib/context/WishlistContext';
 import { useToast } from '@/lib/context/ToastContext';
 import SizeGuideModal from '@/components/product/SizeGuideModal';
+import TryItOnModal from '@/components/product/TryItOnModal';
 
 interface ProductActionsProps {
   product: {
@@ -27,6 +28,7 @@ export default function ProductActions({ product }: ProductActionsProps) {
   const [selectedMetal, setSelectedMetal] = useState("18K Yellow Gold");
   const [selectedSize, setSelectedSize] = useState(sizes[0]);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
+  const [isTryItOnOpen, setIsTryItOnOpen] = useState(false);
 
   const { addToCart, openCart } = useCart();
   const { wishlistIds, toggleWishlist: toggleWishlistBase } = useWishlist();
@@ -69,6 +71,16 @@ export default function ProductActions({ product }: ProductActionsProps) {
 
   return (
     <div className="space-y-8 mt-8">
+      {/* Virtual Try-On */}
+      <button
+        type="button"
+        onClick={() => setIsTryItOnOpen(true)}
+        className="w-full border border-secondary text-secondary hover:bg-secondary-container/20 py-3.5 rounded-full font-label-lg text-label-lg uppercase tracking-wider transition-colors flex items-center justify-center gap-2"
+      >
+        <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
+        Try It On (AI)
+      </button>
+
       {/* Metal Selection */}
       <div className="space-y-3">
         <div className="flex justify-between items-center">
@@ -177,6 +189,12 @@ export default function ProductActions({ product }: ProductActionsProps) {
       </div>
 
       <SizeGuideModal isOpen={isSizeGuideOpen} onClose={() => setIsSizeGuideOpen(false)} />
+      <TryItOnModal
+        isOpen={isTryItOnOpen}
+        onClose={() => setIsTryItOnOpen(false)}
+        productTitle={product.title}
+        productImageUrl={product.imageUrl}
+      />
     </div>
   );
 }

@@ -104,6 +104,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       links: [
         { href: '/admin/reviews', label: 'Reviews', icon: 'star', module: 'reviews' },
         { href: '/admin/inquiries', label: 'Contact Inquiries', icon: 'mail', module: 'inquiries' },
+        { href: '/admin/appointments', label: 'Video Appointments', icon: 'videocam', module: 'appointments' },
       ],
     },
     {

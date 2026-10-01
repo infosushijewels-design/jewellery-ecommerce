@@ -44,6 +44,16 @@ function CatImg({ src, alt }: { src: string; alt: string }) {
           src={src}
           alt={alt}
           loading="lazy"
+          referrerPolicy="no-referrer"
+          // The <img> is server-rendered, so it can finish loading before React
+          // hydrates and attaches onLoad/onError — those events are then lost
+          // and the photo would stay at opacity-0. Check the real state on mount.
+          ref={(el) => {
+            if (el?.complete) {
+              if (el.naturalWidth > 0) setLoaded(true);
+              else setFailed(true);
+            }
+          }}
           onLoad={() => setLoaded(true)}
           onError={() => setFailed(true)}
         />

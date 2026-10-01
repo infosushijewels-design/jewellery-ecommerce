@@ -426,7 +426,7 @@ export default function Header() {
         </nav>
 
         <div className="p-5 border-t border-outline-variant/30">
-          <Link href="/contact" onClick={closeMobileMenu} className="w-full flex items-center justify-center gap-2 py-3.5 bg-primary text-surface rounded-full font-label-lg text-label-lg hover:bg-primary/90 transition-all">
+          <Link href="/book-appointment" onClick={closeMobileMenu} className="w-full flex items-center justify-center gap-2 py-3.5 bg-primary text-surface rounded-full font-label-lg text-label-lg hover:bg-primary/90 transition-all">
             <span className="material-symbols-outlined text-[18px]">event</span>Book Appointment
           </Link>
         </div>

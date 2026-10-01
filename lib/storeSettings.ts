@@ -57,6 +57,16 @@ export interface StoreSettings {
     enabled: boolean;
     messages: string[];
   };
+  appointments: {
+    enabled: boolean;
+    startTime: string; // "HH:MM", Indian Standard Time
+    endTime: string; // last call must finish by this time
+    slotMinutes: number;
+    daysAhead: number;
+    minLeadHours: number;
+    closedDays: string[]; // weekday numbers as strings, "0" = Sunday … "6" = Saturday
+    allowCustomTime: boolean; // customers may type their own time (within opening hours) instead of picking a slot
+  };
   seo: {
     metaTitle: string;
     metaDescription: string;
@@ -118,6 +128,16 @@ export const DEFAULT_STORE_SETTINGS: StoreSettings = {
       '100% Certified 18K/22K Gold & Natural Diamonds',
       '15-Day Easy Returns',
     ],
+  },
+  appointments: {
+    enabled: true,
+    startTime: '11:00',
+    endTime: '20:00',
+    slotMinutes: 30,
+    daysAhead: 14,
+    minLeadHours: 2,
+    closedDays: [],
+    allowCustomTime: true,
   },
   seo: {
     metaTitle: 'Sushi Jewels | Fine High Jewellery',

@@ -166,7 +166,7 @@ export default function AboutPage() {
             <p className="font-body-md text-body-md text-surface-dim max-w-xl mx-auto mb-8">
               Book a private consultation with our concierge team to explore bespoke commissions and heirloom collections.
             </p>
-            <Link href="/contact" className="inline-block bg-secondary text-primary px-8 py-3.5 rounded-full font-label-md uppercase tracking-wide hover:bg-secondary-fixed-dim transition-colors">
+            <Link href="/book-appointment" className="inline-block bg-secondary text-primary px-8 py-3.5 rounded-full font-label-md uppercase tracking-wide hover:bg-secondary-fixed-dim transition-colors">
               Book a Personalized Appointment
             </Link>
           </div>

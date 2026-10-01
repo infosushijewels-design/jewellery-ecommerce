@@ -16,6 +16,7 @@ export const PERMISSION_MODULES = [
   { key: 'stores', label: 'Stores', href: '/admin/stores', actions: ['view', 'create', 'edit', 'delete'] },
   { key: 'reviews', label: 'Reviews', href: '/admin/reviews', actions: ['view', 'edit', 'delete'] },
   { key: 'inquiries', label: 'Contact Inquiries', href: '/admin/inquiries', actions: ['view', 'edit', 'delete'] },
+  { key: 'appointments', label: 'Video Appointments', href: '/admin/appointments', actions: ['view', 'edit', 'delete'] },
   { key: 'legal', label: 'Legal Pages', href: '/admin/legal', actions: ['view', 'create', 'edit', 'delete'] },
   // Managing staff is reserved for Super Admins (otherwise staff could escalate their own role), so roles can only grant view
   { key: 'staff', label: 'Staff & Roles', href: '/admin/staff', actions: ['view'] },
