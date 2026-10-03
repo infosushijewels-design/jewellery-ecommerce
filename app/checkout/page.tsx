@@ -130,9 +130,14 @@ export default function CheckoutPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             orderId: targetId,
+            orderNumber: res.orderNumber,
             email: formData.email,
             firstName: formData.firstName,
             items: items,
+            subtotal,
+            tax,
+            shippingFee,
+            paymentMethod,
             total: calculatedTotal
           })
         }).catch(err => console.error("Failed to send order email", err));

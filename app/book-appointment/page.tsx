@@ -145,7 +145,7 @@ export default function BookAppointmentPage() {
           <span className="font-label-sm text-label-sm text-secondary tracking-widest uppercase">Personalised Appointment</span>
           <h1 className="font-headline-lg text-[28px] sm:text-display-md text-primary mt-2">Book a Video Consultation</h1>
           <p className="font-body-md text-body-md text-on-surface-variant mt-4 leading-relaxed">
-            Meet one of our jewellery experts over a Google Meet video call — for shopping help, a live product demo, or a custom design inquiry.
+            Meet one of our jewellery experts over a Zoom video call — for shopping help, a live product demo, or a custom design inquiry.
           </p>
         </div>
 
@@ -166,7 +166,7 @@ export default function BookAppointmentPage() {
             <h2 className="font-headline-sm text-headline-sm text-primary mt-3">Request received!</h2>
             <p className="font-body-md text-body-md text-on-surface-variant mt-3 leading-relaxed">
               We&apos;ve noted your request for <strong className="text-primary">{formatSlot(confirmedSlot)}</strong>. Our concierge will confirm it
-              shortly and email you the Google Meet link.
+              shortly and email you the Zoom meeting link.
             </p>
             <Link
               href="/"

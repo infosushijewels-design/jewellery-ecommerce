@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/lib/context/ToastContext';
 import type { Database } from '@/lib/supabase/database.types';
-import { formatSlot, isValidMeetLink } from '@/lib/appointments';
+import { formatSlot, isValidZoomLink } from '@/lib/appointments';
 import {
   ConfirmDialog,
   Drawer,
@@ -36,7 +36,6 @@ type StatusTab = 'all' | ApptStatus;
 
 const MIGRATION = '018_video_appointments.sql';
 const PAGE_SIZE = 10;
-const LAST_MEET_KEY = 'admin:lastMeetLink';
 
 const STATUS_OPTIONS: { value: ApptStatus; label: string }[] = [
   { value: 'pending', label: 'Pending' },
@@ -54,22 +53,6 @@ const STATUS_STYLES: Record<ApptStatus, string> = {
   cancelled: 'bg-rose-50 border-rose-200 text-rose-700',
 };
 
-function readLastMeetLink() {
-  try {
-    return localStorage.getItem(LAST_MEET_KEY) || '';
-  } catch {
-    return '';
-  }
-}
-
-function saveLastMeetLink(link: string) {
-  try {
-    localStorage.setItem(LAST_MEET_KEY, link);
-  } catch {
-    /* storage unavailable — it's only a convenience */
-  }
-}
-
 export default function AdminAppointmentsPage() {
   const { showToast } = useToast();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -81,7 +64,7 @@ export default function AdminAppointmentsPage() {
   const [page, setPage] = useState(1);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [meetDraft, setMeetDraft] = useState('');
+  const [zoomDraft, setZoomDraft] = useState('');
   const [notesDraft, setNotesDraft] = useState('');
   const [followupDraft, setFollowupDraft] = useState('');
   const [busy, setBusy] = useState(false);
@@ -143,7 +126,8 @@ export default function AdminAppointmentsPage() {
 
   function openAppointment(a: Appointment) {
     setSelectedId(a.id);
-    setMeetDraft(a.meet_link || readLastMeetLink());
+    // Only show a real Zoom link here; an old non-Zoom link is left blank so Confirm creates a fresh meeting.
+    setZoomDraft(a.meet_link && isValidZoomLink(a.meet_link) ? a.meet_link : '');
     setNotesDraft(a.admin_notes || '');
     setFollowupDraft('');
   }
@@ -178,21 +162,43 @@ export default function AdminAppointmentsPage() {
     });
     const json = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(json.error || 'Something went wrong.');
-    return json as { success: true; emailSent?: boolean; emailError?: string };
+    return json as {
+      success: true;
+      emailSent?: boolean;
+      emailError?: string;
+      meetingLink?: string;
+      zoomMeetingId?: string | null;
+      zoomPasscode?: string | null;
+      zoomCreated?: boolean;
+      zoomDeleted?: boolean | null;
+    };
   }
 
   async function handleConfirm(a: Appointment) {
-    const link = meetDraft.trim();
-    if (!isValidMeetLink(link)) {
-      showToast('Paste a valid Google Meet link first (https://meet.google.com/...).', 'error');
+    // Empty = create the Zoom meeting automatically; a pasted Zoom link is used as-is.
+    const link = zoomDraft.trim();
+    if (link && !isValidZoomLink(link)) {
+      showToast('That is not a Zoom link (https://zoom.us/j/...). Clear the box to create one automatically.', 'error');
       return;
     }
     setBusy(true);
     try {
-      const res = await callManage(a, { action: 'confirm', meetLink: link });
-      patchLocal(a.id, { status: 'confirmed', meet_link: link, confirmed_at: new Date().toISOString() });
-      saveLastMeetLink(link);
-      showToast(res.emailSent ? 'Confirmed — email sent to the customer' : `Confirmed, but the email was not sent${res.emailError ? `: ${res.emailError}` : ''}. Copy the Meet link and send it to the customer yourself.`, res.emailSent ? 'success' : 'error');
+      const res = await callManage(a, { action: 'confirm', meetingLink: link || undefined });
+      patchLocal(a.id, {
+        status: 'confirmed',
+        meet_link: res.meetingLink ?? link,
+        zoom_meeting_id: res.zoomMeetingId ?? null,
+        zoom_passcode: res.zoomPasscode ?? null,
+        confirmed_at: new Date().toISOString(),
+      });
+      if (res.meetingLink) setZoomDraft(res.meetingLink);
+      const made = res.zoomCreated ? 'Zoom meeting created. ' : '';
+      showToast(
+        res.emailSent
+          ? `${made}Confirmed — email sent to the customer`
+          : `${made}Confirmed, but the email was not sent${res.emailError ? `: ${res.emailError}` : ''}. Copy the Zoom link and send it to the customer yourself.`,
+        res.emailSent ? 'success' : 'error'
+      );
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Could not confirm.', 'error');
     } finally {
@@ -205,8 +211,12 @@ export default function AdminAppointmentsPage() {
     setBusy(true);
     try {
       const res = await callManage(cancelTarget, { action: 'cancel' });
-      patchLocal(cancelTarget.id, { status: 'cancelled' });
-      showToast(res.emailSent ? 'Cancelled — customer notified' : 'Cancelled (email was not sent)', res.emailSent ? 'success' : 'error');
+      patchLocal(cancelTarget.id, { status: 'cancelled', ...(res.zoomDeleted ? { zoom_meeting_id: null, zoom_passcode: null } : {}) });
+      const zoomNote = res.zoomDeleted === false ? ' The Zoom meeting could not be deleted — remove it in Zoom.' : '';
+      showToast(
+        (res.emailSent ? 'Cancelled — customer notified.' : 'Cancelled (email was not sent).') + zoomNote,
+        res.emailSent && !zoomNote ? 'success' : 'error'
+      );
       setCancelTarget(null);
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Could not cancel.', 'error');
@@ -252,7 +262,7 @@ export default function AdminAppointmentsPage() {
       <PageHeader
         eyebrow="Engagement"
         title="Video Appointments"
-        subtitle="Personalised Google Meet consultations booked from the website."
+        subtitle="Personalised Zoom consultations booked from the website."
         actions={
           <SecondaryButton icon="refresh" spinning={refreshing} onClick={() => loadAppointments(true)} disabled={refreshing || loading}>
             Refresh
@@ -335,7 +345,7 @@ export default function AdminAppointmentsPage() {
                         </td>
                         <td className="py-3.5 px-5 text-right whitespace-nowrap">
                           <div className="inline-flex items-center gap-0.5">
-                            {a.meet_link && <IconButton icon="videocam" title="Open Meet link" href={a.meet_link} external />}
+                            {a.meet_link && <IconButton icon="videocam" title="Open Zoom link" href={a.meet_link} external />}
                             <IconButton icon="visibility" title="Open appointment" onClick={() => openAppointment(a)} />
                             <IconButton icon="delete" title="Delete appointment" tone="danger" onClick={() => setDeleteTarget(a)} />
                           </div>
@@ -394,22 +404,27 @@ export default function AdminAppointmentsPage() {
               {(selected.status === 'pending' || selected.status === 'confirmed') && (
                 <section className="bg-[#F5EEE7]/60 border border-[#E8D5C5] rounded-xl p-4 space-y-3">
                   <Field
-                    label="Google Meet link"
-                    htmlFor="appt-meet"
-                    hint={'Create one at meet.google.com → "New meeting", then paste it here. It is remembered for next time.'}
+                    label="Zoom meeting link (optional)"
+                    htmlFor="appt-zoom"
+                    hint={'Leave empty — a Zoom meeting is created automatically when you confirm. Or paste your own Zoom invite link.'}
                   >
                     <input
-                      id="appt-meet"
+                      id="appt-zoom"
                       type="url"
-                      value={meetDraft}
-                      onChange={(e) => setMeetDraft(e.target.value)}
+                      value={zoomDraft}
+                      onChange={(e) => setZoomDraft(e.target.value)}
                       className={inputClass}
-                      placeholder="https://meet.google.com/abc-defg-hij"
+                      placeholder="Auto-created on confirm, or paste https://zoom.us/j/..."
                     />
                   </Field>
                   <PrimaryButton icon={selected.status === 'confirmed' ? 'forward_to_inbox' : 'event_available'} disabled={busy} onClick={() => handleConfirm(selected)}>
-                    {selected.status === 'confirmed' ? 'Update Link & Resend Email' : 'Confirm & Email Customer'}
+                    {selected.status === 'confirmed' ? 'Update Link & Resend Email' : zoomDraft.trim() ? 'Confirm & Email Customer' : 'Confirm & Create Zoom Meeting'}
                   </PrimaryButton>
+                  {selected.zoom_passcode && (
+                    <p className="text-xs text-[#2D2024]/60">
+                      Zoom passcode: <strong>{selected.zoom_passcode}</strong>
+                    </p>
+                  )}
                   {selected.reminder_1d_sent_at || selected.reminder_30m_sent_at ? (
                     <p className="text-xs text-[#2D2024]/60">
                       Reminders sent:{selected.reminder_1d_sent_at ? ' 24h' : ''}
@@ -427,7 +442,7 @@ export default function AdminAppointmentsPage() {
                   className="flex items-center justify-center gap-2 border border-[#E8D5C5] bg-white hover:bg-[#E8D5C5]/40 text-[#2D2024] py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-colors"
                 >
                   <span className="material-symbols-outlined text-base">videocam</span>
-                  Join Meet Call
+                  Join Zoom Call
                 </a>
               )}
 

@@ -1,7 +1,7 @@
 -- ==============================================================================
--- 018: Video appointments (Google Meet consultations)
+-- 018: Video appointments (Zoom consultations)
 --
--- Flow: customer books a slot (pending) -> admin confirms with a Meet link
+-- Flow: customer books a slot (pending) -> admin confirms with a Zoom meeting link
 -- (confirmed) -> reminders go out -> admin marks completed + notes -> follow-up.
 --
 -- Safe to re-run.

@@ -17,16 +17,49 @@ export interface AppointmentEmailData {
   message: string | null;
   scheduled_at: string;
   meet_link: string | null;
+  /** Zoom passcode, when the meeting has one. */
+  zoom_passcode?: string | null;
 }
 
 export interface SendResult {
   sent: boolean;
   error?: string;
+  /** HTTP status Resend answered with, when it answered. */
+  statusCode?: number | null;
+  /** True when Resend refused because the account is still in sandbox (no verified domain). */
+  sandboxRestricted?: boolean;
 }
 
-// Resend's shared "onboarding@resend.dev" sender can only deliver to the Resend account owner's own
-// address. Once a domain is verified in Resend, set RESEND_FROM_EMAIL (e.g. "Sushi Jewels <concierge@yourdomain.com>").
-const FROM = process.env.RESEND_FROM_EMAIL || 'Sushi Jewels <onboarding@resend.dev>';
+const DEFAULT_FROM = 'Sushi Jewels <onboarding@resend.dev>';
+
+// Resend's shared "onboarding@resend.dev" sender is a sandbox: it can only deliver to the Resend account
+// owner's own address. Once a domain is verified in Resend, set RESEND_FROM_EMAIL
+// (e.g. "Sushi Jewels <appointments@sushijewels.in>"). Read per call so a changed env is picked up on restart.
+const getFrom = () => process.env.RESEND_FROM_EMAIL?.trim() || DEFAULT_FROM;
+
+/** Resend's wording when an account without a verified domain mails someone other than its owner. */
+const SANDBOX_ERROR_RE = /only send testing emails|verify a domain|own email address/i;
+
+function logResendFailure(kind: AppointmentEmailKind, to: string, from: string, error: { message?: string; name?: string; statusCode?: number | null }) {
+  const status = error.statusCode ?? 'n/a';
+  const sandbox = (error.statusCode === 403 || error.statusCode === 422) && SANDBOX_ERROR_RE.test(error.message ?? '');
+  console.error(
+    `[appointment-email] FAILED kind="${kind}" to="${to}" from="${from}" status=${status} name="${error.name ?? 'unknown'}" message="${error.message ?? ''}"`
+  );
+  if (sandbox) {
+    console.error(
+      [
+        '[appointment-email] RESEND SANDBOX RESTRICTION — this is not a code bug.',
+        `  Resend only lets an account without a verified domain send to its own owner's address; "${to}" was refused.`,
+        `  Current sender: ${from}${from.includes('resend.dev') ? '  (the shared sandbox sender)' : ''}`,
+        '  Fix: verify your domain at https://resend.com/domains, then set',
+        '       RESEND_FROM_EMAIL=Sushi Jewels <appointments@sushijewels.in>  in .env.local (and on the live host) and restart.',
+        "  Until then, test with the Resend account owner's own email address.",
+      ].join('\n')
+    );
+  }
+  return sandbox;
+}
 
 function esc(value: string | null | undefined) {
   return (value ?? '')
@@ -68,7 +101,10 @@ function detailsTable(a: AppointmentEmailData) {
 
 function build(kind: AppointmentEmailKind, a: AppointmentEmailData, extra?: { followupMessage?: string; adminEmail?: string }) {
   const first = esc(a.customer_name.split(' ')[0] || 'there');
-  const meet = a.meet_link ? button(a.meet_link, 'Join Video Call') : '';
+  const join = a.meet_link
+    ? button(a.meet_link, 'Join Zoom Meeting') +
+      (a.zoom_passcode ? `<p style="text-align: center; color: #666; font-size: 14px; margin-top: -12px;">Passcode: <strong>${esc(a.zoom_passcode)}</strong></p>` : '')
+    : '';
 
   switch (kind) {
     case 'received':
@@ -77,7 +113,7 @@ function build(kind: AppointmentEmailKind, a: AppointmentEmailData, extra?: { fo
         subject: 'We received your video appointment request',
         html: layout(`
           <h2 style="margin-top: 0;">Hi ${first}, thank you!</h2>
-          <p>We&apos;ve received your request for a personalised video consultation. Our concierge will confirm your slot shortly, and you&apos;ll get a second email with your Google Meet link.</p>
+          <p>We&apos;ve received your request for a personalised video consultation. Our concierge will confirm your slot shortly, and you&apos;ll get a second email with your Zoom meeting link.</p>
           ${detailsTable(a)}
           <p style="color: #666; font-size: 14px;">Need to change the time? Just reply to this email.</p>`),
       };
@@ -100,7 +136,7 @@ function build(kind: AppointmentEmailKind, a: AppointmentEmailData, extra?: { fo
           <h2 style="margin-top: 0;">You&apos;re confirmed, ${first}!</h2>
           <p>Your personalised video consultation with Sushi Jewels is booked.</p>
           ${detailsTable(a)}
-          ${meet}
+          ${join}
           <p style="color: #666; font-size: 14px; line-height: 1.6;">Join a minute or two early with a stable connection. We&apos;ll send a reminder the day before and 30 minutes before the call.</p>`),
       };
     case 'reminder_1d':
@@ -111,7 +147,7 @@ function build(kind: AppointmentEmailKind, a: AppointmentEmailData, extra?: { fo
           <h2 style="margin-top: 0;">See you soon, ${first}</h2>
           <p>A quick reminder that your video consultation is within the next 24 hours.</p>
           ${detailsTable(a)}
-          ${meet}`),
+          ${join}`),
       };
     case 'reminder_30m':
       return {
@@ -121,7 +157,7 @@ function build(kind: AppointmentEmailKind, a: AppointmentEmailData, extra?: { fo
           <h2 style="margin-top: 0;">Starting soon, ${first}</h2>
           <p>Your video consultation begins in about 30 minutes.</p>
           ${detailsTable(a)}
-          ${meet}`),
+          ${join}`),
       };
     case 'followup':
       return {
@@ -158,16 +194,20 @@ export async function sendAppointmentEmail(
   const message = build(kind, appointment, extra);
   if (!message.to) return { sent: false, error: 'No recipient address.' };
 
+  const from = getFrom();
   try {
     const resend = new Resend(process.env.RESEND_API_KEY);
-    const { error } = await resend.emails.send({ from: FROM, to: [message.to], subject: message.subject, html: message.html });
+    const { data, error } = await resend.emails.send({ from, to: [message.to], subject: message.subject, html: message.html });
     if (error) {
-      console.error(`Resend error for "${kind}" appointment email:`, error);
-      return { sent: false, error: error.message };
+      const sandboxRestricted = logResendFailure(kind, message.to, from, error);
+      return { sent: false, error: error.message, statusCode: error.statusCode ?? null, sandboxRestricted };
+    }
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[appointment-email] sent kind="${kind}" to="${message.to}" from="${from}" id=${data?.id ?? 'n/a'}`);
     }
     return { sent: true };
   } catch (err) {
-    console.error(`Failed to send "${kind}" appointment email:`, err);
+    console.error(`[appointment-email] EXCEPTION kind="${kind}" to="${message.to}" from="${from}":`, err);
     return { sent: false, error: 'Email could not be sent.' };
   }
 }

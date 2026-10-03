@@ -524,6 +524,8 @@ export interface Database {
           scheduled_at: string
           status: 'pending' | 'confirmed' | 'completed' | 'cancelled'
           meet_link: string | null
+          zoom_meeting_id: string | null
+          zoom_passcode: string | null
           admin_notes: string | null
           confirmed_at: string | null
           reminder_1d_sent_at: string | null
@@ -542,6 +544,8 @@ export interface Database {
           scheduled_at: string
           status?: 'pending' | 'confirmed' | 'completed' | 'cancelled'
           meet_link?: string | null
+          zoom_meeting_id?: string | null
+          zoom_passcode?: string | null
           admin_notes?: string | null
           confirmed_at?: string | null
           reminder_1d_sent_at?: string | null
@@ -560,6 +564,8 @@ export interface Database {
           scheduled_at?: string
           status?: 'pending' | 'confirmed' | 'completed' | 'cancelled'
           meet_link?: string | null
+          zoom_meeting_id?: string | null
+          zoom_passcode?: string | null
           admin_notes?: string | null
           confirmed_at?: string | null
           reminder_1d_sent_at?: string | null

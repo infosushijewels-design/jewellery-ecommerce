@@ -1,7 +1,7 @@
 import { DEFAULT_STORE_SETTINGS, type StoreSettings } from '@/lib/storeSettings';
 
 /**
- * Shared helpers for Video Appointments (Google Meet consultations).
+ * Shared helpers for Video Appointments (Zoom consultations).
  *
  * Slots are fixed windows in Indian Standard Time whose hours, length, booking
  * window and closed days come from Admin → Settings → Video Appointments
@@ -169,11 +169,13 @@ export function formatDateChip(date: string): { weekday: string; day: string; mo
   return { weekday: fmt({ weekday: 'short' }), day: fmt({ day: 'numeric' }), month: fmt({ month: 'short' }) };
 }
 
-/** Only allow real http(s) links to be stored/emailed as a Meet link. */
-export function isValidMeetLink(link: string): boolean {
+/** Only allow real Zoom invite links (https://zoom.us/j/..., https://<org>.zoom.us/j/...) to be stored/emailed. */
+export function isValidZoomLink(link: string): boolean {
   try {
     const u = new URL(link);
-    return u.protocol === 'https:' || u.protocol === 'http:';
+    if (u.protocol !== 'https:') return false;
+    const host = u.hostname.toLowerCase();
+    return ['zoom.us', 'zoom.com'].some((d) => host === d || host.endsWith(`.${d}`)) || host.endsWith('.zoomgov.com');
   } catch {
     return false;
   }
