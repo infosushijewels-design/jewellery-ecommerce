@@ -65,8 +65,11 @@ export default function ProductActions({ product }: ProductActionsProps) {
 
   const toggleWishlist = async (productId: string) => {
     const result = await toggleWishlistBase(productId);
-    if (result === 'added') showToast('❤️ Saved to your Wishlist!', 'success');
-    else if (result === 'removed') showToast('Removed from Wishlist.', 'info');
+    if (result === 'added') {
+      showToast('❤️ Saved to your Wishlist!', 'success');
+    } else if (result === 'removed') {
+      showToast('Removed from Wishlist.', 'info');
+    }
   };
 
   return (
@@ -92,10 +95,10 @@ export default function ProductActions({ product }: ProductActionsProps) {
             <button
               key={metal}
               onClick={() => setSelectedMetal(metal)}
-              className={`px-4 py-2 rounded-lg border transition-all duration-200 ${
+            className={`px-4 py-2 rounded-lg border font-label-md text-label-md transition-colors ${
                 selectedMetal === metal
-                  ? 'bg-white text-primary border-2 border-primary font-semibold shadow-sm ring-1 ring-primary'
-                  : 'bg-white/80 text-on-surface-variant border-outline-variant hover:border-secondary hover:text-primary'
+                  ? 'border-secondary bg-surface-container font-bold text-primary'
+                  : 'border-outline-variant hover:border-primary text-on-surface-variant'
               }`}
             >
               {metal}
@@ -171,7 +174,7 @@ export default function ProductActions({ product }: ProductActionsProps) {
         <button
           onClick={handleBuyNow}
           disabled={isSoldOut}
-          className="flex-1 bg-secondary text-primary px-6 py-4 rounded-full font-label-lg text-label-lg uppercase tracking-wider hover:bg-secondary-fixed-dim transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 bg-secondary text-white px-6 py-4 rounded-full font-label-lg text-label-lg uppercase tracking-wider hover:bg-secondary-fixed-dim transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <span className="material-symbols-outlined">bolt</span>
           Buy Now

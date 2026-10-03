@@ -74,8 +74,11 @@ export default function ProductCard({
 
   const toggleWishlist = async (productId: string) => {
     const result = await toggleWishlistBase(productId);
-    if (result === 'added') showToast('❤️ Saved to your Wishlist!', 'success');
-    else if (result === 'removed') showToast('Removed from Wishlist.', 'info');
+    if (result === 'added') {
+      showToast('❤️ Saved to your Wishlist!', 'success');
+    } else if (result === 'removed') {
+      showToast('Removed from Wishlist.', 'info');
+    }
   };
 
   return (
@@ -93,27 +96,24 @@ export default function ProductCard({
                 isLoaded ? 'opacity-100' : 'opacity-80 blur-[2px]'
               }`}
             />
-            <div className="absolute top-2 left-2 flex flex-col gap-1 items-start">
-              {badge && (
+            <div className="absolute top-2 left-2 flex items-start">
+              {badge ? (
                 <span className="bg-surface px-2 py-0.5 rounded-full text-[9px] sm:text-label-sm font-label-sm border border-secondary text-primary uppercase">
                   {badge}
                 </span>
-              )}
-              {isNewArrival && (
+              ) : isNewArrival ? (
                 <span className="bg-green-700 text-green-50 px-2 py-0.5 rounded-full text-[9px] sm:text-label-sm font-label-sm uppercase">
                   New
                 </span>
-              )}
-              {isFeatured && (
+              ) : isFeatured ? (
                 <span className="bg-purple-700 text-purple-50 px-2 py-0.5 rounded-full text-[9px] sm:text-label-sm font-label-sm uppercase">
                   Featured
                 </span>
-              )}
-              {hasDiscount && (
+              ) : hasDiscount ? (
                 <span className="bg-emerald-700 text-emerald-50 px-2 py-0.5 rounded-full text-[9px] sm:text-label-sm font-label-sm uppercase">
                   Save {discountPercent}%
                 </span>
-              )}
+              ) : null}
             </div>
             {isSoldOut ? (
               <div className="absolute inset-0 bg-primary/60 flex items-center justify-center">
@@ -162,7 +162,7 @@ export default function ProductCard({
             ${isSaved ? 'text-error' : 'text-on-surface-variant hover:text-error'}
           `}
         >
-          <span className={`material-symbols-outlined text-[16px] sm:text-[18px] ${isSaved ? 'font-variation-fill-1' : ''}`}>
+          <span className={`material-symbols-outlined text-[14px] sm:text-[16px] leading-none ${isSaved ? 'font-variation-fill-1' : ''}`}>
             favorite
           </span>
         </button>

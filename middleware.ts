@@ -35,7 +35,8 @@ export async function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
 
   // Protect authenticated routes
-  const protectedRoutes = ['/wishlist'];
+  // /wishlist is open to guests (their hearts are kept in the browser and merged into their account on sign-in).
+  const protectedRoutes: string[] = [];
   if (protectedRoutes.some((path) => url.pathname.startsWith(path))) {
     if (!user) {
       url.pathname = '/login';

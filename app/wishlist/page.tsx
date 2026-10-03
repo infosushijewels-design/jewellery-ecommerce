@@ -10,7 +10,6 @@ import { useWishlist } from '@/lib/context/WishlistContext';
 import { createClient } from '@/lib/supabase/client';
 import { Database } from '@/lib/supabase/database.types';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 
 type Product = Database['public']['Tables']['products']['Row'];
 
@@ -21,13 +20,6 @@ export default function WishlistPage() {
   const [isLoading, setIsLoading] = useState(true);
   
   const [supabase] = useState(() => createClient());
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login');
-    }
-  }, [user, authLoading, router]);
 
   useEffect(() => {
     async function fetchProducts() {
@@ -56,7 +48,7 @@ export default function WishlistPage() {
     }
   }, [wishlistIds, wishlistLoading]);
 
-  if (authLoading || (user && isLoading)) {
+  if (authLoading || isLoading) {
     return (
       <>
         <AnnouncementBar />
@@ -72,8 +64,6 @@ export default function WishlistPage() {
     );
   }
 
-  if (!user) return null; // Redirecting
-
   return (
     <>
       <AnnouncementBar />
@@ -82,6 +72,15 @@ export default function WishlistPage() {
         <div className="mb-10 text-center md:text-left">
           <h1 className="text-[26px] sm:text-display-md text-primary font-normal mb-2">Your Wishlist</h1>
           <p className="text-body-md text-on-surface-variant">Curated pieces saved for later.</p>
+          {!user && products.length > 0 && (
+            <p className="text-body-sm text-on-surface-variant mt-3">
+              Saved on this device.{' '}
+              <Link href="/login?next=/wishlist" className="text-secondary font-semibold underline underline-offset-2 hover:text-primary">
+                Sign in
+              </Link>{' '}
+              to keep your wishlist on every device.
+            </p>
+          )}
         </div>
 
         {products.length === 0 ? (

@@ -31,25 +31,23 @@ export default function OrderTrackingPage() {
     loadOrder();
   }, [orderId]);
 
-  // Stepper calculations
-  const steps = [
-    { key: 'placed', label: 'Order Placed', desc: 'Order received & verified', icon: 'task_alt' },
-    { key: 'processing', label: 'In Atelier', desc: 'Crafting & hallmarking check', icon: 'auto_awesome' },
-    { key: 'shipped', label: 'Insured Transit', desc: 'Dispatched with armed courier', icon: 'local_shipping' },
-    { key: 'delivered', label: 'Delivered', desc: 'Safely delivered to patron', icon: 'verified' },
-  ];
-
-  const getStepIndex = (status: FullOrder['status']) => {
+  // Progress bar calculations
+  const getProgressConfig = (status: FullOrder['status']) => {
     switch (status) {
-      case 'placed': return 0;
-      case 'processing': return 1;
-      case 'shipped': return 2;
-      case 'delivered': return 3;
-      default: return 0;
+      case 'placed':
+        return { percent: 15, label: 'Order Confirmed', color: 'text-blue-600', badge: 'CONFIRMED', badgeBg: 'bg-blue-50 text-blue-700 border-blue-200', dot: 'bg-blue-500', estDays: '10–14 business days' };
+      case 'processing':
+        return { percent: 45, label: 'Being Crafted', color: 'text-amber-600', badge: 'IN PROGRESS', badgeBg: 'bg-amber-50 text-amber-700 border-amber-200', dot: 'bg-amber-500', estDays: '7–10 business days' };
+      case 'shipped':
+        return { percent: 80, label: 'Out for Delivery', color: 'text-purple-600', badge: 'SHIPPED', badgeBg: 'bg-purple-50 text-purple-700 border-purple-200', dot: 'bg-purple-500', estDays: '1–3 business days' };
+      case 'delivered':
+        return { percent: 100, label: 'Delivered', color: 'text-green-600', badge: 'DELIVERED', badgeBg: 'bg-green-50 text-green-700 border-green-200', dot: 'bg-green-500', estDays: null };
+      default:
+        return { percent: 0, label: 'Processing', color: 'text-on-surface-variant', badge: 'PENDING', badgeBg: 'bg-surface-container text-on-surface-variant border-outline-variant', dot: 'bg-outline-variant', estDays: '10–14 business days' };
     }
   };
 
-  const currentStepIndex = order ? getStepIndex(order.status) : 0;
+  const progressConfig = order ? getProgressConfig(order.status) : getProgressConfig('placed');
   const isCancelled = order?.status === 'cancelled';
 
   return (
@@ -89,7 +87,7 @@ export default function OrderTrackingPage() {
         ) : (
           <div className="space-y-8">
             
-            {/* Top Success / Header Card */}
+            {/* Top Header Card */}
             <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-2xl p-6 sm:p-8 relative overflow-hidden shadow-sm">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-outline-variant/30 pb-6 mb-6">
                 <div>
@@ -120,9 +118,9 @@ export default function OrderTrackingPage() {
                 </div>
               </div>
 
-              {/* Order Status Stepper */}
+              {/* Minimal Progress Bar Section */}
               {isCancelled ? (
-                <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-xl p-5 text-center my-4">
+                <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-xl p-5 text-center">
                   <span className="material-symbols-outlined text-3xl text-red-600 mb-2">cancel</span>
                   <h3 className="text-base font-semibold text-red-800 dark:text-red-300">This order has been cancelled</h3>
                   <p className="text-xs text-red-700 dark:text-red-400 mt-1">
@@ -130,57 +128,40 @@ export default function OrderTrackingPage() {
                   </p>
                 </div>
               ) : (
-                <div className="py-6 sm:py-8">
-                  <div className="relative">
-                    {/* Connecting line segments with clean 8px gap between circle edges */}
-                    <div className="hidden sm:block absolute inset-0 z-0 pointer-events-none">
-                      {steps.slice(0, -1).map((_, idx) => {
-                        const isSegmentDone = idx < currentStepIndex;
-                        const leftPercent = ((idx + 0.5) / steps.length) * 100;
-                        const colWidthPercent = 100 / steps.length;
-                        return (
-                          <div
-                            key={idx}
-                            className={`absolute top-6 h-0.5 -translate-y-1/2 transition-colors duration-500 ${
-                              isSegmentDone ? 'bg-primary' : 'bg-outline-variant/40'
-                            }`}
-                            style={{
-                              left: `calc(${leftPercent}% + 32px)`,
-                              width: `calc(${colWidthPercent}% - 64px)`,
-                            }}
-                          />
-                        );
-                      })}
+                <div className="flex flex-col items-center text-center py-4 sm:py-6 space-y-5">
+                  {/* Status Badge */}
+                  <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full border text-sm font-semibold uppercase tracking-widest ${progressConfig.badgeBg}`}>
+                    <span className={`w-2 h-2 rounded-full animate-pulse ${progressConfig.dot}`}></span>
+                    {progressConfig.badge}
+                  </div>
+
+                  {/* Status Label */}
+                  <h2 className={`text-xl sm:text-2xl font-headline-md ${progressConfig.color}`}>
+                    {progressConfig.label}
+                  </h2>
+
+                  {/* Estimated Delivery */}
+                  {progressConfig.estDays && (
+                    <p className="text-sm text-on-surface-variant">
+                      Estimated delivery in <span className="font-semibold text-primary">{progressConfig.estDays}</span>
+                    </p>
+                  )}
+
+                  {/* Gold Progress Bar */}
+                  <div className="w-full max-w-2xl mx-auto space-y-2">
+                    <div className="relative h-3 bg-surface-container rounded-full overflow-hidden border border-outline-variant/30">
+                      <div
+                        className="absolute inset-y-0 left-0 rounded-full transition-all duration-1000 ease-out"
+                        style={{
+                          width: `${progressConfig.percent}%`,
+                          background: 'linear-gradient(90deg, #B8955A, #D4AF72, #B8955A)',
+                        }}
+                      />
                     </div>
-
-                    {/* Step Nodes */}
-                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-6 relative z-10">
-                      {steps.map((step, idx) => {
-                        const isDone = idx <= currentStepIndex;
-                        const isCurrent = idx === currentStepIndex;
-
-                        return (
-                          <div key={step.key} className="flex sm:flex-col items-center sm:text-center gap-4 sm:gap-2">
-                            <div 
-                              className={`w-12 h-12 rounded-full flex items-center justify-center transition-all flex-shrink-0 shadow-md ${
-                                isDone 
-                                  ? 'bg-primary text-surface ring-4 ring-tertiary/20' 
-                                  : 'bg-surface border-2 border-outline-variant text-on-surface-variant'
-                              }`}
-                            >
-                              <span className="material-symbols-outlined text-xl">{step.icon}</span>
-                            </div>
-                            <div className="sm:mt-2">
-                              <h4 className={`text-sm font-semibold ${isCurrent ? 'text-tertiary' : isDone ? 'text-primary' : 'text-on-surface-variant'}`}>
-                                {step.label}
-                              </h4>
-                              <p className="text-[11px] text-on-surface-variant leading-tight mt-0.5">
-                                {step.desc}
-                              </p>
-                            </div>
-                          </div>
-                        );
-                      })}
+                    <div className="flex justify-between text-[11px] text-on-surface-variant">
+                      <span>Order Placed</span>
+                      <span className="font-semibold text-secondary">{progressConfig.percent}% Complete</span>
+                      <span>Delivered</span>
                     </div>
                   </div>
                 </div>

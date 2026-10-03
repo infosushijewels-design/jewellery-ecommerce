@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import AnnouncementBar from '@/components/layout/AnnouncementBar';
@@ -10,6 +10,13 @@ import { useToast } from '@/lib/context/ToastContext';
 import { createOrder, getUserOrders } from '@/lib/supabase/orderService';
 import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 import { shippingFeeFor } from '@/lib/storeSettings';
+import {
+  CHECKOUT_FIELD_LABELS,
+  CHECKOUT_FIELD_ORDER,
+  normalizeIndianPhone,
+  validateCheckout,
+  type CheckoutField,
+} from '@/lib/checkoutValidation';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -21,6 +28,9 @@ export default function CheckoutPage() {
   const storeSettings = useStoreSettings();
 
   const [isProcessing, setIsProcessing] = useState(false);
+  // Field-level validation: a field's error shows once it was visited (blur) or Place Order was pressed
+  const [touched, setTouched] = useState<Partial<Record<CheckoutField, boolean>>>({});
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -88,7 +98,52 @@ export default function CheckoutPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    // PIN: digits only (max 6). Phone: only characters people actually type in a number.
+    const next = name === 'pincode' ? value.replace(/D/g, '').slice(0, 6) : name === 'phone' ? value.replace(/[^d+s()-]/g, '') : value;
+    setFormData((prev) => ({ ...prev, [name]: next }));
+  };
+
+  const errors = useMemo(() => validateCheckout(formData), [formData]);
+  const visibleError = (field: CheckoutField) => (touched[field] || submitAttempted ? errors[field] : undefined);
+
+  const FIELD_EXTRAS: Partial<Record<CheckoutField, React.InputHTMLAttributes<HTMLInputElement>>> = {
+    email: { inputMode: 'email', autoComplete: 'email' },
+    phone: { inputMode: 'tel', autoComplete: 'tel', maxLength: 18 },
+    firstName: { autoComplete: 'given-name', maxLength: 50 },
+    lastName: { autoComplete: 'family-name', maxLength: 50 },
+    address: { autoComplete: 'street-address', maxLength: 200 },
+    city: { autoComplete: 'address-level2', maxLength: 60 },
+    state: { autoComplete: 'address-level1', maxLength: 60 },
+    pincode: { inputMode: 'numeric', autoComplete: 'postal-code', maxLength: 6 },
+  };
+
+  /** Everything an input needs: id, value, handlers, error styling and accessibility attributes. */
+  const fieldProps = (name: CheckoutField): React.InputHTMLAttributes<HTMLInputElement> => {
+    const err = visibleError(name);
+    return {
+      id: `checkout-${name}`,
+      name,
+      value: formData[name],
+      onChange: handleChange,
+      onBlur: () => setTouched((prev) => ({ ...prev, [name]: true })),
+      'aria-invalid': err ? true : undefined,
+      'aria-describedby': err ? `checkout-${name}-error` : undefined,
+      className: `w-full bg-surface border rounded-lg px-4 py-2.5 text-on-surface focus:outline-none transition-colors text-sm ${
+        err ? 'border-error focus:border-error bg-error-container/10' : 'border-outline-variant focus:border-primary'
+      }`,
+      ...FIELD_EXTRAS[name],
+    };
+  };
+
+  const renderError = (name: CheckoutField) => {
+    const err = visibleError(name);
+    if (!err) return null;
+    return (
+      <p id={`checkout-${name}-error`} role="alert" className="mt-1.5 flex items-start gap-1 text-xs text-error">
+        <span className="material-symbols-outlined text-[14px] leading-4">error</span>
+        <span>{err}</span>
+      </p>
+    );
   };
 
   const submitOrderToDb = async (status: 'pending' | 'paid', razorpayPaymentId?: string) => {
@@ -98,7 +153,7 @@ export default function CheckoutPage() {
         shippingAddress: {
           fullName: `${formData.firstName} ${formData.lastName}`.trim() || 'Valued Patron',
           email: formData.email,
-          phone: formData.phone,
+          phone: normalizeIndianPhone(formData.phone) ?? formData.phone,
           address: formData.address,
           city: formData.city,
           state: formData.state,
@@ -173,8 +228,13 @@ export default function CheckoutPage() {
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (items.length === 0) return;
-    if (formData.address.trim().length < 5 || !formData.city.trim() || !formData.pincode.trim()) {
-      showToast('⚠️ Please enter a valid delivery address.', 'warning');
+    setSubmitAttempted(true);
+    const badFields = CHECKOUT_FIELD_ORDER.filter((field) => errors[field]);
+    if (badFields.length > 0) {
+      showToast(`Please fix: ${badFields.map((field) => CHECKOUT_FIELD_LABELS[field]).join(', ')}.`, 'warning');
+      const first = document.getElementById(`checkout-${badFields[0]}`);
+      first?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      first?.focus({ preventScroll: true });
       return;
     }
     if (belowMinimum) {
@@ -249,7 +309,7 @@ export default function CheckoutPage() {
           prefill: {
             name: `${formData.firstName} ${formData.lastName}`.trim(),
             email: formData.email,
-            contact: formData.phone,
+            contact: normalizeIndianPhone(formData.phone) ?? formData.phone,
           },
           theme: {
             color: '#B99A62',
@@ -309,7 +369,7 @@ export default function CheckoutPage() {
 
             {/* Left: Checkout Form */}
             <div className="lg:col-span-7">
-              <form id="checkout-form" onSubmit={handlePlaceOrder} className="space-y-8">
+              <form id="checkout-form" onSubmit={handlePlaceOrder} noValidate className="space-y-8">
 
                 {/* Contact Information */}
                 <section className="bg-surface-container-lowest border border-outline-variant/40 rounded-xl p-5 sm:p-6">
@@ -336,28 +396,24 @@ export default function CheckoutPage() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="sm:col-span-2">
-                      <label className="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-1.5 block">Email Address *</label>
+                      <label htmlFor="checkout-email" className="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-1.5 block">Email Address *</label>
                       <input
                         type="email"
-                        name="email"
                         required
-                        value={formData.email}
-                        onChange={handleChange}
+                        {...fieldProps('email')}
                         placeholder="your.email@domain.com"
-                        className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2.5 text-on-surface focus:outline-none focus:border-primary transition-colors text-sm"
                       />
+                      {renderError('email')}
                     </div>
                     <div className="sm:col-span-2">
-                      <label className="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-1.5 block">Mobile Number *</label>
+                      <label htmlFor="checkout-phone" className="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-1.5 block">Mobile Number *</label>
                       <input
                         type="tel"
-                        name="phone"
                         required
-                        value={formData.phone}
-                        onChange={handleChange}
+                        {...fieldProps('phone')}
                         placeholder="+91 98765 43210"
-                        className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2.5 text-on-surface focus:outline-none focus:border-primary transition-colors text-sm"
                       />
+                      {renderError('phone')}
                     </div>
                   </div>
                 </section>
@@ -370,77 +426,64 @@ export default function CheckoutPage() {
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-1.5 block">First Name *</label>
+                      <label htmlFor="checkout-firstName" className="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-1.5 block">First Name *</label>
                       <input
                         type="text"
-                        name="firstName"
                         required
-                        value={formData.firstName}
-                        onChange={handleChange}
+                        {...fieldProps('firstName')}
                         placeholder="Aditi"
-                        className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2.5 text-on-surface focus:outline-none focus:border-primary transition-colors text-sm"
                       />
+                      {renderError('firstName')}
                     </div>
                     <div>
-                      <label className="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-1.5 block">Last Name *</label>
+                      <label htmlFor="checkout-lastName" className="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-1.5 block">Last Name *</label>
                       <input
                         type="text"
-                        name="lastName"
                         required
-                        value={formData.lastName}
-                        onChange={handleChange}
+                        {...fieldProps('lastName')}
                         placeholder="Sharma"
-                        className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2.5 text-on-surface focus:outline-none focus:border-primary transition-colors text-sm"
                       />
+                      {renderError('lastName')}
                     </div>
                     <div className="sm:col-span-2">
-                      <label className="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-1.5 block">Street Address / Suite *</label>
+                      <label htmlFor="checkout-address" className="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-1.5 block">Street Address / Suite *</label>
                       <input
                         type="text"
-                        name="address"
                         required
-                        value={formData.address}
-                        onChange={handleChange}
+                        {...fieldProps('address')}
                         placeholder="House / Flat No., Luxury Avenue, Landmark"
-                        className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2.5 text-on-surface focus:outline-none focus:border-primary transition-colors text-sm"
                       />
+                      {renderError('address')}
                     </div>
                     <div>
-                      <label className="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-1.5 block">City *</label>
+                      <label htmlFor="checkout-city" className="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-1.5 block">City *</label>
                       <input
                         type="text"
-                        name="city"
                         required
-                        value={formData.city}
-                        onChange={handleChange}
+                        {...fieldProps('city')}
                         placeholder="Mumbai"
-                        className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2.5 text-on-surface focus:outline-none focus:border-primary transition-colors text-sm"
                       />
+                      {renderError('city')}
                     </div>
                     <div>
-                      <label className="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-1.5 block">State *</label>
+                      <label htmlFor="checkout-state" className="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-1.5 block">State *</label>
                       <input
                         type="text"
-                        name="state"
                         required
-                        value={formData.state}
-                        onChange={handleChange}
+                        {...fieldProps('state')}
                         placeholder="Maharashtra"
-                        className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2.5 text-on-surface focus:outline-none focus:border-primary transition-colors text-sm"
                       />
+                      {renderError('state')}
                     </div>
                     <div className="sm:col-span-2">
-                      <label className="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-1.5 block">PIN Code *</label>
+                      <label htmlFor="checkout-pincode" className="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-1.5 block">PIN Code *</label>
                       <input
                         type="text"
-                        name="pincode"
                         required
-                        value={formData.pincode}
-                        onChange={handleChange}
+                        {...fieldProps('pincode')}
                         placeholder="400001"
-                        maxLength={6}
-                        className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2.5 text-on-surface focus:outline-none focus:border-primary transition-colors text-sm"
                       />
+                      {renderError('pincode')}
                     </div>
                   </div>
                 </section>
