@@ -104,7 +104,7 @@ export default function CheckoutPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     // PIN: digits only (max 6). Phone: only characters people actually type in a number.
-    const next = name === 'pincode' ? value.replace(/D/g, '').slice(0, 6) : name === 'phone' ? value.replace(/[^d+s()-]/g, '') : value;
+    const next = name === 'pincode' ? value.replace(/\D/g, '').slice(0, 6) : name === 'phone' ? value.replace(/[^\d+\s()-]/g, '') : value;
     setFormData((prev) => ({ ...prev, [name]: next }));
   };
 
