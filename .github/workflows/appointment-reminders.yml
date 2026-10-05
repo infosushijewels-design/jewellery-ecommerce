@@ -1,0 +1,39 @@
+# Runs the appointment-reminder job every 10 minutes.
+#
+# Why GitHub Actions and not a Vercel cron: Vercel's free (Hobby) plan only allows a cron job once a day, which
+# is far too slow for "30 minutes before" reminders. This works on any Vercel plan and costs nothing.
+#
+# One-time setup (GitHub repo -> Settings -> Secrets and variables -> Actions):
+#   Secret   CRON_SECRET  = the same value as the CRON_SECRET environment variable on Vercel
+#   Variable SITE_URL     = https://www.sushijewels.in   (no trailing slash)
+# Note: GitHub pauses scheduled workflows in repositories with no activity for 60 days; re-enable it from the
+# Actions tab if that ever happens. Scheduled runs can start a few minutes late — fine for reminders.
+name: Appointment reminders
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch: {}
+
+concurrency:
+  group: appointment-reminders
+  cancel-in-progress: false
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Call the reminder endpoint
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: |
+          if [ -z "$CRON_SECRET" ] || [ -z "$SITE_URL" ]; then
+            echo "::error::Set the CRON_SECRET secret and the SITE_URL variable in the repository settings."
+            exit 1
+          fi
+          response=$(curl --silent --show-error --fail --max-time 120 \
+            --header "Authorization: Bearer $CRON_SECRET" \
+            "$SITE_URL/api/cron/appointment-reminders")
+          echo "$response"

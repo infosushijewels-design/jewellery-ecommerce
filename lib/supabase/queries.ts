@@ -205,3 +205,38 @@ export async function searchProducts(query: string): Promise<Product[]> {
     .sort((a, b) => b.score - a.score)
     .map(({ p }) => p);
 }
+
+export interface HomeCategory {
+  name: string;
+  href: string;
+  image: string | null;
+}
+
+/**
+ * Active categories for the home "Shop by Category" strip. Each uses the image set in Admin → Categories,
+ * or (like the admin screen's cover preview) the newest product photo in that category when none is set.
+ */
+export async function getHomeCategories(): Promise<HomeCategory[]> {
+  const supabase = await createClient();
+  const [categoriesResult, productsResult] = await Promise.all([
+    supabase.from('categories').select('id, name, slug, image_url, is_active').order('name'),
+    supabase.from('products').select('category_id, image_url').order('created_at', { ascending: false }),
+  ]);
+  if (categoriesResult.error) {
+    console.error('Error fetching home categories:', categoriesResult.error);
+    return [];
+  }
+
+  const coverFallback = new Map<string, string>();
+  for (const p of productsResult.data || []) {
+    if (p.category_id && p.image_url && !coverFallback.has(p.category_id)) coverFallback.set(p.category_id, p.image_url);
+  }
+
+  return (categoriesResult.data || [])
+    .filter((c) => c.is_active !== false)
+    .map((c) => ({
+      name: c.name,
+      href: `/category/${c.slug}`,
+      image: c.image_url || coverFallback.get(c.id) || null,
+    }));
+}

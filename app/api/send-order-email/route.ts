@@ -50,6 +50,7 @@ function parseOrderPayload(raw: unknown): { ok: true; data: OrderEmailData } | {
     data: {
       orderId,
       orderNumber: optText(b.orderNumber, 60),
+      trackingToken: typeof b.trackingToken === 'string' && /^[a-f0-9]{32}$/i.test(b.trackingToken) ? b.trackingToken : null,
       customerName: optText(b.firstName, 100) ?? optText(b.customerName, 100) ?? 'Valued Patron',
       customerEmail: email,
       items,
@@ -85,7 +86,7 @@ export async function POST(request: Request) {
 
   try {
     // Sender, links and contact details are all configurable — nothing brand-specific is hardcoded below.
-    const from = process.env.RESEND_FROM_EMAIL || 'Sushi Jewels <onboarding@resend.dev>';
+    const from = process.env.RESEND_FROM_EMAIL || 'Sushi Jewels <orders@sushijewels.in>';
     const settings = await getPublicStoreSettings();
     const brand: OrderEmailBrand = {
       storeName: settings.store.name || 'Sushi Jewels',

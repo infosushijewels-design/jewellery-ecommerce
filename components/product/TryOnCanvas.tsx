@@ -101,9 +101,9 @@ export default function TryOnCanvas({ selfieSrc, jewelryImageUrl, analysis, prod
           setIsRendering(false);
           onReady?.(canvas);
         }
-      } catch (err: any) {
+      } catch (err) {
         if (!cancelled) {
-          setRenderError(err?.message || 'Could not render the try-on preview.');
+          setRenderError((err instanceof Error && err.message) || 'Could not render the try-on preview.');
           setIsRendering(false);
         }
       }

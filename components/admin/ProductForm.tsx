@@ -129,6 +129,8 @@ export default function ProductForm({ mode, productId, initialProduct }: Product
 
   useEffect(() => {
     if (initialProduct) {
+      // The product loads asynchronously on the edit page, so the form is re-seeded once it arrives
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setForm(productToForm(initialProduct));
     }
   }, [initialProduct]);

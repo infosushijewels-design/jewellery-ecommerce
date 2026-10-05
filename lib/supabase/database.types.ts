@@ -280,7 +280,7 @@ export interface Database {
           shipping_fee: number
           total: number
           payment_method: 'cod' | 'online'
-          payment_status: 'pending' | 'paid' | 'failed'
+          payment_status: 'pending' | 'paid' | 'failed' | 'refunded' | 'partially_refunded'
           shipping_address: {
             full_name: string
             email: string
@@ -293,6 +293,12 @@ export interface Database {
           notes: string | null
           created_at: string
           updated_at: string
+          razorpay_order_id: string | null
+          razorpay_payment_id: string | null
+          paid_at: string | null
+          refunded_amount: number
+          tracking_token: string | null
+          stock_reserved: boolean
         }
         Insert: {
           id?: string
@@ -304,7 +310,7 @@ export interface Database {
           shipping_fee?: number
           total: number
           payment_method?: 'cod' | 'online'
-          payment_status?: 'pending' | 'paid' | 'failed'
+          payment_status?: 'pending' | 'paid' | 'failed' | 'refunded' | 'partially_refunded'
           shipping_address: {
             full_name: string
             email: string
@@ -317,6 +323,12 @@ export interface Database {
           notes?: string | null
           created_at?: string
           updated_at?: string
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          paid_at?: string | null
+          refunded_amount?: number
+          tracking_token?: string | null
+          stock_reserved?: boolean
         }
         Update: {
           id?: string
@@ -328,7 +340,7 @@ export interface Database {
           shipping_fee?: number
           total?: number
           payment_method?: 'cod' | 'online'
-          payment_status?: 'pending' | 'paid' | 'failed'
+          payment_status?: 'pending' | 'paid' | 'failed' | 'refunded' | 'partially_refunded'
           shipping_address?: {
             full_name: string
             email: string
@@ -341,6 +353,12 @@ export interface Database {
           notes?: string | null
           created_at?: string
           updated_at?: string
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          paid_at?: string | null
+          refunded_amount?: number
+          tracking_token?: string | null
+          stock_reserved?: boolean
         }
       }
       order_items: {
@@ -651,6 +669,35 @@ export interface Database {
           id?: number
           settings?: Json
           updated_at?: string
+        }
+      }
+      audit_logs: {
+        Row: {
+          id: string
+          admin_id: string | null
+          action: string
+          resource_type: string
+          resource_id: string | null
+          details: Json
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          admin_id?: string | null
+          action: string
+          resource_type: string
+          resource_id?: string | null
+          details?: Json
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          admin_id?: string | null
+          action?: string
+          resource_type?: string
+          resource_id?: string | null
+          details?: Json
+          created_at?: string
         }
       }
     }

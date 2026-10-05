@@ -2,7 +2,6 @@ import React from 'react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import AnnouncementBar from '@/components/layout/AnnouncementBar';
-import ProductCard from '@/components/product/ProductCard';
 import { getAllCollections } from '@/lib/supabase/queries';
 import Link from 'next/link';
 

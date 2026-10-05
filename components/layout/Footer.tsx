@@ -11,9 +11,9 @@ export default function Footer() {
 
           {/* Brand & Manifesto */}
           <div className="lg:col-span-4 lg:pr-4">
-            <Link className="flex flex-col items-start group mb-5 sm:mb-6 inline-block" href="/">
-              <span className="font-headline-lg text-[28px] sm:text-[32px] text-surface tracking-tight group-hover:text-secondary-fixed transition-colors duration-200">Sushi Jewels</span>
-              <span className="font-label-sm text-[9px] sm:text-[10px] text-outline-variant tracking-[0.25em] -mt-1 font-normal">FINE JEWELLERY</span>
+            <Link className="inline-block mb-5 sm:mb-6" href="/" aria-label="Sushi Jewels — home">
+              {/* The logo is black on white; invert + screen turns it white on the dark footer with no box around it */}
+              <img src="/logo.jpeg" alt="Sushi Jewels" width={638} height={978} className="h-28 sm:h-32 w-auto invert mix-blend-screen" />
             </Link>
             <p className="font-body-sm text-body-sm text-surface-dim leading-relaxed max-w-sm">
               Translating the eternal grammar of Indian royalty into modern fine jewellery. We steward ethically sourced natural diamonds and BIS hallmarked precious metals into heirlooms meant to be lived in.

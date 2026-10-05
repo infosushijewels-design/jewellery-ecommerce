@@ -1,9 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import Link from 'next/link';
 
-export type ToastType = 'success' | 'error' | 'info' | 'warning' | 'login_required';
+export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
 export interface ToastMessage {
   id: string;
@@ -51,9 +50,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               key={toast.id}
               role="alert"
               className={`pointer-events-auto flex items-center justify-between gap-3 px-4 py-3 rounded-lg shadow-xl border backdrop-blur-md transition-all transform translate-y-0 duration-300 animate-fadeIn ${
-                toast.type === 'login_required'
-                  ? 'bg-surface text-on-surface border-secondary/60'
-                  : isSuccess
+                isSuccess
                   ? 'bg-primary text-surface border-tertiary/40'
                   : isError
                   ? 'bg-[#2A0E0E] text-[#FFB4AB] border-[#FF5449]/40'
@@ -64,19 +61,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             >
               <div className="flex items-center gap-2.5">
                 <span className="material-symbols-outlined text-lg sm:text-xl">
-                  {toast.type === 'login_required' ? 'favorite' : isSuccess ? 'check_circle' : isError ? 'error' : isWarning ? 'warning' : 'info'}
+                  {isSuccess ? 'check_circle' : isError ? 'error' : isWarning ? 'warning' : 'info'}
                 </span>
                 <div className="flex flex-col gap-1">
                   <p className="text-xs sm:text-sm font-medium leading-snug">{toast.message}</p>
-                  {toast.type === 'login_required' && (
-                    <Link
-                      href="/login"
-                      onClick={() => removeToast(toast.id)}
-                      className="text-xs font-semibold text-secondary underline underline-offset-2 hover:text-primary transition-colors"
-                    >
-                      Login Karein →
-                    </Link>
-                  )}
                 </div>
               </div>
               <button

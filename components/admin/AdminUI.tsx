@@ -378,6 +378,8 @@ export function ConfirmDialog({
   message,
   confirmLabel,
   busy,
+  icon = 'delete_forever',
+  busyLabel = 'Deleting…',
   onConfirm,
   onCancel,
 }: {
@@ -386,6 +388,10 @@ export function ConfirmDialog({
   message: ReactNode;
   confirmLabel: string;
   busy?: boolean;
+  /** Material icon in the red circle (default: the delete icon). */
+  icon?: string;
+  /** Button text while busy (default: "Deleting…"). */
+  busyLabel?: string;
   onConfirm: () => void;
   onCancel: () => void;
 }) {
@@ -398,7 +404,7 @@ export function ConfirmDialog({
       >
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-full bg-red-50 border border-red-100 flex items-center justify-center flex-shrink-0">
-            <span className="material-symbols-outlined text-red-600 text-xl">delete_forever</span>
+            <span className="material-symbols-outlined text-red-600 text-xl">{icon}</span>
           </div>
           <div>
             <h3 className="font-headline-sm text-base text-[#2D2024]">{title}</h3>
@@ -417,7 +423,7 @@ export function ConfirmDialog({
             disabled={busy}
             className="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-wider transition-colors disabled:opacity-50"
           >
-            {busy ? 'Deleting…' : confirmLabel}
+            {busy ? busyLabel : confirmLabel}
           </button>
         </div>
       </div>

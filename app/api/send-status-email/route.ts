@@ -11,10 +11,12 @@ export async function POST(request: Request) {
   const resend = new Resend(process.env.RESEND_API_KEY);
 
   try {
-    const { orderId, orderNumber, email, firstName, status } = await request.json();
+    const { orderId, orderNumber, email, firstName, status, trackingToken } = await request.json();
 
     const storeUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.sushijewels.in';
-    const trackingLink = `${storeUrl}/orders/${orderId}`;
+    // The secret token (when known) lets a guest open the order from any device.
+    const tokenQuery = typeof trackingToken === 'string' && /^[a-f0-9]{32}$/i.test(trackingToken) ? `?t=${trackingToken}` : '';
+    const trackingLink = `${storeUrl}/orders/${encodeURIComponent(String(orderId))}${tokenQuery}`;
 
     let statusMessage = '';
     let subjectMessage = '';
@@ -30,8 +32,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, message: 'Status not mapped for email' });
     }
 
+    const fromEmail = process.env.RESEND_FROM_EMAIL || 'Sushi Jewels <orders@sushijewels.in>';
+
     const { data, error } = await resend.emails.send({
-      from: 'Sushi Jewels <onboarding@resend.dev>', // Update to verified domain
+      from: fromEmail,
       to: [email],
       subject: subjectMessage,
       html: `

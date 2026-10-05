@@ -88,8 +88,8 @@ export default function TryItOnModal({ isOpen, onClose, productTitle, productIma
 
       setAnalysis(data as TryOnAnalysis);
       showToast('Photo analyzed successfully! Rendering your try-on preview...', 'success');
-    } catch (err: any) {
-      const message = err?.message || 'Could not analyze your photo. Please try again.';
+    } catch (err) {
+      const message = (err instanceof Error && err.message) || 'Could not analyze your photo. Please try again.';
       setAnalysisError(message);
       showToast(message, 'error');
     } finally {

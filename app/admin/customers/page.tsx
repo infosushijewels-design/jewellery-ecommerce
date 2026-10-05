@@ -10,6 +10,7 @@ import {
   CustomerActivity,
 } from '@/lib/supabase/orderService';
 import { useToast } from '@/lib/context/ToastContext';
+import { downloadCsv } from '@/lib/utils/csv';
 import { ORDER_STATUS_STYLES, orderStatusLabel, paymentLabel } from '@/components/admin/OrderDetailsDrawer';
 import {
   Drawer,
@@ -99,16 +100,7 @@ function exportCustomersCsv(customers: AdminCustomer[]) {
     c.lastOrderAt ? new Date(c.lastOrderAt).toISOString() : '',
     new Date(c.createdAt).toISOString(),
   ]);
-  const csv = [header, ...rows]
-    .map((r) => r.map((cell) => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(','))
-    .join('\n');
-  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `customers-${new Date().toISOString().slice(0, 10)}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
+  downloadCsv('customers', header, rows);
 }
 
 function TierBadge({ customer }: { customer: AdminCustomer }) {

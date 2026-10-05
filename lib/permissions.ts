@@ -50,9 +50,19 @@ export function hasPermission(perms: PermissionMap, module: PermissionModule, ac
   return !!perms[module]?.includes(action);
 }
 
+/** Admin screens that share another section's permission (Newsletter and bulk email are managed with Contact Inquiries). */
+const SHARED_ROUTE_MODULES: Record<string, PermissionModule> = {
+  '/admin/newsletter': 'inquiries',
+  '/admin/notifications': 'inquiries', // sending emails needs Contact Inquiries → edit
+  '/admin/audit-logs': 'staff', // the activity log is visible to whoever may view Staff & Roles (the Super Admin)
+};
+
 /** Module a pathname belongs to, or null for routes without a permission gate. */
 export function moduleForPath(pathname: string): PermissionModule | null {
   if (pathname === '/admin') return 'dashboard';
+  for (const [route, module] of Object.entries(SHARED_ROUTE_MODULES)) {
+    if (pathname === route || pathname.startsWith(`${route}/`)) return module;
+  }
   const match = [...PERMISSION_MODULES]
     .filter((m) => m.href !== '/admin')
     .find((m) => pathname === m.href || pathname.startsWith(`${m.href}/`));

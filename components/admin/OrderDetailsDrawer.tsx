@@ -6,6 +6,7 @@ import type { FullOrder } from '@/lib/supabase/orderService';
 import { printOrderInvoice } from '@/lib/utils/printInvoice';
 import { useToast } from '@/lib/context/ToastContext';
 import { CHEVRON_BG, Drawer, formatDateTime, formatINR, getInitials } from './AdminUI';
+import RefundSection, { canRefund, type RefundOutcome } from './RefundSection';
 
 type OrderStatus = FullOrder['status'];
 
@@ -54,11 +55,13 @@ export default function OrderDetailsDrawer({
   onClose,
   onStatusChange,
   updating,
+  onRefunded,
 }: {
   order: FullOrder | null;
   onClose: () => void;
   onStatusChange: (orderId: string, status: OrderStatus) => void;
   updating: boolean;
+  onRefunded?: (outcome: RefundOutcome) => void;
 }) {
   const { showToast } = useToast();
   if (!order) return null;
@@ -261,13 +264,19 @@ export default function OrderDetailsDrawer({
                   ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
                   : order.payment_status === 'failed'
                     ? 'bg-red-50 border-red-200 text-red-700'
-                    : 'bg-amber-50 border-amber-200 text-amber-800'
+                    : order.payment_status === 'partially_refunded'
+                      ? 'bg-violet-50 border-violet-200 text-violet-800'
+                      : order.payment_status === 'refunded'
+                        ? 'bg-slate-100 border-slate-300 text-slate-700'
+                        : 'bg-amber-50 border-amber-200 text-amber-800'
               }`}
             >
-              {order.payment_status}
+              {order.payment_status.replace('_', ' ')}
             </span>
           </div>
         </Section>
+
+        {canRefund(order) && <RefundSection key={`${order.id}:${order.refunded_amount}`} order={order} onRefunded={onRefunded} />}
 
         {order.notes && (
           <Section title="Customer Note" icon="sticky_note_2">

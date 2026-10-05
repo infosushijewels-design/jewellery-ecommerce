@@ -7,7 +7,7 @@ import AnnouncementBar from '@/components/layout/AnnouncementBar';
 import { useCart } from '@/lib/context/CartContext';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useToast } from '@/lib/context/ToastContext';
-import { createOrder, getUserOrders } from '@/lib/supabase/orderService';
+import { confirmOnlinePayment, createOrder, getUserOrders, orderTrackingPath, type PlacedOrder } from '@/lib/supabase/orderService';
 import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 import { shippingFeeFor } from '@/lib/storeSettings';
 import {
@@ -19,6 +19,11 @@ import {
 } from '@/lib/checkoutValidation';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+
+/** Razorpay's checkout.js adds this global once its script has loaded. */
+type RazorpayWindow = Window & {
+  Razorpay?: new (options: Record<string, unknown>) => { on(event: string, handler: (response: { error: { description: string } }) => void): void; open(): void };
+};
 
 export default function CheckoutPage() {
   const { items, subtotal, tax, clearCart } = useCart();
@@ -146,74 +151,105 @@ export default function CheckoutPage() {
     );
   };
 
-  const submitOrderToDb = async (status: 'pending' | 'paid', razorpayPaymentId?: string) => {
-    try {
-      const res = await createOrder({
-        userId: user?.id || null,
-        shippingAddress: {
-          fullName: `${formData.firstName} ${formData.lastName}`.trim() || 'Valued Patron',
+  /** Everything after an order is saved (and, for online orders, paid): email, empty the bag, show the order. */
+  const finishOrder = (placed: PlacedOrder) => {
+    const targetId = placed.orderNumber || placed.orderId || 'latest';
+    const summary = placed.order;
+
+    // Send order confirmation email (non-blocking). Items and totals are the server's, so the email matches the order.
+    if (summary) {
+      fetch('/api/send-order-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId: targetId,
+          orderNumber: placed.orderNumber,
+          trackingToken: placed.trackingToken,
           email: formData.email,
-          phone: normalizeIndianPhone(formData.phone) ?? formData.phone,
-          address: formData.address,
-          city: formData.city,
-          state: formData.state,
-          pincode: formData.pincode,
+          firstName: formData.firstName,
+          items: summary.items.map((item) => ({ title: item.title, metal: item.metal, size: item.size, quantity: item.quantity, price: item.price })),
+          subtotal: summary.subtotal,
+          tax: summary.tax,
+          shippingFee: summary.shippingFee,
+          paymentMethod,
+          total: summary.total,
+        }),
+      }).catch((err) => console.error('Failed to send order email', err));
+    }
+
+    clearCart();
+    showToast('🎉 Order placed successfully! Confirmation sent to your email.', 'success');
+    router.push(orderTrackingPath(targetId, placed.trackingToken));
+  };
+
+  /** Opens the Razorpay window for the order the server created and priced. */
+  const startOnlinePayment = (placed: PlacedOrder) => {
+    const gateway = placed.razorpay;
+    if (!gateway) {
+      showToast('Could not start the payment. Please try again.', 'error');
+      setIsProcessing(false);
+      return;
+    }
+
+    let paymentHandled = false;
+    const options = {
+      key: gateway.keyId,
+      amount: gateway.amount,
+      currency: gateway.currency,
+      name: storeSettings.store.name,
+      description: storeSettings.store.tagline,
+      image: storeSettings.store.logoUrl || `${window.location.origin}/logo.jpeg`,
+      order_id: gateway.id,
+      handler: async function (response: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) {
+        paymentHandled = true;
+        // The window reporting "success" is only client-side JavaScript. The server checks the signature AND asks
+        // Razorpay for the payment (right order, right amount) before the order is ever marked paid.
+        const confirmed = await confirmOnlinePayment({
+          razorpayOrderId: response.razorpay_order_id,
+          razorpayPaymentId: response.razorpay_payment_id,
+          razorpaySignature: response.razorpay_signature,
+        });
+        if (!confirmed.success) {
+          showToast('❌ Payment could not be verified. If money was debited, contact support with your payment ID: ' + response.razorpay_payment_id, 'error');
+          setIsProcessing(false);
+          return;
+        }
+        finishOrder(placed);
+      },
+      prefill: {
+        name: `${formData.firstName} ${formData.lastName}`.trim(),
+        email: formData.email,
+        contact: normalizeIndianPhone(formData.phone) ?? formData.phone,
+      },
+      theme: {
+        color: '#B99A62',
+      },
+      modal: {
+        ondismiss: function () {
+          setIsProcessing(false);
+          if (!paymentHandled) showToast('Payment was not completed. You have not been charged.', 'info');
         },
-        items: items.map((item) => ({
-          productId: item.productId.length === 36 ? item.productId : null,
-          title: item.title,
-          imageUrl: item.imageUrl,
-          price: item.price,
-          quantity: item.quantity,
-          metal: item.metal || null,
-          size: item.size || null,
-        })),
-        subtotal,
-        tax,
-        shippingFee,
-        total: calculatedTotal,
-        paymentMethod,
-        paymentStatus: status,
-        notes: razorpayPaymentId ? `${formData.notes}\n[Razorpay Payment ID: ${razorpayPaymentId}]`.trim() : formData.notes,
+      },
+    };
+
+    try {
+      const RazorpayCheckout = (window as RazorpayWindow).Razorpay;
+      if (!RazorpayCheckout) throw new Error('Razorpay SDK is not loaded');
+      const rzp = new RazorpayCheckout(options);
+      rzp.on('payment.failed', function (response: { error: { description: string } }) {
+        showToast(`Payment failed: ${response.error.description}`, 'error');
       });
-
-      if (res.success) {
-        // Send order confirmation email (non-blocking)
-        const targetId = res.orderNumber || res.orderId || 'latest';
-        fetch('/api/send-order-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            orderId: targetId,
-            orderNumber: res.orderNumber,
-            email: formData.email,
-            firstName: formData.firstName,
-            items: items,
-            subtotal,
-            tax,
-            shippingFee,
-            paymentMethod,
-            total: calculatedTotal
-          })
-        }).catch(err => console.error("Failed to send order email", err));
-
-        clearCart();
-        showToast('🎉 Order placed successfully! Confirmation sent to your email.', 'success');
-        router.push(`/orders/${targetId}`);
-      } else {
-        showToast(res.error || 'Could not place order. Please try again.', 'error');
-        setIsProcessing(false);
-      }
-    } catch (err: any) {
-      console.error('Order creation error:', err);
-      showToast('An unexpected error occurred while placing your order.', 'error');
+      rzp.open();
+    } catch (err) {
+      console.error('Razorpay init error:', err);
+      showToast('Error setting up payment. Please try again.', 'error');
       setIsProcessing(false);
     }
   };
 
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
-      if ((window as any).Razorpay) {
+      if ((window as RazorpayWindow).Razorpay) {
         resolve(true);
         return;
       }
@@ -248,6 +284,7 @@ export default function CheckoutPage() {
 
     setIsProcessing(true);
 
+    // Load the payment window first, so we never save an order we then can't take payment for.
     if (paymentMethod === 'online') {
       const isLoaded = await loadRazorpayScript();
       if (!isLoaded) {
@@ -255,84 +292,46 @@ export default function CheckoutPage() {
         setIsProcessing(false);
         return;
       }
+    }
 
-      try {
-        const response = await fetch('/api/razorpay/create-order', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ amount: calculatedTotal }),
-        });
-        const orderData = await response.json();
+    try {
+      // The server prices the bag from the catalogue and saves the order; we only say what and how many.
+      const placed = await createOrder({
+        userId: user?.id || null,
+        shippingAddress: {
+          fullName: `${formData.firstName} ${formData.lastName}`.trim() || 'Valued Patron',
+          email: formData.email,
+          phone: normalizeIndianPhone(formData.phone) ?? formData.phone,
+          address: formData.address,
+          city: formData.city,
+          state: formData.state,
+          pincode: formData.pincode,
+        },
+        items: items.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          metal: item.metal || null,
+          size: item.size || null,
+        })),
+        paymentMethod,
+        notes: formData.notes,
+      });
 
-        if (!response.ok || !orderData.id) {
-          showToast(orderData.error || 'Failed to initialize payment gateway.', 'error');
-          setIsProcessing(false);
-          return;
-        }
-
-        const options = {
-          key: orderData.keyId,
-          amount: orderData.amount,
-          currency: orderData.currency,
-          name: storeSettings.store.name,
-          description: storeSettings.store.tagline,
-          image: storeSettings.store.logoUrl,
-          order_id: orderData.id,
-          handler: async function (response: any) {
-            // Checkout reporting "success" here is just client-side JS — verify the
-            // signature server-side before ever marking the order paid, otherwise
-            // anyone could call this handler from dev tools without paying at all.
-            try {
-              const verifyRes = await fetch('/api/razorpay/verify-payment', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  razorpay_order_id: response.razorpay_order_id,
-                  razorpay_payment_id: response.razorpay_payment_id,
-                  razorpay_signature: response.razorpay_signature,
-                }),
-              });
-              const verifyBody = await verifyRes.json();
-              if (!verifyRes.ok || !verifyBody.verified) {
-                showToast('❌ Payment could not be verified. If money was debited, contact support with your payment ID: ' + response.razorpay_payment_id, 'error');
-                setIsProcessing(false);
-                return;
-              }
-            } catch (err) {
-              console.error('Payment verification error:', err);
-              showToast('❌ Payment could not be verified. If money was debited, contact support with your payment ID: ' + response.razorpay_payment_id, 'error');
-              setIsProcessing(false);
-              return;
-            }
-            await submitOrderToDb('paid', response.razorpay_payment_id);
-          },
-          prefill: {
-            name: `${formData.firstName} ${formData.lastName}`.trim(),
-            email: formData.email,
-            contact: normalizeIndianPhone(formData.phone) ?? formData.phone,
-          },
-          theme: {
-            color: '#B99A62',
-          },
-          modal: {
-            ondismiss: function () {
-              setIsProcessing(false);
-            },
-          },
-        };
-
-        const rzp = new (window as any).Razorpay(options);
-        rzp.on('payment.failed', function (response: any) {
-          showToast(`Payment failed: ${response.error.description}`, 'error');
-        });
-        rzp.open();
-      } catch (err) {
-        console.error('Razorpay init error:', err);
-        showToast('Error setting up payment. Please try again.', 'error');
+      if (!placed.success) {
+        showToast(placed.error || 'Could not place order. Please try again.', 'error');
         setIsProcessing(false);
+        return;
       }
-    } else {
-      await submitOrderToDb('pending');
+
+      if (paymentMethod === 'online') {
+        startOnlinePayment(placed);
+      } else {
+        finishOrder(placed);
+      }
+    } catch (err) {
+      console.error('Order creation error:', err);
+      showToast('An unexpected error occurred while placing your order.', 'error');
+      setIsProcessing(false);
     }
   };
 

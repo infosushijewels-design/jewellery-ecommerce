@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { adminCreateProduct, adminDeleteProduct, Product } from '@/lib/supabase/orderService';
 import { useToast } from '@/lib/context/ToastContext';
+import { downloadCsv } from '@/lib/utils/csv';
 import {
   ConfirmDialog,
   EmptyState,
@@ -65,16 +66,7 @@ function exportProductsCsv(products: Product[], categoryName: (id: string | null
     p.is_new_arrival ? 'Yes' : 'No',
     new Date(p.created_at).toISOString(),
   ]);
-  const csv = [header, ...rows]
-    .map((r) => r.map((cell) => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(','))
-    .join('\n');
-  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `products-${new Date().toISOString().slice(0, 10)}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
+  downloadCsv('products', header, rows);
 }
 
 export default function AdminProductsPage() {

@@ -104,6 +104,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       links: [
         { href: '/admin/reviews', label: 'Reviews', icon: 'star', module: 'reviews' },
         { href: '/admin/inquiries', label: 'Contact Inquiries', icon: 'mail', module: 'inquiries' },
+        { href: '/admin/newsletter', label: 'Newsletter', icon: 'mark_email_read', module: 'inquiries' },
+        { href: '/admin/notifications', label: 'Email Notifications', icon: 'campaign', module: 'inquiries' },
         { href: '/admin/appointments', label: 'Video Appointments', icon: 'videocam', module: 'appointments' },
       ],
     },
@@ -112,6 +114,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       links: [
         { href: '/admin/legal', label: 'Legal Pages', icon: 'gavel', module: 'legal' },
         { href: '/admin/staff', label: 'Staff & Roles', icon: 'badge', module: 'staff' },
+        { href: '/admin/audit-logs', label: 'Audit Logs', icon: 'history', module: 'staff' },
         { href: '/admin/settings', label: 'Settings', icon: 'settings', module: 'settings' },
       ],
     },

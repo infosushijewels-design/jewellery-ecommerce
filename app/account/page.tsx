@@ -9,6 +9,17 @@ import AnnouncementBar from '@/components/layout/AnnouncementBar';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useToast } from '@/lib/context/ToastContext';
 import { createClient } from '@/lib/supabase/client';
+import {
+  ADDRESS_FIELD_LABELS,
+  ADDRESS_FIELD_ORDER,
+  PROFILE_FIELD_LABELS,
+  PROFILE_FIELD_ORDER,
+  phoneDigits,
+  validateAddressBook,
+  validateProfile,
+  type AddressField,
+  type ProfileField,
+} from '@/lib/formValidation';
 
 type Tab = 'personal' | 'addresses' | 'security';
 
@@ -53,6 +64,25 @@ export default function AccountPage() {
   const [addressForm, setAddressForm] = useState(emptyAddressForm);
   const [savingAddress, setSavingAddress] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<AddressRow | null>(null);
+
+  // Field-level validation: an error shows once the field was visited (blur) or Save was pressed
+  const [profileTouched, setProfileTouched] = useState<Partial<Record<ProfileField, boolean>>>({});
+  const [profileAttempted, setProfileAttempted] = useState(false);
+  const [addressTouched, setAddressTouched] = useState<Partial<Record<AddressField, boolean>>>({});
+  const [addressAttempted, setAddressAttempted] = useState(false);
+
+  const profileErrors = validateProfile({ fullName, phone });
+  const profileError = (field: ProfileField) => (profileTouched[field] || profileAttempted ? profileErrors[field] : undefined);
+  const addressErrors = validateAddressBook({
+    label: addressForm.label,
+    fullName: addressForm.full_name,
+    phone: addressForm.phone,
+    address: addressForm.address,
+    city: addressForm.city,
+    state: addressForm.state,
+    pincode: addressForm.pincode,
+  });
+  const addressError = (field: AddressField) => (addressTouched[field] || addressAttempted ? addressErrors[field] : undefined);
 
   // Security
   const [currentPassword, setCurrentPassword] = useState('');
@@ -104,11 +134,18 @@ export default function AccountPage() {
   async function handleSaveProfile(e: React.FormEvent) {
     e.preventDefault();
     if (!user) return;
+    setProfileAttempted(true);
+    const badProfile = PROFILE_FIELD_ORDER.filter((field) => profileErrors[field]);
+    if (badProfile.length > 0) {
+      showToast(`Please fix: ${badProfile.map((field) => PROFILE_FIELD_LABELS[field]).join(', ')}.`, 'warning');
+      document.getElementById(`profile-${badProfile[0]}`)?.focus();
+      return;
+    }
     setSavingProfile(true);
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .update({ full_name: fullName.trim(), phone: phone.trim() })
+        .update({ full_name: fullName.trim(), phone: phoneDigits(phone) ?? '' })
         .eq('id', user.id)
         .select('id');
       if (error || !data?.length) throw error || new Error('permission denied');
@@ -123,6 +160,8 @@ export default function AccountPage() {
 
   function startNewAddress() {
     setAddressForm({ ...emptyAddressForm, full_name: fullName, phone });
+    setAddressTouched({});
+    setAddressAttempted(false);
     setEditingAddressId('new');
   }
 
@@ -137,24 +176,29 @@ export default function AccountPage() {
       pincode: a.pincode,
       is_default: a.is_default,
     });
+    setAddressTouched({});
+    setAddressAttempted(false);
     setEditingAddressId(a.id);
   }
 
   async function handleSaveAddress(e: React.FormEvent) {
     e.preventDefault();
     if (!user || !editingAddressId) return;
-    const digits = addressForm.pincode.replace(/\D/g, '');
-    if (digits.length !== 6) {
-      showToast('Please enter a valid 6-digit pincode.', 'warning');
+    setAddressAttempted(true);
+    const badAddress = ADDRESS_FIELD_ORDER.filter((field) => addressErrors[field]);
+    if (badAddress.length > 0) {
+      showToast(`Please fix: ${badAddress.map((field) => ADDRESS_FIELD_LABELS[field]).join(', ')}.`, 'warning');
+      document.getElementById(`address-${badAddress[0]}`)?.focus();
       return;
     }
+    const digits = addressForm.pincode.trim();
     setSavingAddress(true);
     try {
       const payload = {
         user_id: user.id,
         label: addressForm.label.trim() || 'Home',
         full_name: addressForm.full_name.trim(),
-        phone: addressForm.phone.trim(),
+        phone: phoneDigits(addressForm.phone) ?? addressForm.phone.trim(),
         address: addressForm.address.trim(),
         city: addressForm.city.trim(),
         state: addressForm.state.trim(),
@@ -273,6 +317,18 @@ export default function AccountPage() {
   const inputClass =
     'w-full bg-surface border border-outline-variant rounded-lg px-4 py-2.5 text-sm text-on-surface placeholder:text-outline focus:outline-none focus:border-primary transition-colors';
   const labelClass = 'text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-1.5 block';
+  /** Same look as inputClass, with a red border when the field has an error. */
+  const inputClassFor = (error?: string) =>
+    `w-full bg-surface border rounded-lg px-4 py-2.5 text-sm text-on-surface placeholder:text-outline focus:outline-none transition-colors ${
+      error ? 'border-error focus:border-error bg-error-container/10' : 'border-outline-variant focus:border-primary'
+    }`;
+  const renderFieldError = (id: string, message?: string) =>
+    message ? (
+      <p id={`${id}-error`} role="alert" className="mt-1.5 flex items-start gap-1 text-xs text-error">
+        <span className="material-symbols-outlined text-[14px] leading-4">error</span>
+        <span>{message}</span>
+      </p>
+    ) : null;
 
   return (
     <>
@@ -339,26 +395,45 @@ export default function AccountPage() {
                     <div className="h-10 bg-surface-container rounded-lg" />
                   </div>
                 ) : (
-                  <form onSubmit={handleSaveProfile} className="space-y-5 max-w-md">
+                  <form onSubmit={handleSaveProfile} noValidate className="space-y-5 max-w-md">
                     <div>
                       <label className={labelClass}>Email</label>
                       <input type="email" value={user.email || ''} disabled className={`${inputClass} bg-surface-container-low text-on-surface-variant cursor-not-allowed`} />
                     </div>
                     <div>
                       <label className={labelClass}>Full Name</label>
-                      <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Your full name" className={inputClass} />
+                      <input
+                        id="profile-fullName"
+                        type="text"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        onBlur={() => setProfileTouched((p) => ({ ...p, fullName: true }))}
+                        placeholder="Your full name"
+                        maxLength={100}
+                        autoComplete="name"
+                        aria-invalid={profileError('fullName') ? true : undefined}
+                        aria-describedby={profileError('fullName') ? 'profile-fullName-error' : undefined}
+                        className={inputClassFor(profileError('fullName'))}
+                      />
+                      {renderFieldError('profile-fullName', profileError('fullName'))}
                     </div>
                     <div>
                       <label className={labelClass}>Phone Number</label>
                       <input
+                        id="profile-phone"
                         type="tel"
                         inputMode="tel"
                         maxLength={10}
                         value={phone}
                         onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                        onBlur={() => setProfileTouched((p) => ({ ...p, phone: true }))}
                         placeholder="10-digit mobile number"
-                        className={inputClass}
+                        autoComplete="tel-national"
+                        aria-invalid={profileError('phone') ? true : undefined}
+                        aria-describedby={profileError('phone') ? 'profile-phone-error' : undefined}
+                        className={inputClassFor(profileError('phone'))}
                       />
+                      {renderFieldError('profile-phone', profileError('phone'))}
                     </div>
                     <button
                       type="submit"
@@ -400,71 +475,130 @@ export default function AccountPage() {
                     </p>
                   </div>
                 ) : editingAddressId !== null ? (
-                  <form onSubmit={handleSaveAddress} className="space-y-5 max-w-lg">
+                  <form onSubmit={handleSaveAddress} noValidate className="space-y-5 max-w-lg">
                     <div>
                       <label className={labelClass}>Label</label>
                       <input
+                        id="address-label"
                         type="text"
                         value={addressForm.label}
                         onChange={(e) => setAddressForm((p) => ({ ...p, label: e.target.value }))}
+                        onBlur={() => setAddressTouched((p) => ({ ...p, label: true }))}
                         placeholder="Home, Work, etc."
-                        className={inputClass}
+                        maxLength={30}
+                        aria-invalid={addressError('label') ? true : undefined}
+                        aria-describedby={addressError('label') ? 'address-label-error' : undefined}
+                        className={inputClassFor(addressError('label'))}
                       />
+                      {renderFieldError('address-label', addressError('label'))}
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className={labelClass}>Recipient Name</label>
                         <input
+                          id="address-fullName"
                           type="text"
                           required
+                          maxLength={100}
+                          autoComplete="name"
                           value={addressForm.full_name}
                           onChange={(e) => setAddressForm((p) => ({ ...p, full_name: e.target.value }))}
-                          className={inputClass}
+                          onBlur={() => setAddressTouched((p) => ({ ...p, fullName: true }))}
+                          aria-invalid={addressError('fullName') ? true : undefined}
+                          aria-describedby={addressError('fullName') ? 'address-fullName-error' : undefined}
+                          className={inputClassFor(addressError('fullName'))}
                         />
+                        {renderFieldError('address-fullName', addressError('fullName'))}
                       </div>
                       <div>
                         <label className={labelClass}>Phone</label>
                         <input
+                          id="address-phone"
                           type="tel"
                           required
+                          inputMode="tel"
                           maxLength={10}
+                          autoComplete="tel-national"
                           value={addressForm.phone}
                           onChange={(e) => setAddressForm((p) => ({ ...p, phone: e.target.value.replace(/\D/g, '') }))}
-                          className={inputClass}
+                          onBlur={() => setAddressTouched((p) => ({ ...p, phone: true }))}
+                          aria-invalid={addressError('phone') ? true : undefined}
+                          aria-describedby={addressError('phone') ? 'address-phone-error' : undefined}
+                          className={inputClassFor(addressError('phone'))}
                         />
+                        {renderFieldError('address-phone', addressError('phone'))}
                       </div>
                     </div>
                     <div>
                       <label className={labelClass}>Address</label>
                       <textarea
+                        id="address-address"
                         required
                         rows={2}
+                        maxLength={200}
+                        autoComplete="street-address"
                         value={addressForm.address}
                         onChange={(e) => setAddressForm((p) => ({ ...p, address: e.target.value }))}
-                        className={`${inputClass} resize-none`}
+                        onBlur={() => setAddressTouched((p) => ({ ...p, address: true }))}
+                        aria-invalid={addressError('address') ? true : undefined}
+                        aria-describedby={addressError('address') ? 'address-address-error' : undefined}
+                        className={`${inputClassFor(addressError('address'))} resize-none`}
                         placeholder="House / Flat No., Street, Landmark"
                       />
+                      {renderFieldError('address-address', addressError('address'))}
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
                         <label className={labelClass}>City</label>
-                        <input type="text" required value={addressForm.city} onChange={(e) => setAddressForm((p) => ({ ...p, city: e.target.value }))} className={inputClass} />
+                        <input
+                          id="address-city"
+                          type="text"
+                          required
+                          maxLength={60}
+                          autoComplete="address-level2"
+                          value={addressForm.city}
+                          onChange={(e) => setAddressForm((p) => ({ ...p, city: e.target.value }))}
+                          onBlur={() => setAddressTouched((p) => ({ ...p, city: true }))}
+                          aria-invalid={addressError('city') ? true : undefined}
+                          aria-describedby={addressError('city') ? 'address-city-error' : undefined}
+                          className={inputClassFor(addressError('city'))}
+                        />
+                        {renderFieldError('address-city', addressError('city'))}
                       </div>
                       <div>
                         <label className={labelClass}>State</label>
-                        <input type="text" required value={addressForm.state} onChange={(e) => setAddressForm((p) => ({ ...p, state: e.target.value }))} className={inputClass} />
+                        <input
+                          id="address-state"
+                          type="text"
+                          required
+                          maxLength={60}
+                          autoComplete="address-level1"
+                          value={addressForm.state}
+                          onChange={(e) => setAddressForm((p) => ({ ...p, state: e.target.value }))}
+                          onBlur={() => setAddressTouched((p) => ({ ...p, state: true }))}
+                          aria-invalid={addressError('state') ? true : undefined}
+                          aria-describedby={addressError('state') ? 'address-state-error' : undefined}
+                          className={inputClassFor(addressError('state'))}
+                        />
+                        {renderFieldError('address-state', addressError('state'))}
                       </div>
                       <div>
                         <label className={labelClass}>Pincode</label>
                         <input
+                          id="address-pincode"
                           type="text"
                           required
                           inputMode="numeric"
                           maxLength={6}
+                          autoComplete="postal-code"
                           value={addressForm.pincode}
                           onChange={(e) => setAddressForm((p) => ({ ...p, pincode: e.target.value.replace(/\D/g, '') }))}
-                          className={inputClass}
+                          onBlur={() => setAddressTouched((p) => ({ ...p, pincode: true }))}
+                          aria-invalid={addressError('pincode') ? true : undefined}
+                          aria-describedby={addressError('pincode') ? 'address-pincode-error' : undefined}
+                          className={inputClassFor(addressError('pincode'))}
                         />
+                        {renderFieldError('address-pincode', addressError('pincode'))}
                       </div>
                     </div>
                     <label className="flex items-center gap-2 cursor-pointer select-none">

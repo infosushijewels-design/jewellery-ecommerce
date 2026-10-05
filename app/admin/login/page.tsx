@@ -39,6 +39,8 @@ export default function AdminLoginPage() {
     try {
       const remembered = localStorage.getItem(REMEMBERED_EMAIL_KEY);
       if (remembered) {
+        // Browser-only storage can't be read during render without a hydration mismatch, so it is restored after mount
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setEmail(remembered);
         setRememberMe(true);
       }

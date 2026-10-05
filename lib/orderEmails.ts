@@ -20,6 +20,8 @@ export interface OrderEmailItem {
 export interface OrderEmailData {
   /** Used in the tracking link: `${storeUrl}/orders/${orderId}`. */
   orderId: string;
+  /** Secret from the order: added to the tracking link so a guest can open it from any device. */
+  trackingToken?: string | null;
   /** Human-friendly reference shown in the badge (falls back to orderId). */
   orderNumber?: string | null;
   customerName: string;
@@ -77,6 +79,11 @@ function paymentLabel(method: string | null | undefined): string | null {
   return method;
 }
 
+/** "?t=<token>" for the tracking link (only a well-formed token is ever added). */
+function tokenQuery(data: OrderEmailData): string {
+  return data.trackingToken && /^[a-f0-9]{32}$/i.test(data.trackingToken) ? `?t=${data.trackingToken}` : '';
+}
+
 function orderRef(data: OrderEmailData): string {
   return (data.orderNumber || data.orderId).trim();
 }
@@ -127,7 +134,7 @@ export function generateOrderEmailHtml(
   const first = data.customerName.trim().split(/\s+/)[0] || 'there';
   const store = escapeHtml(brand.storeName);
   const storeUrl = brand.storeUrl.replace(/\/+$/, '');
-  const ctaHref = isAdmin ? `${storeUrl}/admin/orders` : `${storeUrl}/orders/${encodeURIComponent(data.orderId)}`;
+  const ctaHref = isAdmin ? `${storeUrl}/admin/orders` : `${storeUrl}/orders/${encodeURIComponent(data.orderId)}${tokenQuery(data)}`;
   const ctaLabel = isAdmin ? 'Open Orders Dashboard' : 'Track Your Order';
   const pay = paymentLabel(data.paymentMethod);
 
@@ -297,7 +304,7 @@ export function generateOrderEmailText(
   lines.push(`Shipping: ${data.shippingFee === undefined || data.shippingFee === null ? 'Calculated' : data.shippingFee === 0 ? 'Complimentary' : formatINR(data.shippingFee)}`);
   lines.push(`Taxes (GST): ${data.tax === undefined || data.tax === null ? 'Included' : formatINR(data.tax)}`);
   lines.push(`TOTAL: ${formatINR(data.total)}`, '');
-  lines.push(isAdmin ? `Open orders: ${storeUrl}/admin/orders` : `Track your order: ${storeUrl}/orders/${encodeURIComponent(data.orderId)}`);
+  lines.push(isAdmin ? `Open orders: ${storeUrl}/admin/orders` : `Track your order: ${storeUrl}/orders/${encodeURIComponent(data.orderId)}${tokenQuery(data)}`);
   if (!isAdmin) {
     lines.push('', 'Insured, discreet packaging. A lifetime authenticity card with your jewellery.');
     lines.push("We'll email your tracking details as soon as your order is dispatched.");

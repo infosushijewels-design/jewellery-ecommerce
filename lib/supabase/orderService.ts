@@ -1,18 +1,25 @@
 import { createClient } from './client';
 import { Database } from './database.types';
-import { loadStoreSettings } from '@/lib/hooks/useStoreSettings';
 import { isDemoAdminActive } from '@/lib/utils/adminDemoAccess';
 export type Order = Database['public']['Tables']['orders']['Row'];
 export type OrderItem = Database['public']['Tables']['order_items']['Row'];
 export type Profile = Database['public']['Tables']['profiles']['Row'];
 export type Product = Database['public']['Tables']['products']['Row'];
 export type ProductVariant = Database['public']['Tables']['product_variants']['Row'];
+type ProductInsert = Database['public']['Tables']['products']['Insert'];
+type ProductUpdate = Database['public']['Tables']['products']['Update'];
+type VariantInsert = Database['public']['Tables']['product_variants']['Insert'];
+
+function errorMessage(e: unknown): string {
+  return e instanceof Error ? e.message : '';
+}
 
 export interface FullOrder extends Order {
   items: OrderItem[];
 }
 
 export interface CreateOrderInput {
+  /** Only used for the local copy — the server takes the customer's identity from their session. */
   userId?: string | null;
   shippingAddress: {
     fullName: string;
@@ -23,21 +30,14 @@ export interface CreateOrderInput {
     state: string;
     pincode: string;
   };
+  /** Only WHICH product and HOW MANY (plus the chosen metal and size): prices are decided by the server. */
   items: {
-    productId?: string | null;
-    title: string;
-    imageUrl?: string | null;
-    price: number;
+    productId: string;
     quantity: number;
     metal?: string | null;
     size?: string | null;
   }[];
-  subtotal: number;
-  tax: number;
-  shippingFee: number;
-  total: number;
   paymentMethod: 'cod' | 'online';
-  paymentStatus: 'pending' | 'paid';
   notes?: string;
 }
 
@@ -96,110 +96,157 @@ function addGuestRecentOrder(ref: GuestOrderRef) {
   saveGuestRecentOrders([ref, ...existing].slice(0, 25));
 }
 
+/** What the server worked out for an order (prices come from the catalogue, never from the browser). */
+export interface PlacedOrderSummary {
+  subtotal: number;
+  tax: number;
+  shippingFee: number;
+  total: number;
+  items: {
+    productId: string;
+    title: string;
+    imageUrl: string | null;
+    price: number;
+    quantity: number;
+    metal: string | null;
+    size: string | null;
+  }[];
+}
+
+export interface PlacedOrder {
+  success: boolean;
+  orderId?: string;
+  orderNumber?: string;
+  error?: string;
+  order?: PlacedOrderSummary;
+  /** Secret that lets the customer open this order from any device: /orders/<number>?t=<token>. */
+  trackingToken?: string;
+  /** Present for online payments: the Razorpay order to open in the payment window. */
+  razorpay?: { id: string; amount: number; currency: string; keyId: string };
+}
+
 /**
- * Creates an order in Supabase and persists order items.
- * Falls back to browser localStorage if DB table isn't created yet.
+ * Places an order through the server (/api/orders). The server prices the cart from the catalogue, saves the
+ * order and its items (for guests and signed-in customers alike) and, for online payments, opens a Razorpay
+ * order for exactly the server-calculated total. Online orders stay "pending" until confirmOnlinePayment()
+ * succeeds. A copy is kept in this browser so the order can still be opened here (guest tracking).
+ * If the server could not save the order, it is NOT reported as placed.
  */
-export async function createOrder(input: CreateOrderInput): Promise<{ success: boolean; orderId?: string; orderNumber?: string; error?: string }> {
-  const supabase = createClient();
-  // Prefix is configurable in Admin → Settings → Order Settings
-  const prefix = (await loadStoreSettings()).orders.numberPrefix.trim().toUpperCase() || 'SJ';
-  const orderNumber = `${prefix}-${Date.now().toString().slice(-6)}`;
-  const orderId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `order-${Date.now()}`;
-
-  const orderRecord: Order = {
-    id: orderId,
-    order_number: orderNumber,
-    user_id: input.userId || null,
-    status: 'placed',
-    subtotal: input.subtotal,
-    tax: input.tax,
-    shipping_fee: input.shippingFee,
-    total: input.total,
-    payment_method: input.paymentMethod,
-    payment_status: input.paymentStatus,
-    shipping_address: {
-      full_name: input.shippingAddress.fullName,
-      email: input.shippingAddress.email,
-      phone: input.shippingAddress.phone,
-      address: input.shippingAddress.address,
-      city: input.shippingAddress.city,
-      state: input.shippingAddress.state,
-      pincode: input.shippingAddress.pincode,
-    },
-    notes: input.notes || null,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  };
-
-  const orderItemsRecords: OrderItem[] = input.items.map((item, idx) => ({
-    id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `item-${Date.now()}-${idx}`,
-    order_id: orderId,
-    product_id: item.productId || null,
-    title: item.title,
-    image_url: item.imageUrl || null,
-    price: item.price,
-    quantity: item.quantity,
-    metal: item.metal || null,
-    size: item.size || null,
-    created_at: new Date().toISOString(),
-  }));
-
-  // Always save to local storage as safety backup — order details are never
-  // lost on this device, even for guest checkouts with no account.
-  const localOrders = getLocalOrders();
-  saveLocalOrders([{ ...orderRecord, items: orderItemsRecords }, ...localOrders]);
-  addGuestRecentOrder({ orderId, orderNumber, createdAt: orderRecord.created_at });
-
+export async function createOrder(input: CreateOrderInput): Promise<PlacedOrder> {
+  let response: Response;
   try {
-    // Attempt Supabase insert
-    const { error: orderError } = await supabase
-      .from('orders')
-      .insert({
-        id: orderRecord.id,
-        order_number: orderRecord.order_number,
-        user_id: orderRecord.user_id,
-        status: orderRecord.status,
-        subtotal: orderRecord.subtotal,
-        tax: orderRecord.tax,
-        shipping_fee: orderRecord.shipping_fee,
-        total: orderRecord.total,
-        payment_method: orderRecord.payment_method,
-        payment_status: orderRecord.payment_status,
-        shipping_address: orderRecord.shipping_address,
-        notes: orderRecord.notes,
-      });
+    response = await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      // Only WHAT and HOW MANY are sent — no prices or totals; the server decides those.
+      body: JSON.stringify({
+        shippingAddress: input.shippingAddress,
+        items: input.items.map((item) => ({ productId: item.productId, quantity: item.quantity, metal: item.metal ?? null, size: item.size ?? null })),
+        paymentMethod: input.paymentMethod,
+        notes: input.notes,
+      }),
+    });
+  } catch (err) {
+    console.error('Network error placing order:', err);
+    return { success: false, error: 'Could not reach the server. Please check your connection and try again.' };
+  }
 
-    if (orderError) {
-      console.warn('Could not insert order to Supabase (using local backup):', orderError.message);
-      return { success: true, orderId, orderNumber };
-    }
+  const result = (await response.json().catch(() => null)) as PlacedOrder | null;
+  if (!response.ok || !result?.success || !result.orderId || !result.orderNumber || !result.order) {
+    return { success: false, error: result?.error || 'We could not save your order. Please try again.' };
+  }
+  const { orderId, orderNumber, order } = result;
 
-    // Insert order items
-    const { error: itemsError } = await supabase
-      .from('order_items')
-      .insert(
-        orderItemsRecords.map((item) => ({
-          id: item.id,
-          order_id: item.order_id,
-          product_id: item.product_id,
-          title: item.title,
-          image_url: item.image_url,
-          price: item.price,
-          quantity: item.quantity,
-          metal: item.metal,
-          size: item.size,
-        }))
+  // Local copy (guest tracking on this device). A storage failure here must never undo a saved order.
+  try {
+    const createdAt = new Date().toISOString();
+    const record: Order = {
+      id: orderId,
+      order_number: orderNumber,
+      user_id: input.userId || null,
+      status: 'placed',
+      subtotal: order.subtotal,
+      tax: order.tax,
+      shipping_fee: order.shippingFee,
+      total: order.total,
+      payment_method: input.paymentMethod,
+      payment_status: 'pending',
+      shipping_address: {
+        full_name: input.shippingAddress.fullName,
+        email: input.shippingAddress.email,
+        phone: input.shippingAddress.phone,
+        address: input.shippingAddress.address,
+        city: input.shippingAddress.city,
+        state: input.shippingAddress.state,
+        pincode: input.shippingAddress.pincode,
+      },
+      notes: input.notes || null,
+      razorpay_order_id: result.razorpay?.id ?? null,
+      razorpay_payment_id: null,
+      paid_at: null,
+      tracking_token: result.trackingToken ?? null,
+      stock_reserved: false,
+      refunded_amount: 0,
+      created_at: createdAt,
+      updated_at: createdAt,
+    };
+    const itemRecords: OrderItem[] = order.items.map((item, idx) => ({
+      id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `item-${Date.now()}-${idx}`,
+      order_id: orderId,
+      product_id: item.productId,
+      title: item.title,
+      image_url: item.imageUrl,
+      price: item.price,
+      quantity: item.quantity,
+      metal: item.metal,
+      size: item.size,
+      created_at: createdAt,
+    }));
+    saveLocalOrders([{ ...record, items: itemRecords }, ...getLocalOrders()]);
+    addGuestRecentOrder({ orderId, orderNumber, createdAt });
+  } catch (err) {
+    console.warn('Could not keep a local copy of the order:', err);
+  }
+
+  return result;
+}
+
+/**
+ * Asks the server to confirm an online payment. The server checks the Razorpay signature, then asks Razorpay
+ * for the payment and compares it with the order (same order, INR, authorised/captured, exact amount) before
+ * marking the order paid.
+ */
+export async function confirmOnlinePayment(proof: {
+  razorpayOrderId: string;
+  razorpayPaymentId: string;
+  razorpaySignature: string;
+}): Promise<{ success: boolean; orderId?: string; orderNumber?: string; error?: string }> {
+  try {
+    const response = await fetch('/api/razorpay/verify-payment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        razorpay_order_id: proof.razorpayOrderId,
+        razorpay_payment_id: proof.razorpayPaymentId,
+        razorpay_signature: proof.razorpaySignature,
+      }),
+    });
+    const body = (await response.json().catch(() => null)) as { verified?: boolean; orderId?: string; orderNumber?: string; error?: string } | null;
+    if (!response.ok || !body?.verified) return { success: false, error: body?.error || 'Payment could not be verified.' };
+
+    try {
+      saveLocalOrders(
+        getLocalOrders().map((o) =>
+          o.id === body.orderId ? { ...o, payment_status: 'paid' as const, razorpay_payment_id: proof.razorpayPaymentId, paid_at: new Date().toISOString() } : o
+        )
       );
-
-    if (itemsError) {
-      console.warn('Could not insert items to Supabase (using local backup):', itemsError.message);
+    } catch {
+      /* the local copy is only a convenience */
     }
-
-    return { success: true, orderId, orderNumber };
-  } catch (err: any) {
-    console.warn('Network error placing order in Supabase:', err?.message || err);
-    return { success: true, orderId, orderNumber };
+    return { success: true, orderId: body.orderId, orderNumber: body.orderNumber };
+  } catch (err) {
+    console.error('Payment verification error:', err);
+    return { success: false, error: 'Payment could not be verified.' };
   }
 }
 
@@ -287,10 +334,28 @@ export async function getUserOrders(userId?: string | null, email?: string | nul
   }
 }
 
+/** Path of the order tracking page; the secret token (when known) lets a guest open it from any device. */
+export function orderTrackingPath(identifier: string, trackingToken?: string | null): string {
+  return `/orders/${encodeURIComponent(identifier)}${trackingToken ? `?t=${encodeURIComponent(trackingToken)}` : ''}`;
+}
+
 /**
  * Fetch single order by its ID or order_number
  */
-export async function getOrderById(identifier: string): Promise<FullOrder | null> {
+export async function getOrderById(identifier: string, trackingToken?: string | null): Promise<FullOrder | null> {
+  // With the secret from the tracking link, anyone holding the link (a guest, on any device) can open the order.
+  if (trackingToken && /^[a-f0-9]{32}$/i.test(trackingToken)) {
+    try {
+      const res = await fetch(`/api/orders/track?id=${encodeURIComponent(identifier)}&token=${encodeURIComponent(trackingToken)}`, { cache: 'no-store' });
+      if (res.ok) {
+        const body = (await res.json()) as { order?: FullOrder };
+        if (body.order) return body.order;
+      }
+    } catch {
+      /* fall back to the normal lookup below */
+    }
+  }
+
   const local = getLocalOrders();
   const localMatch = local.find((o) => o.id === identifier || o.order_number === identifier);
 
@@ -309,7 +374,7 @@ export async function getOrderById(identifier: string): Promise<FullOrder | null
 
     return {
       ...data,
-      items: (data as any).items || [],
+      items: (data as unknown as { items?: OrderItem[] }).items || [],
     };
   } catch {
     return localMatch || null;
@@ -334,12 +399,12 @@ export async function getAllOrdersAdmin(): Promise<FullOrder[]> {
     }
 
     // Merge any local-only orders with Supabase orders
-    const sbIds = new Set(data.map((d: any) => d.id));
+    const sbIds = new Set(data.map((d: { id: string }) => d.id));
     const unmergedLocal = local.filter((l) => !sbIds.has(l.id));
 
-    const formattedSb = data.map((o: any) => ({
+    const formattedSb = data.map((o) => ({
       ...o,
-      items: o.items || [],
+      items: (o as unknown as { items?: OrderItem[] }).items || [],
     }));
 
     return [...formattedSb, ...unmergedLocal];
@@ -701,19 +766,19 @@ export async function getAdminCustomers(): Promise<AdminCustomer[]> {
 /**
  * Admin: Product management functions with graceful column fallback
  */
-export async function adminCreateProduct(product: Record<string, any>): Promise<{ success: boolean; id?: string; error?: string }> {
+export async function adminCreateProduct(product: Record<string, unknown>): Promise<{ success: boolean; id?: string; error?: string }> {
   if (isDemoAdminActive()) {
     return { success: true, id: `demo-product-${Date.now()}` };
   }
   const supabase = createClient();
   try {
     // 1. Try full insert
-    const { data, error } = await supabase.from('products').insert(product as any).select('id').single();
+    const { data, error } = await supabase.from('products').insert(product as ProductInsert).select('id').single();
     if (!error) return { success: true, id: data?.id };
 
     // 2. If column error (e.g. available_sizes, mrp, stock not in schema yet), fallback to baseline columns
     if (error.message.includes('column') || error.message.includes('schema cache')) {
-      const baselinePayload: Record<string, any> = {
+      const baselinePayload: Record<string, unknown> = {
         title: product.title,
         slug: product.slug,
         price: product.price,
@@ -727,14 +792,14 @@ export async function adminCreateProduct(product: Record<string, any>): Promise<
         is_featured: product.is_featured,
         is_new_arrival: product.is_new_arrival,
       };
-      const { data: retryData, error: retryError } = await supabase.from('products').insert(baselinePayload as any).select('id').single();
+      const { data: retryData, error: retryError } = await supabase.from('products').insert(baselinePayload as ProductInsert).select('id').single();
       if (retryError) return { success: false, error: retryError.message };
       return { success: true, id: retryData?.id };
     }
 
     return { success: false, error: error.message };
-  } catch (e: any) {
-    return { success: false, error: e?.message || 'Failed to create product' };
+  } catch (e) {
+    return { success: false, error: errorMessage(e) || 'Failed to create product' };
   }
 }
 
@@ -779,28 +844,28 @@ export async function adminSaveProductVariants(
     if (variants.length === 0) return { success: true };
 
     const { error: insertError } = await supabase.from('product_variants').insert(
-      variants.map((v) => ({ ...v, product_id: productId })) as any
+      variants.map((v) => ({ ...v, product_id: productId })) as VariantInsert[]
     );
     if (insertError) return { success: false, error: insertError.message };
 
     return { success: true };
-  } catch (e: any) {
-    return { success: false, error: e?.message || 'Failed to save product variants' };
+  } catch (e) {
+    return { success: false, error: errorMessage(e) || 'Failed to save product variants' };
   }
 }
 
-export async function adminUpdateProduct(id: string, product: Record<string, any>): Promise<{ success: boolean; error?: string }> {
+export async function adminUpdateProduct(id: string, product: Record<string, unknown>): Promise<{ success: boolean; error?: string }> {
   if (isDemoAdminActive()) {
     return { success: true };
   }
   const supabase = createClient();
   try {
-    const { error } = await supabase.from('products').update(product as any).eq('id', id);
+    const { error } = await supabase.from('products').update(product as ProductUpdate).eq('id', id);
     if (!error) return { success: true };
 
     // Fallback to baseline columns if column doesn't exist
     if (error.message.includes('column') || error.message.includes('schema cache')) {
-      const baselinePayload: Record<string, any> = {
+      const baselinePayload: Record<string, unknown> = {
         title: product.title,
         slug: product.slug,
         price: product.price,
@@ -814,14 +879,14 @@ export async function adminUpdateProduct(id: string, product: Record<string, any
         is_featured: product.is_featured,
         is_new_arrival: product.is_new_arrival,
       };
-      const { error: retryError } = await supabase.from('products').update(baselinePayload as any).eq('id', id);
+      const { error: retryError } = await supabase.from('products').update(baselinePayload as ProductUpdate).eq('id', id);
       if (retryError) return { success: false, error: retryError.message };
       return { success: true };
     }
 
     return { success: false, error: error.message };
-  } catch (e: any) {
-    return { success: false, error: e?.message || 'Failed to update product' };
+  } catch (e) {
+    return { success: false, error: errorMessage(e) || 'Failed to update product' };
   }
 }
 
@@ -831,8 +896,8 @@ export async function adminDeleteProduct(id: string): Promise<{ success: boolean
     const { error } = await supabase.from('products').delete().eq('id', id);
     if (error) return { success: false, error: error.message };
     return { success: true };
-  } catch (e: any) {
-    return { success: false, error: e?.message || 'Failed to delete product' };
+  } catch (e) {
+    return { success: false, error: errorMessage(e) || 'Failed to delete product' };
   }
 }
 
@@ -871,6 +936,12 @@ export function seedDemoOrdersIfEmpty(): void {
         pincode: '400002',
       },
       notes: null,
+      razorpay_order_id: null,
+      razorpay_payment_id: null,
+      paid_at: null,
+      tracking_token: null,
+      stock_reserved: false,
+      refunded_amount: 0,
       created_at: new Date(now - 2 * day).toISOString(),
       updated_at: new Date(now - 1 * day).toISOString(),
       items: [
@@ -909,6 +980,12 @@ export function seedDemoOrdersIfEmpty(): void {
         pincode: '700016',
       },
       notes: null,
+      razorpay_order_id: null,
+      razorpay_payment_id: null,
+      paid_at: null,
+      tracking_token: null,
+      stock_reserved: false,
+      refunded_amount: 0,
       created_at: new Date(now - 12 * day).toISOString(),
       updated_at: new Date(now - 5 * day).toISOString(),
       items: [

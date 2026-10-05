@@ -1,52 +1,105 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useMemo, useState, FormEvent } from 'react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import AnnouncementBar from '@/components/layout/AnnouncementBar';
 import Breadcrumb from '@/components/ui/Breadcrumb';
 import { useToast } from '@/lib/context/ToastContext';
-import { createClient } from '@/lib/supabase/client';
+import {
+  CONTACT_CATEGORIES,
+  CONTACT_FIELD_LABELS,
+  CONTACT_FIELD_ORDER,
+  CONTACT_MESSAGE_MAX,
+  validateContact,
+  type ContactField,
+  type ContactValues,
+} from '@/lib/formValidation';
 
-const categories = ['Engagement', 'High Jewellery', 'Bespoke'];
+const emptyForm: ContactValues = { name: '', email: '', phone: '', category: CONTACT_CATEGORIES[0], message: '' };
+
+const inputBase =
+  'w-full px-4 py-3 rounded-lg border bg-surface font-body-sm text-body-sm text-on-surface focus:outline-none transition-colors';
 
 export default function ContactPage() {
   const { showToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [form, setForm] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    category: categories[0],
-    message: '',
-  });
+  const [form, setForm] = useState<ContactValues>(emptyForm);
+  const [website, setWebsite] = useState(''); // hidden bot trap — real visitors never see or fill it
+  const [startedAt] = useState(() => Date.now()); // when the form appeared (a form filled in "instantly" is a bot)
+  const [touched, setTouched] = useState<Partial<Record<ContactField, boolean>>>({});
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
-  const handleChange = (field: keyof typeof form) => (
+  const errors = useMemo(() => validateContact(form), [form]);
+  const visibleError = (field: ContactField) => (touched[field] || submitAttempted ? errors[field] : undefined);
+
+  const handleChange = (field: ContactField) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
-    setForm((prev) => ({ ...prev, [field]: e.target.value }));
+    // Phone: only characters people actually type in a number.
+    const value = field === 'phone' ? e.target.value.replace(/[^\d+\s()-]/g, '') : e.target.value;
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  /** id, value, handlers and error styling for a field. */
+  const fieldProps = (field: ContactField) => {
+    const err = visibleError(field);
+    return {
+      id: `contact-${field}`,
+      name: field,
+      value: form[field],
+      onChange: handleChange(field),
+      onBlur: () => setTouched((prev) => ({ ...prev, [field]: true })),
+      'aria-invalid': err ? (true as const) : undefined,
+      'aria-describedby': err ? `contact-${field}-error` : undefined,
+      className: `${inputBase} ${err ? 'border-error focus:border-error bg-error-container/10' : 'border-outline-variant/60 focus:border-secondary'}`,
+    };
+  };
+
+  const renderError = (field: ContactField) => {
+    const err = visibleError(field);
+    if (!err) return null;
+    return (
+      <p id={`contact-${field}-error`} role="alert" className="mt-1.5 flex items-start gap-1 text-xs text-error">
+        <span className="material-symbols-outlined text-[14px] leading-4">error</span>
+        <span>{err}</span>
+      </p>
+    );
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
+    if (isSubmitting) return;
 
+    setSubmitAttempted(true);
+    const badFields = CONTACT_FIELD_ORDER.filter((field) => errors[field]);
+    if (badFields.length > 0) {
+      showToast(`Please fix: ${badFields.map((field) => CONTACT_FIELD_LABELS[field]).join(', ')}.`, 'warning');
+      const first = document.getElementById(`contact-${badFields[0]}`);
+      first?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      first?.focus({ preventScroll: true });
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
-      const { error } = await createClient()
-        .from('contact_inquiries')
-        .insert({
-          name: form.name.trim(),
-          email: form.email.trim(),
-          phone: form.phone.trim() || null,
-          category: form.category,
-          message: form.message.trim(),
-        });
-      if (error) throw error;
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...form, website, startedAt }),
+      });
+      const body = (await response.json().catch(() => null)) as { success?: boolean; error?: string } | null;
+      if (!response.ok || !body?.success) {
+        showToast(body?.error || 'Sorry, we could not send your message. Please try again or email concierge@sushijewels.com.', 'error');
+        return;
+      }
       showToast('💬 Message sent! Our team will respond shortly.', 'success');
-      setForm({ name: '', email: '', phone: '', category: categories[0], message: '' });
+      setForm(emptyForm);
+      setTouched({});
+      setSubmitAttempted(false);
     } catch (err) {
       console.error('Failed to submit enquiry:', err);
-      showToast('Sorry, we could not send your message. Please try again or email concierge@sushijewels.com.', 'error');
+      showToast('Sorry, we could not send your message. Please check your connection or email concierge@sushijewels.com.', 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -77,83 +130,70 @@ export default function ContactPage() {
           <div className="lg:col-span-7">
             <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-xl p-6 sm:p-10">
               <h2 className="font-headline-sm text-headline-sm text-primary mb-6">Bespoke Enquiry &amp; Appointment Booking</h2>
-              <form onSubmit={handleSubmit} className="space-y-5">
+              <form onSubmit={handleSubmit} noValidate className="space-y-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div>
-                    <label htmlFor="name" className="block font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wide mb-2">
+                    <label htmlFor="contact-name" className="block font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wide mb-2">
                       Full Name
                     </label>
-                    <input
-                      id="name"
-                      type="text"
-                      required
-                      value={form.name}
-                      onChange={handleChange('name')}
-                      className="w-full px-4 py-3 rounded-lg border border-outline-variant/60 bg-surface font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-secondary transition-colors"
-                      placeholder="Your name"
-                    />
+                    <input type="text" required maxLength={100} autoComplete="name" placeholder="Your name" {...fieldProps('name')} />
+                    {renderError('name')}
                   </div>
                   <div>
-                    <label htmlFor="phone" className="block font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wide mb-2">
+                    <label htmlFor="contact-phone" className="block font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wide mb-2">
                       Phone
                     </label>
-                    <input
-                      id="phone"
-                      type="tel"
-                      required
-                      value={form.phone}
-                      onChange={handleChange('phone')}
-                      className="w-full px-4 py-3 rounded-lg border border-outline-variant/60 bg-surface font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-secondary transition-colors"
-                      placeholder="+91 00000 00000"
-                    />
+                    <input type="tel" required inputMode="tel" maxLength={18} autoComplete="tel" placeholder="+91 00000 00000" {...fieldProps('phone')} />
+                    {renderError('phone')}
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="email" className="block font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wide mb-2">
+                  <label htmlFor="contact-email" className="block font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wide mb-2">
                     Email
                   </label>
-                  <input
-                    id="email"
-                    type="email"
-                    required
-                    value={form.email}
-                    onChange={handleChange('email')}
-                    className="w-full px-4 py-3 rounded-lg border border-outline-variant/60 bg-surface font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-secondary transition-colors"
-                    placeholder="you@example.com"
-                  />
+                  <input type="email" required inputMode="email" maxLength={254} autoComplete="email" placeholder="you@example.com" {...fieldProps('email')} />
+                  {renderError('email')}
                 </div>
 
                 <div>
-                  <label htmlFor="category" className="block font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wide mb-2">
+                  <label htmlFor="contact-category" className="block font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wide mb-2">
                     Preferred Category
                   </label>
-                  <select
-                    id="category"
-                    value={form.category}
-                    onChange={handleChange('category')}
-                    className="w-full px-4 py-3 rounded-lg border border-outline-variant/60 bg-surface font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-secondary transition-colors"
-                  >
-                    {categories.map((cat) => (
+                  <select {...fieldProps('category')}>
+                    {CONTACT_CATEGORIES.map((cat) => (
                       <option key={cat} value={cat}>{cat}</option>
                     ))}
                   </select>
+                  {renderError('category')}
                 </div>
 
                 <div>
-                  <label htmlFor="message" className="block font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wide mb-2">
+                  <label htmlFor="contact-message" className="block font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wide mb-2">
                     Message
                   </label>
                   <textarea
-                    id="message"
                     required
                     rows={5}
-                    value={form.message}
-                    onChange={handleChange('message')}
-                    className="w-full px-4 py-3 rounded-lg border border-outline-variant/60 bg-surface font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-secondary transition-colors resize-none"
+                    maxLength={CONTACT_MESSAGE_MAX}
                     placeholder="Tell us about the piece you have in mind..."
+                    {...fieldProps('message')}
+                    className={`${fieldProps('message').className} resize-none`}
                   />
+                  {renderError('message')}
                 </div>
+
+                {/* Bot trap: invisible to people (and to screen readers / keyboard), but bots fill every field. */}
+                <input
+                  type="text"
+                  name="website"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  className="hidden"
+                />
 
                 <button
                   type="submit"

@@ -6,11 +6,13 @@ import Footer from '@/components/layout/Footer';
 import AnnouncementBar from '@/components/layout/AnnouncementBar';
 import { getOrderById, FullOrder } from '@/lib/supabase/orderService';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 
 export default function OrderTrackingPage() {
   const params = useParams();
   const orderId = params?.id as string;
+  // The tracking link in the confirmation email carries a secret (?t=...) so a guest can open the order on any device.
+  const trackingToken = useSearchParams().get('t');
 
   const [order, setOrder] = useState<FullOrder | null>(null);
   const [loading, setLoading] = useState(true);
@@ -20,7 +22,7 @@ export default function OrderTrackingPage() {
       if (!orderId) return;
       setLoading(true);
       try {
-        const data = await getOrderById(orderId);
+        const data = await getOrderById(orderId, trackingToken);
         setOrder(data);
       } catch (err) {
         console.error('Error fetching order:', err);
@@ -29,7 +31,7 @@ export default function OrderTrackingPage() {
       }
     }
     loadOrder();
-  }, [orderId]);
+  }, [orderId, trackingToken]);
 
   // Progress bar calculations
   const getProgressConfig = (status: FullOrder['status']) => {

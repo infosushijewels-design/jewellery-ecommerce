@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getAllOrdersAdmin, updateOrderPaymentStatus, updateOrderStatus, FullOrder } from '@/lib/supabase/orderService';
 import { useToast } from '@/lib/context/ToastContext';
+import { downloadCsv } from '@/lib/utils/csv';
 import { printOrderInvoice } from '@/lib/utils/printInvoice';
 import OrderDetailsDrawer, {
   ORDER_STATUS_OPTIONS,
@@ -50,13 +51,20 @@ const PAYMENT_STATUS_STYLES: Record<PaymentStatus, string> = {
   paid: 'bg-emerald-50 border-emerald-200 text-emerald-800',
   pending: 'bg-amber-50 border-amber-200 text-amber-800',
   failed: 'bg-red-50 border-red-200 text-red-700',
+  partially_refunded: 'bg-violet-50 border-violet-200 text-violet-800',
+  refunded: 'bg-slate-100 border-slate-300 text-slate-700',
 };
+
+// Refund states are set only by the Refund action in the order drawer, never from the dropdown.
+const REFUND_STATE_LABELS: Partial<Record<PaymentStatus, string>> = { partially_refunded: 'Partly refunded', refunded: 'Refunded' };
 
 const PAYMENT_STATUS_FILTERS = [
   { value: 'all', label: 'All payments' },
   { value: 'paid', label: 'Paid' },
   { value: 'pending', label: 'Payment pending' },
   { value: 'failed', label: 'Payment failed' },
+  { value: 'partially_refunded', label: 'Partly refunded' },
+  { value: 'refunded', label: 'Refunded' },
 ];
 
 const PAYMENT_OPTIONS = [
@@ -85,16 +93,29 @@ function exportOrdersCsv(orders: FullOrder[]) {
     o.payment_status,
     orderStatusLabel(o.status),
   ]);
-  const csv = [header, ...rows]
-    .map((r) => r.map((cell) => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(','))
-    .join('\n');
-  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `orders-${new Date().toISOString().slice(0, 10)}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
+  downloadCsv('orders', header, rows);
+}
+
+function exportPaymentsCsv(orders: FullOrder[]) {
+  const header = ['Order Number', 'Date', 'Customer', 'Email', 'Payment Method', 'Payment Status', 'Order Total', 'Amount Refunded', 'Net Received', 'Razorpay Order ID', 'Razorpay Payment ID'];
+  const rows = orders.map((o) => {
+    const paid = o.payment_status === 'paid' || o.payment_status === 'refunded' || o.payment_status === 'partially_refunded';
+    const refunded = Number(o.refunded_amount) || 0;
+    return [
+      o.order_number,
+      new Date(o.created_at).toISOString(),
+      o.shipping_address?.full_name || '',
+      o.shipping_address?.email || '',
+      paymentLabel(o.payment_method),
+      o.payment_status,
+      String(o.total),
+      String(refunded),
+      paid ? String(Math.max(0, Number(o.total) - refunded)) : '0',
+      o.razorpay_order_id || '',
+      o.razorpay_payment_id || '',
+    ];
+  });
+  downloadCsv('payments', header, rows);
 }
 
 export default function AdminOrdersPage() {
@@ -148,6 +169,7 @@ export default function AdminOrdersPage() {
             body: JSON.stringify({
               orderId: order.id,
               orderNumber: order.order_number,
+              trackingToken: order.tracking_token ?? undefined,
               email: order.shipping_address.email,
               firstName: firstName,
               status: newStatus
@@ -181,14 +203,16 @@ export default function AdminOrdersPage() {
     const count = (s: OrderStatus) => orders.filter((o) => o.status === s).length;
     const live = orders.filter((o) => o.status !== 'cancelled');
     const sum = (list: FullOrder[]) => list.reduce((acc, o) => acc + (Number(o.total) || 0), 0);
-    const paid = live.filter((o) => o.payment_status === 'paid');
+    // Money actually kept: paid orders, and partly refunded ones net of what was handed back.
+    const paid = live.filter((o) => o.payment_status === 'paid' || o.payment_status === 'partially_refunded');
+    const net = (list: FullOrder[]) => list.reduce((acc, o) => acc + Math.max(0, (Number(o.total) || 0) - (Number(o.refunded_amount) || 0)), 0);
     const codPending = live.filter((o) => o.payment_status === 'pending' && o.payment_method === 'cod');
     return {
       total: orders.length,
       pending: count('placed') + count('processing'),
       shipped: count('shipped'),
       delivered: count('delivered'),
-      collected: sum(paid),
+      collected: net(paid),
       paidCount: paid.length,
       codPending: sum(codPending),
       codPendingCount: codPending.length,
@@ -244,7 +268,14 @@ export default function AdminOrdersPage() {
               onClick={() => exportOrdersCsv(filteredOrders)}
               disabled={loading || filteredOrders.length === 0}
             >
-              Export CSV
+              Export Orders CSV
+            </SecondaryButton>
+            <SecondaryButton
+              icon="payments"
+              onClick={() => exportPaymentsCsv(filteredOrders)}
+              disabled={loading || filteredOrders.length === 0}
+            >
+              Export Payments CSV
             </SecondaryButton>
             <SecondaryButton icon="refresh" spinning={refreshing} onClick={() => loadOrders(true)} disabled={refreshing || loading}>
               {refreshing ? 'Refreshing…' : 'Refresh Orders'}
@@ -382,12 +413,17 @@ export default function AdminOrdersPage() {
                             </span>
                             <select
                               value={order.payment_status}
-                              disabled={updatingId === order.id}
+                              disabled={updatingId === order.id || !!REFUND_STATE_LABELS[order.payment_status]}
                               onChange={(e) => handlePaymentStatusChange(order, e.target.value as PaymentStatus)}
                               aria-label={`Payment status for order ${order.order_number}`}
                               className={`rounded-full min-w-[105px] pl-3 pr-7 py-1 text-[11px] font-semibold border capitalize focus:outline-none cursor-pointer appearance-none disabled:opacity-60 ${PAYMENT_STATUS_STYLES[order.payment_status]}`}
                               style={{ backgroundImage: CHEVRON_BG, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center' }}
                             >
+                              {REFUND_STATE_LABELS[order.payment_status] && (
+                                <option value={order.payment_status} style={{ backgroundColor: '#FFFFFF', color: '#2D2024' }}>
+                                  {REFUND_STATE_LABELS[order.payment_status]}
+                                </option>
+                              )}
                               {PAYMENT_STATUS_OPTIONS.map((opt) => (
                                 <option key={opt.value} value={opt.value} style={{ backgroundColor: '#FFFFFF', color: '#2D2024' }}>
                                   {opt.label}
@@ -445,6 +481,9 @@ export default function AdminOrdersPage() {
         onClose={() => setSelectedId(null)}
         onStatusChange={handleStatusChange}
         updating={!!selectedOrder && updatingId === selectedOrder.id}
+        onRefunded={(refund) =>
+          setOrders((prev) => prev.map((o) => (o.id === refund.orderId ? { ...o, payment_status: refund.paymentStatus, refunded_amount: refund.refundedAmount } : o)))
+        }
       />
     </div>
   );

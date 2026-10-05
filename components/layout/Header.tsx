@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useWishlist } from '@/lib/context/WishlistContext';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useState } from 'react';
 import SearchBox from './SearchBox';
 
 interface DropdownColumn {
@@ -217,13 +217,9 @@ export default function Header() {
         <div className="w-full px-4 sm:px-6 lg:px-12 max-w-[1440px] mx-auto flex items-center gap-4 h-16 sm:h-20">
 
           {/* Brand Logo */}
-          <Link href="/" prefetch={true} onClick={handleLogoClick} className="flex flex-col items-start flex-shrink-0 group">
-            <span className="font-headline-lg text-[20px] sm:text-[22px] text-primary tracking-tight group-hover:text-secondary transition-colors leading-tight">
-              Sushi Jewels
-            </span>
-            <span className="font-label-sm text-[7px] sm:text-[8px] text-outline tracking-[0.25em] font-normal">
-              FINE JEWELLERY
-            </span>
+          <Link href="/" prefetch={true} onClick={handleLogoClick} className="flex items-center flex-shrink-0" aria-label="Sushi Jewels — home">
+            {/* mix-blend-multiply drops the logo file's white background so it sits cleanly on the header */}
+            <img src="/logo.jpeg" alt="Sushi Jewels" width={638} height={978} className="h-14 sm:h-[68px] w-auto mix-blend-multiply" />
           </Link>
 
           {/* Center Search Bar */}
@@ -354,10 +350,9 @@ export default function Header() {
       {/* Mobile Navigation Drawer */}
       <div className={`fixed top-0 left-0 h-full w-[85vw] max-w-[340px] bg-surface z-[201] flex flex-col shadow-2xl transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="flex items-center justify-between px-5 py-4 border-b border-outline-variant/40">
-          <div className="flex flex-col">
-            <span className="font-headline-lg text-[20px] text-primary tracking-tight leading-tight">Sushi Jewels</span>
-            <span className="font-label-sm text-[8px] text-outline tracking-[0.25em]">FINE JEWELLERY</span>
-          </div>
+          <Link href="/" onClick={closeMobileMenu} aria-label="Sushi Jewels — home">
+            <img src="/logo.jpeg" alt="Sushi Jewels" width={638} height={978} className="h-14 w-auto mix-blend-multiply" />
+          </Link>
           <button onClick={closeMobileMenu} className="p-2 text-on-surface-variant hover:text-primary rounded-full hover:bg-surface-container" aria-label="Close menu">
             <span className="material-symbols-outlined text-[22px]">close</span>
           </button>

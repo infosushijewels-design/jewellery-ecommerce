@@ -5,7 +5,6 @@ import AnnouncementBar from '@/components/layout/AnnouncementBar';
 import ProductCatalog from '@/components/product/ProductCatalog';
 import { getCategoryList, getProductsByCategorySlug } from '@/lib/supabase/queries';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
 
 export const revalidate = 0;
 

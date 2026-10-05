@@ -38,6 +38,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      data-scroll-behavior="smooth"
       className={`scroll-smooth ${manrope.variable} ${playfair.variable}`}
     >
       <head>
