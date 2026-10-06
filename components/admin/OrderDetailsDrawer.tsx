@@ -157,6 +157,9 @@ export default function OrderDetailsDrawer({
               {getInitials(addr?.full_name)}
             </div>
             <div className="min-w-0 text-sm space-y-0.5">
+              <p className="text-[11px] uppercase tracking-wider text-[#2D2024]/55 mb-0.5">
+                Customer type: <span className="font-semibold text-[#8A6F3C]">{order.user_id ? 'Registered' : 'Guest'}</span>
+              </p>
               {addr?.email ? (
                 <Link
                   href={`/admin/customers?q=${encodeURIComponent(addr.email)}&open=1`}

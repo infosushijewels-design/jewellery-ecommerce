@@ -392,7 +392,10 @@ export default function AdminOrdersPage() {
                               {getInitials(addr?.full_name)}
                             </div>
                             <div className="min-w-0">
-                              <div className="text-[#2D2024] font-medium truncate max-w-[200px]">{addr?.full_name || 'Guest'}</div>
+                              <div className="text-[#2D2024] font-medium truncate max-w-[200px]">
+                                {addr?.full_name || 'Guest'}
+                                {!order.user_id && <span className="ml-1.5 align-middle text-[10px] uppercase tracking-wider font-semibold text-[#8A6F3C] bg-[#B99A62]/15 rounded-full px-2 py-0.5">Guest</span>}
+                              </div>
                               <div className="text-xs text-[#2D2024]/55 truncate max-w-[200px]">{addr?.email || '—'}</div>
                             </div>
                           </div>

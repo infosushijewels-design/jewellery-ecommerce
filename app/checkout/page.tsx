@@ -8,6 +8,8 @@ import { useCart } from '@/lib/context/CartContext';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useToast } from '@/lib/context/ToastContext';
 import { confirmOnlinePayment, createOrder, getUserOrders, orderTrackingPath, type PlacedOrder } from '@/lib/supabase/orderService';
+import StateCitySelect from '@/components/ui/StateCitySelect';
+import { canonicalState } from '@/lib/indianStatesCities';
 import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 import { shippingFeeFor } from '@/lib/storeSettings';
 import {
@@ -27,7 +29,8 @@ type RazorpayWindow = Window & {
 
 export default function CheckoutPage() {
   const { items, subtotal, tax, clearCart } = useCart();
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
+  const [continueAsGuest, setContinueAsGuest] = useState(false);
   const { showToast } = useToast();
   const router = useRouter();
   const storeSettings = useStoreSettings();
@@ -88,7 +91,7 @@ export default function CheckoutPage() {
           phone: prev.phone || last?.phone || metaPhone || '',
           address: prev.address || last?.address || '',
           city: prev.city || last?.city || '',
-          state: prev.state || last?.state || '',
+          state: prev.state || canonicalState(last?.state) || last?.state || '',
           pincode: prev.pincode || last?.pincode || '',
         }));
       })
@@ -219,7 +222,8 @@ export default function CheckoutPage() {
       prefill: {
         name: `${formData.firstName} ${formData.lastName}`.trim(),
         email: formData.email,
-        contact: normalizeIndianPhone(formData.phone) ?? formData.phone,
+        // Razorpay reads the number as +91XXXXXXXXXX (no spaces); with spaces it ignores it and asks the customer again
+        contact: (normalizeIndianPhone(formData.phone) ?? formData.phone).replace(/[^\d+]/g, ''),
       },
       theme: {
         color: '#B99A62',
@@ -363,6 +367,42 @@ export default function CheckoutPage() {
               Discover High Jewellery
             </Link>
           </div>
+        ) : !user && !authLoading && !continueAsGuest ? (
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center mb-6 sm:mb-8">
+              <h2 className="text-title-lg font-title-lg text-primary">How would you like to check out?</h2>
+              <p className="text-body-sm text-on-surface-variant mt-1">Your bag is saved — you can pick either way.</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-2xl p-6 sm:p-8 flex flex-col">
+                <span className="material-symbols-outlined text-secondary text-[28px] mb-3">shopping_bag</span>
+                <h3 className="text-title-md font-title-lg text-primary mb-1">Continue as Guest</h3>
+                <p className="text-body-sm text-on-surface-variant leading-relaxed mb-6 flex-1">
+                  No account needed. Enter your details, pay securely, and track your order later with a one-time code sent to your email.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setContinueAsGuest(true)}
+                  className="w-full bg-primary text-surface py-3 rounded-full font-label-lg uppercase tracking-wider hover:bg-tertiary transition-colors"
+                >
+                  Continue as Guest
+                </button>
+              </div>
+              <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-2xl p-6 sm:p-8 flex flex-col">
+                <span className="material-symbols-outlined text-secondary text-[28px] mb-3">person</span>
+                <h3 className="text-title-md font-title-lg text-primary mb-1">Login / Create Account</h3>
+                <p className="text-body-sm text-on-surface-variant leading-relaxed mb-6 flex-1">
+                  Faster checkout with your saved details, your wishlist, and every order in one place.
+                </p>
+                <Link
+                  href="/login"
+                  className="w-full text-center border border-primary text-primary py-3 rounded-full font-label-lg uppercase tracking-wider hover:bg-surface-container-low transition-colors"
+                >
+                  Login / Sign Up
+                </Link>
+              </div>
+            </div>
+          </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12">
 
@@ -454,26 +494,23 @@ export default function CheckoutPage() {
                       />
                       {renderError('address')}
                     </div>
-                    <div>
-                      <label htmlFor="checkout-city" className="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-1.5 block">City *</label>
-                      <input
-                        type="text"
-                        required
-                        {...fieldProps('city')}
-                        placeholder="Mumbai"
-                      />
-                      {renderError('city')}
-                    </div>
-                    <div>
-                      <label htmlFor="checkout-state" className="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-1.5 block">State *</label>
-                      <input
-                        type="text"
-                        required
-                        {...fieldProps('state')}
-                        placeholder="Maharashtra"
-                      />
-                      {renderError('state')}
-                    </div>
+                    <StateCitySelect
+                      idPrefix="checkout"
+                      state={formData.state}
+                      city={formData.city}
+                      onChange={({ state, city }) => setFormData((prev) => ({ ...prev, state, city }))}
+                      onBlurField={(field) => setTouched((prev) => ({ ...prev, [field]: true }))}
+                      stateError={visibleError('state')}
+                      cityError={visibleError('city')}
+                      controlClass={(err) =>
+                        `w-full bg-surface border rounded-lg px-4 py-2.5 text-on-surface focus:outline-none transition-colors text-sm ${
+                          err ? 'border-error focus:border-error bg-error-container/10' : 'border-outline-variant focus:border-primary'
+                        }`
+                      }
+                      labelClass="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-1.5 block"
+                      renderError={(field) => renderError(field)}
+                      labels={{ state: 'State *', city: 'City *' }}
+                    />
                     <div className="sm:col-span-2">
                       <label htmlFor="checkout-pincode" className="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-1.5 block">PIN Code *</label>
                       <input

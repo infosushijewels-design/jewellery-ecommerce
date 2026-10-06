@@ -258,9 +258,14 @@ export default function Header() {
                 </div>
               </div>
             ) : (
+              <>
+              <Link href="/track-order" className="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface-container" title="Track Order" aria-label="Track Order">
+                <span className="material-symbols-outlined text-[22px]">package_2</span>
+              </Link>
               <Link href="/login" className="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface-container" title="Sign In">
                 <span className="material-symbols-outlined text-[22px]">person</span>
               </Link>
+              </>
             )}
 
             <Link href="/wishlist" className="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary relative transition-colors rounded-full hover:bg-surface-container" title="Wishlist">
@@ -415,6 +420,11 @@ export default function Header() {
             ) : (
               <Link href="/login" onClick={closeMobileMenu} className="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-label-lg text-label-lg hover:bg-surface-container-low hover:text-primary transition-colors">
                 <span className="material-symbols-outlined text-secondary text-[20px]">login</span>Sign In / Register
+              </Link>
+            )}
+            {!user && (
+              <Link href="/track-order" onClick={closeMobileMenu} className="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-label-lg text-label-lg hover:bg-surface-container-low hover:text-primary transition-colors">
+                <span className="material-symbols-outlined text-secondary text-[20px]">package_2</span>Track Order
               </Link>
             )}
           </div>

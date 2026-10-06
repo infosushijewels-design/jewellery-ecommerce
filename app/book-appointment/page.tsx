@@ -7,6 +7,7 @@ import Footer from '@/components/layout/Footer';
 import AnnouncementBar from '@/components/layout/AnnouncementBar';
 import Breadcrumb from '@/components/ui/Breadcrumb';
 import { useToast } from '@/lib/context/ToastContext';
+import { useCaptchaPost } from '@/components/ui/TurnstileChallenge';
 import { createClient } from '@/lib/supabase/client';
 import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 import {
@@ -28,6 +29,7 @@ const labelCls = 'block font-label-sm text-label-sm text-on-surface-variant uppe
 
 export default function BookAppointmentPage() {
   const { showToast } = useToast();
+  const { postJson, challenge } = useCaptchaPost();
   // Hours, slot length, booking window and closed days are set by the store owner (Admin → Settings).
   const settings = useStoreSettings();
   const config = useMemo(() => appointmentConfigFrom(settings.appointments), [settings.appointments]);
@@ -46,6 +48,7 @@ export default function BookAppointmentPage() {
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [submitting, setSubmitting] = useState(false);
   const [confirmedSlot, setConfirmedSlot] = useState<string | null>(null);
+  const [startedAt] = useState(() => Date.now()); // when the page opened (a booking submitted "instantly" is a bot)
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -111,12 +114,10 @@ export default function BookAppointmentPage() {
     setSubmitting(true);
     try {
       const scheduledAt = slotToISO(date, time);
-      const res = await fetch('/api/appointments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, scheduledAt }),
-      });
-      const json = await res.json().catch(() => ({}));
+      // A plain request; only a visitor over the rate limit is ever asked to tick Cloudflare's one-click check
+      const res = await postJson('/api/appointments', { ...form, scheduledAt, startedAt });
+      const json = res.json ?? {};
+      if (res.dismissed) return;
       if (!res.ok) {
         showToast(json.error || 'Could not book your appointment. Please try again.', 'error');
         if (res.status === 409 || res.status === 400) {
@@ -126,6 +127,7 @@ export default function BookAppointmentPage() {
         return;
       }
       setConfirmedSlot(scheduledAt);
+      showToast('📅 Appointment request received! We will email you the Zoom link shortly.', 'success');
     } catch (err) {
       console.error('Booking failed:', err);
       showToast('Could not book your appointment. Please check your connection and try again.', 'error');
@@ -352,6 +354,7 @@ export default function BookAppointmentPage() {
           </form>
         )}
       </main>
+      {challenge}
       <Footer />
     </>
   );

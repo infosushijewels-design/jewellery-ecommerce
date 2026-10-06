@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useToast } from '@/lib/context/ToastContext';
 import { validateNewsletterEmail } from '@/lib/formValidation';
+import { useCaptchaPost } from '@/components/ui/TurnstileChallenge';
 
 export default function Newsletter() {
   const [email, setEmail] = useState('');
@@ -12,6 +13,7 @@ export default function Newsletter() {
   const [submitted, setSubmitted] = useState(false);
   const [startedAt] = useState(() => Date.now()); // when the form appeared (a form filled in "instantly" is a bot)
   const { showToast } = useToast();
+  const { postJson, challenge } = useCaptchaPost();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,14 +28,10 @@ export default function Newsletter() {
     setError(null);
     setSubmitting(true);
     try {
-      const response = await fetch('/api/newsletter', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, website, startedAt }),
-      });
-      const body = (await response.json().catch(() => null)) as { success?: boolean; error?: string } | null;
-      if (!response.ok || !body?.success) {
-        setError(body?.error || 'Sorry, we could not sign you up. Please try again.');
+      // A plain request; only a visitor over the rate limit is ever asked to tick Cloudflare's one-click check
+      const { ok, json: body, dismissed } = await postJson('/api/newsletter', { email, website, startedAt });
+      if (!ok || !body?.success) {
+        if (!dismissed) setError(body?.error || 'Sorry, we could not sign you up. Please try again.');
         return;
       }
       setSubmitted(true);
@@ -50,6 +48,7 @@ export default function Newsletter() {
 
   return (
     <section className="py-12 sm:py-20 border-t border-outline-variant/40">
+      {challenge}
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-16 text-center max-w-3xl">
         <span className="material-symbols-outlined text-[36px] sm:text-[40px] text-secondary mb-3 sm:mb-4 font-light block">mail</span>
         <h2 className="font-headline-lg text-[24px] sm:text-headline-lg text-primary">Join the Inner Circle</h2>

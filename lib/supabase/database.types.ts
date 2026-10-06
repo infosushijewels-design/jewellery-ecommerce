@@ -463,6 +463,7 @@ export interface Database {
           admin_reply: string | null
           created_at: string
           updated_at: string
+          ip_hash: string | null
         }
         Insert: {
           id?: string
@@ -477,6 +478,7 @@ export interface Database {
           admin_reply?: string | null
           created_at?: string
           updated_at?: string
+          ip_hash?: string | null
         }
         Update: {
           id?: string
@@ -491,6 +493,7 @@ export interface Database {
           admin_reply?: string | null
           created_at?: string
           updated_at?: string
+          ip_hash?: string | null
         }
       }
       contact_inquiries: {
@@ -551,6 +554,7 @@ export interface Database {
           followup_sent_at: string | null
           created_at: string
           updated_at: string
+          ip_hash: string | null
         }
         Insert: {
           id?: string
@@ -571,6 +575,7 @@ export interface Database {
           followup_sent_at?: string | null
           created_at?: string
           updated_at?: string
+          ip_hash?: string | null
         }
         Update: {
           id?: string
@@ -591,6 +596,7 @@ export interface Database {
           followup_sent_at?: string | null
           created_at?: string
           updated_at?: string
+          ip_hash?: string | null
         }
       }
       legal_pages: {
@@ -697,6 +703,41 @@ export interface Database {
           resource_type?: string
           resource_id?: string | null
           details?: Json
+          created_at?: string
+        }
+      }
+      guest_otps: {
+        Row: {
+          id: string
+          identifier: string
+          kind: "email" | "phone"
+          code_hash: string | null
+          attempts: number
+          expires_at: string
+          consumed_at: string | null
+          ip_hash: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          identifier: string
+          kind: "email" | "phone"
+          code_hash?: string | null
+          attempts?: number
+          expires_at: string
+          consumed_at?: string | null
+          ip_hash?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          identifier?: string
+          kind?: "email" | "phone"
+          code_hash?: string | null
+          attempts?: number
+          expires_at?: string
+          consumed_at?: string | null
+          ip_hash?: string | null
           created_at?: string
         }
       }

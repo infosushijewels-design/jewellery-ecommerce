@@ -5,6 +5,13 @@
  */
 import { createHmac } from 'crypto';
 
+/** The caller's IP address as the proxy reports it (Vercel puts the real one first in x-forwarded-for), or null. */
+export function clientIp(request: Request): string | null {
+  const forwarded = request.headers.get('x-forwarded-for');
+  const ip = (forwarded ? forwarded.split(',')[0] : request.headers.get('x-real-ip') ?? '').trim();
+  return ip || null;
+}
+
 /** One-way hash of the caller's IP (Vercel puts the real address first in x-forwarded-for), or null if unknown. */
 export function clientIpHash(request: Request, secret: string): string | null {
   const forwarded = request.headers.get('x-forwarded-for');

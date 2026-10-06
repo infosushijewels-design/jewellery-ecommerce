@@ -35,27 +35,35 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
+  // The saved bag is only written back once it has been read. Before this guard, the first render saved the empty
+  // starting list over the real bag — so a page reload (or a second effect run in development) wiped the cart.
+  const [hydrated, setHydrated] = useState(false);
+
   // Load from local storage on mount
   useEffect(() => {
+    let saved: CartItem[] | null = null;
     try {
-      const saved = localStorage.getItem('sushi-cart');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        setTimeout(() => setItems(parsed), 0);
-      }
+      const raw = localStorage.getItem('sushi-cart');
+      if (raw) saved = JSON.parse(raw);
     } catch (e) {
       console.error("Failed to load cart from local storage", e);
     }
+    const timer = setTimeout(() => {
+      if (Array.isArray(saved)) setItems(saved);
+      setHydrated(true);
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   // Save to local storage on change
   useEffect(() => {
+    if (!hydrated) return;
     try {
       localStorage.setItem('sushi-cart', JSON.stringify(items));
     } catch (e) {
       console.error("Failed to save cart to local storage", e);
     }
-  }, [items]);
+  }, [items, hydrated]);
 
   const addToCart = (newItem: Omit<CartItem, 'id' | 'quantity'>) => {
     const id = `${newItem.productId}-${newItem.metal}-${newItem.size}`;

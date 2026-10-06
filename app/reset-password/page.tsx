@@ -7,8 +7,10 @@ import AnnouncementBar from '@/components/layout/AnnouncementBar';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/lib/context/ToastContext';
 
 export default function ResetPasswordPage() {
+  const { showToast } = useToast();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -45,11 +47,13 @@ export default function ResetPasswordPage() {
 
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
+      showToast('Passwords do not match.', 'warning');
       return;
     }
 
     if (password.length < 6) {
       setError('Password must be at least 6 characters long.');
+      showToast('Password must be at least 6 characters long.', 'warning');
       return;
     }
 
@@ -61,9 +65,11 @@ export default function ResetPasswordPage() {
 
     if (error) {
       setError(error.message);
+      showToast(error.message || 'Could not update password. Please try again.', 'error');
       setIsLoading(false);
     } else {
       setMessage('Your password has been successfully updated! Redirecting to login...');
+      showToast('🎉 Your password has been successfully updated!', 'success');
       // End the temporary recovery session so /login (which signed-in users are bounced away from) really opens.
       await supabase.auth.signOut();
       setTimeout(() => {

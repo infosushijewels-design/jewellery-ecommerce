@@ -6,8 +6,10 @@ import Footer from '@/components/layout/Footer';
 import AnnouncementBar from '@/components/layout/AnnouncementBar';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import { useToast } from '@/lib/context/ToastContext';
 
 export default function ForgotPasswordPage() {
+  const { showToast } = useToast();
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -29,8 +31,10 @@ export default function ForgotPasswordPage() {
 
     if (error) {
       setError(error.message);
+      showToast(error.message || 'Could not send reset link. Please try again.', 'error');
     } else {
       setMessage('Password reset instructions have been sent to your email address.');
+      showToast('✉️ Password reset instructions have been sent to your email address.', 'success');
     }
     setIsLoading(false);
   };

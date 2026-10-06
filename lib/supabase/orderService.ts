@@ -356,6 +356,19 @@ export async function getOrderById(identifier: string, trackingToken?: string | 
     }
   }
 
+  // A guest who verified with an emailed code carries a signed cookie; the server only returns orders that match it.
+  if (typeof window !== 'undefined' && !trackingToken) {
+    try {
+      const res = await fetch(`/api/guest/orders/${encodeURIComponent(identifier)}`, { cache: 'no-store' });
+      if (res.ok) {
+        const body = (await res.json()) as { order?: FullOrder };
+        if (body.order) return body.order;
+      }
+    } catch {
+      /* fall back to the normal lookup below */
+    }
+  }
+
   const local = getLocalOrders();
   const localMatch = local.find((o) => o.id === identifier || o.order_number === identifier);
 
@@ -901,115 +914,6 @@ export async function adminDeleteProduct(id: string): Promise<{ success: boolean
   }
 }
 
-/**
- * Seeds two realistic demo orders into this device's guest order cache the
- * first time there are none, so tracking/stepper/admin views have something
- * to show immediately. Purely local (localStorage) — never written to
- * Supabase — and a no-op if any guest orders already exist on this device.
- */
-export function seedDemoOrdersIfEmpty(): void {
-  if (typeof window === 'undefined') return;
-  if (getGuestRecentOrders().length > 0 || getLocalOrders().length > 0) return;
-
-  const now = Date.now();
-  const day = 24 * 60 * 60 * 1000;
-
-  const demoOrders: FullOrder[] = [
-    {
-      id: 'demo-order-necklace',
-      order_number: 'SJ-849201',
-      user_id: null,
-      status: 'processing',
-      subtotal: 125000,
-      tax: 3750,
-      shipping_fee: 0,
-      total: 128750,
-      payment_method: 'online',
-      payment_status: 'paid',
-      shipping_address: {
-        full_name: 'Aisha Khan',
-        email: 'aisha.khan@example.com',
-        phone: '9876543210',
-        address: '12 Marine Drive',
-        city: 'Mumbai',
-        state: 'Maharashtra',
-        pincode: '400002',
-      },
-      notes: null,
-      razorpay_order_id: null,
-      razorpay_payment_id: null,
-      paid_at: null,
-      tracking_token: null,
-      stock_reserved: false,
-      refunded_amount: 0,
-      created_at: new Date(now - 2 * day).toISOString(),
-      updated_at: new Date(now - 1 * day).toISOString(),
-      items: [
-        {
-          id: 'demo-item-necklace',
-          order_id: 'demo-order-necklace',
-          product_id: null,
-          title: 'Royal Nizam Emerald Necklace',
-          image_url: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&q=80&w=800',
-          price: 125000,
-          quantity: 1,
-          metal: '22K Yellow Gold',
-          size: null,
-          created_at: new Date(now - 2 * day).toISOString(),
-        },
-      ],
-    },
-    {
-      id: 'demo-order-ring',
-      order_number: 'SJ-732845',
-      user_id: null,
-      status: 'delivered',
-      subtotal: 45000,
-      tax: 1350,
-      shipping_fee: 0,
-      total: 46350,
-      payment_method: 'cod',
-      payment_status: 'paid',
-      shipping_address: {
-        full_name: 'Rohan Mehta',
-        email: 'rohan.mehta@example.com',
-        phone: '9123456780',
-        address: '45 Park Street',
-        city: 'Kolkata',
-        state: 'West Bengal',
-        pincode: '700016',
-      },
-      notes: null,
-      razorpay_order_id: null,
-      razorpay_payment_id: null,
-      paid_at: null,
-      tracking_token: null,
-      stock_reserved: false,
-      refunded_amount: 0,
-      created_at: new Date(now - 12 * day).toISOString(),
-      updated_at: new Date(now - 5 * day).toISOString(),
-      items: [
-        {
-          id: 'demo-item-ring',
-          order_id: 'demo-order-ring',
-          product_id: null,
-          title: 'Classic Solitaire Diamond Ring',
-          image_url: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&q=80&w=800',
-          price: 45000,
-          quantity: 1,
-          metal: '18K White Gold',
-          size: '14',
-          created_at: new Date(now - 12 * day).toISOString(),
-        },
-      ],
-    },
-  ];
-
-  saveLocalOrders(demoOrders);
-  saveGuestRecentOrders(
-    demoOrders.map((o) => ({ orderId: o.id, orderNumber: o.order_number, createdAt: o.created_at }))
-  );
-}
 
 /**
  * Admin CRM: everything a customer has done besides ordering — wishlist,

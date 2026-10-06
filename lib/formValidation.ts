@@ -13,7 +13,8 @@ import {
   validateName,
   validatePhoneNumber,
   validatePincode,
-  validatePlaceName,
+  validateCity,
+  validateState,
   validateStreetAddress,
 } from '@/lib/checkoutValidation';
 
@@ -71,10 +72,10 @@ export function validateContact(values: ContactValues): FieldErrors<ContactField
 // Saved addresses (My Account)
 // ---------------------------------------------------------------------------
 export type AddressField = 'label' | 'fullName' | 'phone' | 'address' | 'city' | 'state' | 'pincode';
-export const ADDRESS_FIELD_ORDER: readonly AddressField[] = ['label', 'fullName', 'phone', 'address', 'city', 'state', 'pincode'];
+export const ADDRESS_FIELD_ORDER: readonly AddressField[] = ['label', 'fullName', 'phone', 'address', 'state', 'city', 'pincode'];
 export const ADDRESS_FIELD_LABELS: Record<AddressField, string> = {
   label: 'Label',
-  fullName: 'Recipient Name',
+  fullName: 'Full Name',
   phone: 'Phone',
   address: 'Address',
   city: 'City',
@@ -92,19 +93,19 @@ export function validateAddressBook(values: AddressValues): FieldErrors<AddressF
   if (label && (label.length > 30 || !LABEL_RE.test(label))) errors.label = 'Label can use letters, numbers and spaces only (max 30 characters).';
 
   const fullName = values.fullName.trim();
-  if (!fullName) errors.fullName = "Enter the recipient's name.";
+  if (!fullName) errors.fullName = 'Enter your full name.';
   else if (fullName.length > 100) errors.fullName = 'Name is too long (max 100 characters).';
   else if (!NAME_RE.test(fullName)) errors.fullName = 'Name should contain letters only — no numbers or symbols.';
-  else if (fullName.split(/\s+/).length < 2) errors.fullName = "Enter the recipient's first and last name.";
+  else if (fullName.split(/\s+/).length < 2) errors.fullName = 'Enter your first and last name.';
 
   const phoneError = validatePhoneNumber(values.phone);
   if (phoneError) errors.phone = phoneError;
   const addressError = validateStreetAddress(values.address);
   if (addressError) errors.address = addressError;
-  const cityError = validatePlaceName(values.city, 'City');
-  if (cityError) errors.city = cityError;
-  const stateError = validatePlaceName(values.state, 'State');
+  const stateError = validateState(values.state);
   if (stateError) errors.state = stateError;
+  const cityError = validateCity(values.city);
+  if (cityError) errors.city = cityError;
   const pinError = validatePincode(values.pincode);
   if (pinError) errors.pincode = pinError;
 

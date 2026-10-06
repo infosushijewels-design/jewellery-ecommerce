@@ -3,10 +3,12 @@
  * form can show the customer exactly which field is wrong and why.
  */
 
+import { canonicalState } from '@/lib/indianStatesCities';
+
 export type CheckoutField = 'email' | 'phone' | 'firstName' | 'lastName' | 'address' | 'city' | 'state' | 'pincode';
 
 /** Top-to-bottom order of the fields on the page: the first error in this order gets focus. */
-export const CHECKOUT_FIELD_ORDER: CheckoutField[] = ['email', 'phone', 'firstName', 'lastName', 'address', 'city', 'state', 'pincode'];
+export const CHECKOUT_FIELD_ORDER: CheckoutField[] = ['email', 'phone', 'firstName', 'lastName', 'address', 'state', 'city', 'pincode'];
 
 export const CHECKOUT_FIELD_LABELS: Record<CheckoutField, string> = {
   email: 'Email Address',
@@ -94,6 +96,19 @@ export function validatePlaceName(value: string, label: 'City' | 'State'): strin
   return undefined;
 }
 
+/** The State is picked from the list of Indian states and union territories (older spellings such as Orissa are accepted). */
+export function validateState(value: string): string | undefined {
+  if (!value.trim()) return 'Select your state.';
+  if (!canonicalState(value)) return 'Select a state from the list.';
+  return undefined;
+}
+
+/** The City is chosen from the state's list, or typed in after picking "Other". */
+export function validateCity(value: string): string | undefined {
+  if (!value.trim()) return 'Select your city (or choose Other and type it).';
+  return validatePlaceName(value, 'City');
+}
+
 export function validatePincode(value: string): string | undefined {
   const pincode = value.trim();
   if (!pincode) return 'Enter your 6-digit PIN code.';
@@ -112,8 +127,8 @@ export function validateCheckout(values: CheckoutFormValues): CheckoutErrors {
   set('firstName', validateName(values.firstName, 'first name'));
   set('lastName', validateName(values.lastName, 'last name'));
   set('address', validateStreetAddress(values.address));
-  set('city', validatePlaceName(values.city, 'City'));
-  set('state', validatePlaceName(values.state, 'State'));
+  set('state', validateState(values.state));
+  set('city', validateCity(values.city));
   set('pincode', validatePincode(values.pincode));
 
   return errors;

@@ -7,10 +7,14 @@ import AnnouncementBar from '@/components/layout/AnnouncementBar';
 import { getOrderById, FullOrder } from '@/lib/supabase/orderService';
 import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
+import { useAuth } from '@/lib/context/AuthContext';
 
 export default function OrderTrackingPage() {
   const params = useParams();
   const orderId = params?.id as string;
+  const { user } = useAuth();
+  // Registered customers go back to their account's orders; guests to the email-verified list
+  const listHref = user ? '/orders' : '/track-order';
   // The tracking link in the confirmation email carries a secret (?t=...) so a guest can open the order on any device.
   const trackingToken = useSearchParams().get('t');
 
@@ -62,7 +66,7 @@ export default function OrderTrackingPage() {
         <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-on-surface-variant mb-4">
           <Link href="/" className="hover:text-primary">Home</Link>
           <span>/</span>
-          <Link href="/orders" className="hover:text-primary">My Orders</Link>
+          <Link href={listHref} className="hover:text-primary">My Orders</Link>
           <span>/</span>
           <span className="text-primary font-medium">Tracking</span>
         </div>
@@ -80,7 +84,7 @@ export default function OrderTrackingPage() {
               We couldn&apos;t locate an order with the reference &ldquo;{orderId}&rdquo;. Please check your order reference number.
             </p>
             <Link
-              href="/orders"
+              href={listHref}
               className="inline-block bg-primary text-surface px-6 py-2.5 rounded-full text-xs font-label-lg uppercase tracking-wider hover:bg-tertiary transition-colors"
             >
               Back to My Orders
@@ -112,7 +116,7 @@ export default function OrderTrackingPage() {
 
                 <div className="flex items-center gap-3">
                   <Link
-                    href="/orders"
+                    href={listHref}
                     className="bg-surface border border-outline-variant hover:border-primary text-primary px-4 py-2 rounded-full text-xs font-medium uppercase tracking-wider transition-colors"
                   >
                     All Orders

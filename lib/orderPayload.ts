@@ -5,6 +5,7 @@
  * (see lib/orderPricing.ts) — so any such fields in the request are simply ignored.
  */
 import { normalizeIndianPhone, validateCheckout, type CheckoutField } from '@/lib/checkoutValidation';
+import { canonicalCity, canonicalState } from '@/lib/indianStatesCities';
 import type { RequestedLine } from '@/lib/orderPricing';
 
 export interface ParsedOrder {
@@ -70,8 +71,9 @@ export function parseOrderRequest(raw: unknown): ParseResult {
         email: values.email.trim(),
         phone,
         address: values.address.trim(),
-        city: values.city.trim(),
-        state: values.state.trim(),
+        // The state is one of the listed Indian states (validated above); store it, and a listed city, in the standard spelling
+        city: canonicalCity(values.state, values.city),
+        state: canonicalState(values.state) ?? values.state.trim(),
         pincode: values.pincode.trim(),
       },
       items,

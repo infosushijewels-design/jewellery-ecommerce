@@ -20,6 +20,8 @@ import {
   type AddressField,
   type ProfileField,
 } from '@/lib/formValidation';
+import StateCitySelect from '@/components/ui/StateCitySelect';
+import { canonicalState, canonicalCity } from '@/lib/indianStatesCities';
 
 type Tab = 'personal' | 'addresses' | 'security';
 
@@ -200,8 +202,8 @@ export default function AccountPage() {
         full_name: addressForm.full_name.trim(),
         phone: phoneDigits(addressForm.phone) ?? addressForm.phone.trim(),
         address: addressForm.address.trim(),
-        city: addressForm.city.trim(),
-        state: addressForm.state.trim(),
+        city: canonicalCity(addressForm.state, addressForm.city),
+        state: canonicalState(addressForm.state) ?? addressForm.state.trim(),
         pincode: digits,
         is_default: addressForm.is_default,
       };
@@ -418,7 +420,7 @@ export default function AccountPage() {
                       {renderFieldError('profile-fullName', profileError('fullName'))}
                     </div>
                     <div>
-                      <label className={labelClass}>Phone Number</label>
+                      <label className={labelClass}>Phone Number <span className="normal-case tracking-normal text-on-surface-variant/70">(optional)</span></label>
                       <input
                         id="profile-phone"
                         type="tel"
@@ -494,7 +496,7 @@ export default function AccountPage() {
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className={labelClass}>Recipient Name</label>
+                        <label className={labelClass}>Full Name</label>
                         <input
                           id="address-fullName"
                           type="text"
@@ -548,40 +550,18 @@ export default function AccountPage() {
                       {renderFieldError('address-address', addressError('address'))}
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <div>
-                        <label className={labelClass}>City</label>
-                        <input
-                          id="address-city"
-                          type="text"
-                          required
-                          maxLength={60}
-                          autoComplete="address-level2"
-                          value={addressForm.city}
-                          onChange={(e) => setAddressForm((p) => ({ ...p, city: e.target.value }))}
-                          onBlur={() => setAddressTouched((p) => ({ ...p, city: true }))}
-                          aria-invalid={addressError('city') ? true : undefined}
-                          aria-describedby={addressError('city') ? 'address-city-error' : undefined}
-                          className={inputClassFor(addressError('city'))}
-                        />
-                        {renderFieldError('address-city', addressError('city'))}
-                      </div>
-                      <div>
-                        <label className={labelClass}>State</label>
-                        <input
-                          id="address-state"
-                          type="text"
-                          required
-                          maxLength={60}
-                          autoComplete="address-level1"
-                          value={addressForm.state}
-                          onChange={(e) => setAddressForm((p) => ({ ...p, state: e.target.value }))}
-                          onBlur={() => setAddressTouched((p) => ({ ...p, state: true }))}
-                          aria-invalid={addressError('state') ? true : undefined}
-                          aria-describedby={addressError('state') ? 'address-state-error' : undefined}
-                          className={inputClassFor(addressError('state'))}
-                        />
-                        {renderFieldError('address-state', addressError('state'))}
-                      </div>
+                      <StateCitySelect
+                        idPrefix="address"
+                        state={addressForm.state}
+                        city={addressForm.city}
+                        onChange={({ state, city }) => setAddressForm((p) => ({ ...p, state, city }))}
+                        onBlurField={(field) => setAddressTouched((p) => ({ ...p, [field]: true }))}
+                        stateError={addressError('state')}
+                        cityError={addressError('city')}
+                        controlClass={inputClassFor}
+                        labelClass={labelClass}
+                        renderError={(field, message) => renderFieldError(`address-${field}`, message)}
+                      />
                       <div>
                         <label className={labelClass}>Pincode</label>
                         <input

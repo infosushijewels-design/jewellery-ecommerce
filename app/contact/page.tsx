@@ -6,6 +6,7 @@ import Footer from '@/components/layout/Footer';
 import AnnouncementBar from '@/components/layout/AnnouncementBar';
 import Breadcrumb from '@/components/ui/Breadcrumb';
 import { useToast } from '@/lib/context/ToastContext';
+import { useCaptchaPost } from '@/components/ui/TurnstileChallenge';
 import {
   CONTACT_CATEGORIES,
   CONTACT_FIELD_LABELS,
@@ -23,6 +24,7 @@ const inputBase =
 
 export default function ContactPage() {
   const { showToast } = useToast();
+  const { postJson, challenge } = useCaptchaPost();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState<ContactValues>(emptyForm);
   const [website, setWebsite] = useState(''); // hidden bot trap — real visitors never see or fill it
@@ -83,13 +85,10 @@ export default function ContactPage() {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, website, startedAt }),
-      });
-      const body = (await response.json().catch(() => null)) as { success?: boolean; error?: string } | null;
-      if (!response.ok || !body?.success) {
+      // A plain request; only a visitor over the rate limit is ever asked to tick Cloudflare's one-click check
+      const { ok, json: body, dismissed } = await postJson('/api/contact', { ...form, website, startedAt });
+      if (dismissed) return;
+      if (!ok || !body?.success) {
         showToast(body?.error || 'Sorry, we could not send your message. Please try again or email concierge@sushijewels.com.', 'error');
         return;
       }
@@ -256,6 +255,7 @@ export default function ContactPage() {
           </div>
         </div>
       </main>
+      {challenge}
       <Footer />
     </>
   );

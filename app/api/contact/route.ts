@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/serviceRole';
 import { normalizeIndianPhone } from '@/lib/checkoutValidation';
 import { CONTACT_FIELD_ORDER, firstErrorField, validateContact, type ContactValues } from '@/lib/formValidation';
-import { clientIpHash, isBotSubmission, recentCount } from '@/lib/requestGuard';
+import { clientIp, clientIpHash, isBotSubmission, recentCount } from '@/lib/requestGuard';
+import { decideRateLimit, tooManyRequests } from '@/lib/turnstile';
 
 /** Most messages one visitor / one email address / the whole shop can send per hour. */
 const LIMITS = { perIp: 5, perEmail: 3, global: 100 };
@@ -62,12 +63,13 @@ export async function POST(request: Request) {
     recentCount(admin, 'contact_inquiries', { column: 'email', value: email }, 60),
     recentCount(admin, 'contact_inquiries', null, 60),
   ]);
-  if (fromIp >= LIMITS.perIp || fromEmail >= LIMITS.perEmail || overall >= LIMITS.global) {
-    return NextResponse.json(
-      { success: false, error: 'You have sent several messages in a short time. Please wait a little while before sending another, or call us.' },
-      { status: 429 }
-    );
-  }
+  const tooMany = 'You have sent several messages in a short time. Please wait a little while before sending another, or call us.';
+  if (overall >= LIMITS.global) return tooManyRequests('blocked', tooMany);
+  // Over a per-visitor limit: a person who solves the Turnstile check (when configured) may still send.
+  // The two counters are compared as multiples of their limits (1 = at the limit).
+  const worst = Math.max(fromIp / LIMITS.perIp, fromEmail / LIMITS.perEmail);
+  const decision = await decideRateLimit({ count: worst, limit: 1, token: body['cf-turnstile-response'], ip: clientIp(request) });
+  if (decision !== 'ok') return tooManyRequests(decision, tooMany);
 
   // The exact same message from the same address in the last day (double click, retry): already have it.
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();

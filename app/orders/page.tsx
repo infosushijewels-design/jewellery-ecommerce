@@ -5,7 +5,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import AnnouncementBar from '@/components/layout/AnnouncementBar';
 import { useAuth } from '@/lib/context/AuthContext';
-import { getUserOrders, seedDemoOrdersIfEmpty, FullOrder } from '@/lib/supabase/orderService';
+import { getUserOrders, FullOrder } from '@/lib/supabase/orderService';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import ReviewForm from '@/components/orders/ReviewForm';
@@ -21,9 +21,6 @@ export default function MyOrdersPage() {
     async function loadOrders() {
       setLoading(true);
       try {
-        if (!user) {
-          seedDemoOrdersIfEmpty();
-        }
         const data = await getUserOrders(user?.id, user?.email);
         setOrders(data);
       } catch (err) {
@@ -33,9 +30,11 @@ export default function MyOrdersPage() {
       }
     }
     if (!authLoading) {
-      loadOrders();
+      // Guests (no account) see their orders through email + one-time code, not the account page
+      if (!user) router.replace('/track-order');
+      else loadOrders();
     }
-  }, [user, authLoading]);
+  }, [user, authLoading, router]);
 
   const handleTrackConsignment = (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,20 +117,7 @@ export default function MyOrdersPage() {
           </form>
         </div>
 
-        {/* Guest device banner */}
-        {!authLoading && !user && (
-          <div className="flex items-start sm:items-center gap-3 bg-secondary-container/40 border border-secondary/30 rounded-xl px-4 sm:px-5 py-3.5 mb-6">
-            <span className="material-symbols-outlined text-secondary text-[20px] flex-shrink-0">devices</span>
-            <p className="text-xs sm:text-sm text-primary leading-relaxed">
-              Viewing guest orders on this device.{' '}
-              <Link href="/login" className="font-semibold underline underline-offset-2 hover:text-secondary">
-                Sign in
-              </Link>{' '}
-              to sync your acquisitions across all devices.
-            </p>
-          </div>
-        )}
-
+        
         {/* Content */}
         {loading ? (
           <div className="py-24 text-center">

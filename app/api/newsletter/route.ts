@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/serviceRole';
 import { validateNewsletterEmail } from '@/lib/formValidation';
-import { clientIpHash, isBotSubmission, recentCount } from '@/lib/requestGuard';
+import { clientIp, clientIpHash, isBotSubmission, recentCount } from '@/lib/requestGuard';
+import { decideRateLimit, tooManyRequests } from '@/lib/turnstile';
 
 /** Most sign-ups one visitor / the whole shop can make per hour. */
 const LIMITS = { perIp: 5, global: 300 };
@@ -42,9 +43,11 @@ export async function POST(request: Request) {
     ipHash ? recentCount(admin, 'newsletter_subscribers', { column: 'ip_hash', value: ipHash }, 60) : Promise.resolve(0),
     recentCount(admin, 'newsletter_subscribers', null, 60),
   ]);
-  if (fromIp >= LIMITS.perIp || overall >= LIMITS.global) {
-    return NextResponse.json({ success: false, error: 'Too many sign-ups right now. Please try again in a little while.' }, { status: 429 });
-  }
+  const tooMany = 'Too many sign-ups right now. Please try again in a little while.';
+  if (overall >= LIMITS.global) return tooManyRequests('blocked', tooMany);
+  // Over the per-visitor limit: a person who solves the Turnstile check (when configured) may still sign up
+  const decision = await decideRateLimit({ count: fromIp, limit: LIMITS.perIp, token: body['cf-turnstile-response'], ip: clientIp(request) });
+  if (decision !== 'ok') return tooManyRequests(decision, tooMany);
 
   const { error } = await admin
     .from('newsletter_subscribers')

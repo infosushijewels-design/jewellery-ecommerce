@@ -3,6 +3,12 @@ import { createClient } from '@/lib/supabase/server';
 import { APPOINTMENT_TOPICS, appointmentConfigFrom, isBookableSlot, overlapsBooked } from '@/lib/appointments';
 import { mergeStoreSettings } from '@/lib/storeSettings';
 import { sendAppointmentEmail } from '@/lib/appointmentEmails';
+import { createServiceRoleClient } from '@/lib/supabase/serviceRole';
+import { clientIp, clientIpHash, isBotSubmission, recentCount } from '@/lib/requestGuard';
+import { decideRateLimit, tooManyRequests } from '@/lib/turnstile';
+
+/** Bookings allowed per visitor per hour (a person who solves the Turnstile check may go past it, up to a ceiling). */
+const MAX_BOOKINGS_PER_IP_PER_HOUR = 5;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -15,8 +21,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid request.' }, { status: 400 });
   }
 
-  // Honeypot — real users never fill this hidden field.
-  if (typeof body.website === 'string' && body.website.trim()) {
+  // Bots fill the hidden "website" field and submit the form instantly; both look like success but save nothing.
+  if (isBotSubmission({ honeypot: body.website, startedAt: body.startedAt }, Date.now(), 1500)) {
     return NextResponse.json({ success: true });
   }
 
@@ -32,6 +38,15 @@ export async function POST(request: Request) {
   if (phone.replace(/\D/g, '').length < 8 || phone.length > 20) return NextResponse.json({ error: 'Please enter a valid phone number.' }, { status: 400 });
   if (!(APPOINTMENT_TOPICS as readonly string[]).includes(topic)) return NextResponse.json({ error: 'Please choose a topic.' }, { status: 400 });
   if (message.length > 1000) return NextResponse.json({ error: 'Message is too long (max 1000 characters).' }, { status: 400 });
+
+  // Per-visitor limit, counted from the bookings already saved (needs the service role: the table is admin-read only)
+  const admin = createServiceRoleClient();
+  const ipHash = admin ? clientIpHash(request, process.env.SUPABASE_SERVICE_ROLE_KEY as string) : null;
+  if (admin && ipHash) {
+    const made = await recentCount(admin, 'video_appointments', { column: 'ip_hash', value: ipHash }, 60);
+    const decision = await decideRateLimit({ count: made, limit: MAX_BOOKINGS_PER_IP_PER_HOUR, token: body['cf-turnstile-response'], ip: clientIp(request) });
+    if (decision !== 'ok') return tooManyRequests(decision, 'You have requested several appointments in a short time. Please try again in a little while, or contact us directly.');
+  }
 
   const supabase = await createClient();
   // Hours, slot length and closed days are set by the store owner in Admin → Settings.
@@ -57,7 +72,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Sorry, that time clashes with another booking. Please pick a different time.' }, { status: 409 });
   }
 
-  const { error } = await supabase.from('video_appointments').insert({
+  // Saved by the server (service role) when available, so the public insert rule can be removed (migration 033)
+  const { error } = await (admin ?? supabase).from('video_appointments').insert({
+    ip_hash: ipHash,
     customer_name: name,
     email,
     phone,
