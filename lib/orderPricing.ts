@@ -50,7 +50,9 @@ export function priceOrder(
   requested: RequestedLine[],
   catalog: Map<string, CatalogProduct>,
   settings: StoreSettings,
-  paymentMethod: 'cod' | 'online'
+  paymentMethod: 'cod' | 'online',
+  /** true when the order is placed without signing in (Admin → Settings → "Allow COD for Guest Users") */
+  isGuest = false
 ): PricingResult {
   if (requested.length === 0) return { ok: false, error: 'Your bag is empty.' };
 

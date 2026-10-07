@@ -60,7 +60,7 @@ export async function POST(request: Request) {
       { id: p.id, title: p.title, price: Number(p.price), stock: Number(p.stock ?? 0), image_url: p.image_url },
     ])
   );
-  const priced = priceOrder(request_.items, catalog, settings, request_.paymentMethod);
+  const priced = priceOrder(request_.items, catalog, settings, request_.paymentMethod, !userId);
   if (!priced.ok) return NextResponse.json({ success: false, error: priced.error }, { status: 400 });
   const order = priced.order;
 
