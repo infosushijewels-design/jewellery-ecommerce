@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState, FormEvent } from 'react';
+import { LoadingLabel } from '@/components/ui/Spinner';
 import Link from 'next/link';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -348,7 +349,7 @@ export default function BookAppointmentPage() {
                 disabled={submitting || !time || !!customProblem}
                 className="w-full bg-primary text-surface py-3.5 rounded-full font-label-md uppercase tracking-wide hover:bg-tertiary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {submitting ? 'Booking...' : 'Request Appointment'}
+                <LoadingLabel loading={submitting} loadingText="Booking...">Request Appointment</LoadingLabel>
               </button>
             </div>
           </form>

@@ -360,6 +360,7 @@ export default function AdminCategoriesPage() {
                             <Toggle
                               checked={active}
                               disabled={togglingId === cat.id}
+                              loading={togglingId === cat.id}
                               onChange={(next) => handleToggleActive(cat, next)}
                               label={active ? `Hide ${cat.name} from store` : `Show ${cat.name} on store`}
                             />
@@ -489,7 +490,7 @@ export default function AdminCategoriesPage() {
 
           <div className="sticky bottom-0 bg-[#FFFCF7]/95 backdrop-blur-sm border-t border-[#E8D5C5] px-6 py-4 flex justify-end gap-3">
             <SecondaryButton onClick={closeForm}>Cancel</SecondaryButton>
-            <PrimaryButton type="submit" icon={saving ? undefined : 'save'} disabled={saving}>
+            <PrimaryButton type="submit" icon="save" loading={saving}>
               {saving ? 'Saving…' : editingId ? 'Update Category' : 'Save Category'}
             </PrimaryButton>
           </div>

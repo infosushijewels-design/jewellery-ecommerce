@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import Spinner from '@/components/ui/Spinner';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useWishlist } from '@/lib/context/WishlistContext';
@@ -47,7 +48,8 @@ export default function ProductCard({
   isFeatured,
   slug
 }: ProductCardProps) {
-  const { wishlistIds, toggleWishlist: toggleWishlistBase } = useWishlist();
+  const { wishlistIds, toggleWishlist: toggleWishlistBase, pendingIds } = useWishlist();
+  const isLikePending = pendingIds.has(id);
   const { addToCart, openCart } = useCart();
   const { showToast } = useToast();
   const router = useRouter();
@@ -158,13 +160,19 @@ export default function ProductCard({
             toggleWishlist(id);
           }}
           aria-label="Save to Wishlist"
+          disabled={isLikePending}
+          aria-busy={isLikePending || undefined}
           className={`absolute top-2 right-2 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-surface/80 backdrop-blur-sm flex items-center justify-center transition-colors z-10
-            ${isSaved ? 'text-error' : 'text-on-surface-variant hover:text-error'}
+            ${isSaved ? 'text-red-500' : 'text-on-surface-variant hover:text-red-500'}
           `}
         >
-          <span className={`material-symbols-outlined text-[14px] sm:text-[16px] leading-none ${isSaved ? 'font-variation-fill-1' : ''}`}>
-            favorite
-          </span>
+          {isLikePending ? (
+            <Spinner size={15} />
+          ) : (
+            <span className={`material-symbols-outlined text-[14px] sm:text-[16px] leading-none ${isSaved ? 'font-variation-fill-1' : ''}`}>
+              favorite
+            </span>
+          )}
         </button>
       </div>
 
@@ -195,7 +203,6 @@ export default function ProductCard({
               </span>
             )}
           </div>
-          <span className="block text-[9px] sm:text-label-sm font-label-sm text-on-surface-variant">Incl. taxes</span>
         </div>
         <button
           onClick={handleAcquire}

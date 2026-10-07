@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from 'react';
+import Spinner, { LoadingLabel } from '@/components/ui/Spinner';
 
 /** Shared light-luxury building blocks for admin pages. */
 
@@ -32,22 +33,26 @@ export function PrimaryButton({
   onClick,
   icon,
   disabled,
+  loading,
   type = 'button',
 }: {
   children: ReactNode;
   onClick?: () => void;
   icon?: string;
   disabled?: boolean;
+  /** Action in progress: shows the spinner in place of the icon and blocks further clicks. */
+  loading?: boolean;
   type?: 'button' | 'submit';
 }) {
   return (
     <button
       type={type}
       onClick={onClick}
-      disabled={disabled}
+      disabled={disabled || loading}
+      aria-busy={loading || undefined}
       className="inline-flex items-center gap-2 bg-[#2D2024] text-[#FAF7F2] hover:bg-[#4B2949] px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
     >
-      {icon && <span className="material-symbols-outlined text-[18px]">{icon}</span>}
+      {loading ? <Spinner size={18} /> : icon && <span className="material-symbols-outlined text-[18px]">{icon}</span>}
       {children}
     </button>
   );
@@ -59,22 +64,28 @@ export function SecondaryButton({
   icon,
   disabled,
   spinning,
+  loading,
 }: {
   children: ReactNode;
   onClick?: () => void;
   icon?: string;
   disabled?: boolean;
   spinning?: boolean;
+  /** Action in progress: shows the spinner in place of the icon and blocks further clicks. */
+  loading?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      disabled={disabled}
+      disabled={disabled || loading}
+      aria-busy={loading || undefined}
       className="inline-flex items-center gap-2 bg-[#FFFCF7] hover:bg-[#E8D5C5]/40 border border-[#E8D5C5] text-[#2D2024] px-4 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
     >
-      {icon && (
-        <span className={`material-symbols-outlined text-[18px] text-[#8A6F3C] ${spinning ? 'animate-spin' : ''}`}>{icon}</span>
+      {loading ? (
+        <Spinner size={18} className="text-[#8A6F3C]" />
+      ) : (
+        icon && <span className={`material-symbols-outlined text-[18px] text-[#8A6F3C] ${spinning ? 'animate-spin' : ''}`}>{icon}</span>
       )}
       {children}
     </button>
@@ -199,11 +210,14 @@ export function Toggle({
   onChange,
   disabled,
   label,
+  loading,
 }: {
   checked: boolean;
   onChange: (next: boolean) => void;
   disabled?: boolean;
   label: string;
+  /** Saving the new value: a small spinner sits in the knob and the switch ignores clicks. */
+  loading?: boolean;
 }) {
   return (
     <button
@@ -211,18 +225,21 @@ export function Toggle({
       role="switch"
       aria-checked={checked}
       aria-label={label}
+      aria-busy={loading || undefined}
       title={label}
-      disabled={disabled}
+      disabled={disabled || loading}
       onClick={() => onChange(!checked)}
       className={`relative inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
         checked ? 'bg-[#B99A62]' : 'bg-[#2D2024]/15'
       }`}
     >
       <span
-        className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${
+        className={`inline-flex items-center justify-center h-4 w-4 rounded-full bg-white shadow transition-transform ${
           checked ? 'translate-x-[18px]' : 'translate-x-0.5'
         }`}
-      />
+      >
+        {loading && <Spinner size={11} className="text-[#8A6F3C]" />}
+      </span>
     </button>
   );
 }
@@ -236,6 +253,7 @@ export function IconButton({
   external,
   disabled,
   spinning,
+  loading,
 }: {
   icon: string;
   title: string;
@@ -245,6 +263,8 @@ export function IconButton({
   external?: boolean;
   disabled?: boolean;
   spinning?: boolean;
+  /** Action in progress: the icon becomes the spinner and the button ignores clicks. */
+  loading?: boolean;
 }) {
   const toneClass = disabled
     ? 'text-[#2D2024]/30 cursor-not-allowed'
@@ -254,7 +274,7 @@ export function IconButton({
         ? 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50'
         : 'text-[#2D2024]/60 hover:text-[#2D2024] hover:bg-[#E8D5C5]/50';
   const className = `p-2 rounded-full inline-flex transition-colors ${toneClass}`;
-  const iconEl = <span className={`material-symbols-outlined text-[20px] ${spinning ? 'animate-spin' : ''}`}>{icon}</span>;
+  const iconEl = loading ? <Spinner size={20} /> : <span className={`material-symbols-outlined text-[20px] ${spinning ? 'animate-spin' : ''}`}>{icon}</span>;
 
   if (href && !disabled) {
     return (
@@ -270,7 +290,7 @@ export function IconButton({
     );
   }
   return (
-    <button type="button" onClick={onClick} disabled={disabled} title={title} aria-label={title} className={className}>
+    <button type="button" onClick={onClick} disabled={disabled || loading} aria-busy={loading || undefined} title={title} aria-label={title} className={`${className} ${loading ? 'cursor-wait' : ''}`}>
       {iconEl}
     </button>
   );
@@ -414,16 +434,20 @@ export function ConfirmDialog({
         <div className="flex justify-end gap-3 pt-2">
           <button
             onClick={onCancel}
-            className="border border-[#E8D5C5] text-[#2D2024]/80 px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-wider hover:bg-[#F5EEE7] transition-colors"
+            disabled={busy}
+            className="border border-[#E8D5C5] text-[#2D2024]/80 px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-wider hover:bg-[#F5EEE7] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
             disabled={busy}
-            className="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-wider transition-colors disabled:opacity-50"
+            aria-busy={busy || undefined}
+            className="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {busy ? busyLabel : confirmLabel}
+            <LoadingLabel loading={!!busy} loadingText={busyLabel}>
+              {confirmLabel}
+            </LoadingLabel>
           </button>
         </div>
       </div>
@@ -479,11 +503,59 @@ export function formatINR(value: number | string | null | undefined) {
 }
 
 /** wa.me link for an Indian mobile number (adds 91 when a bare 10-digit number is given). */
+/**
+ * The number in the form wa.me wants (country code + number, digits only), or null when it isn't a usable mobile
+ * number. Spaces, dashes, brackets and "+" are stripped. Indian numbers may be written with or without +91 / 91 / 0;
+ * a number from another country must be written with its "+" country code.
+ */
+export function whatsappNumber(phone?: string | null): string | null {
+  const raw = (phone || '').trim();
+  if (!raw) return null;
+  const digits = raw.replace(/\D/g, '');
+  let full: string | null = null;
+  if (/^[6-9]\d{9}$/.test(digits)) full = `91${digits}`;
+  else if (/^0[6-9]\d{9}$/.test(digits)) full = `91${digits.slice(1)}`;
+  else if (/^91[6-9]\d{9}$/.test(digits)) full = digits;
+  else if (raw.startsWith('+') && !digits.startsWith('91') && /^[1-9]\d{7,14}$/.test(digits)) full = digits;
+  if (!full || /^(\d)\1+$/.test(full.slice(-10))) return null; // 9999999999 and friends are never real
+  return full;
+}
+
+/** https://wa.me/<number> (with an optional pre-filled message), or null when the phone number isn't valid. */
 export function whatsappLink(phone?: string | null, text?: string) {
-  const digits = (phone || '').replace(/\D/g, '');
-  if (!digits) return null;
-  const full = digits.length === 10 ? `91${digits}` : digits;
+  const full = whatsappNumber(phone);
+  if (!full) return null;
   return `https://wa.me/${full}${text ? `?text=${encodeURIComponent(text)}` : ''}`;
+}
+
+/** WhatsApp's logo, in its brand green (#25D366) unless a colour class is passed. */
+export function WhatsAppIcon({ size = 20, className = 'text-[#25D366]' }: { size?: number; className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true" className={className} fill="currentColor">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+    </svg>
+  );
+}
+
+/**
+ * Round WhatsApp icon button for table rows. Opens the chat in a new tab; renders nothing when the number isn't a
+ * valid mobile number, so it only ever appears when it will work.
+ */
+export function WhatsAppButton({ phone, message, title = 'WhatsApp' }: { phone?: string | null; message?: string; title?: string }) {
+  const href = whatsappLink(phone, message);
+  if (!href) return null;
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={title}
+      aria-label={title}
+      className="p-2 rounded-full inline-flex transition-colors hover:bg-[#25D366]/10"
+    >
+      <WhatsAppIcon size={20} />
+    </a>
+  );
 }
 
 export const inputClass =

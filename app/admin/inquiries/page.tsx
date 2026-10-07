@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from 'react';
+import Spinner from '@/components/ui/Spinner';
 import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/lib/context/ToastContext';
 import type { Database } from '@/lib/supabase/database.types';
@@ -30,6 +31,8 @@ import {
   inputClass,
   isMissingTableError,
   whatsappLink,
+  WhatsAppButton,
+  WhatsAppIcon,
 } from '@/components/admin/AdminUI';
 
 type Inquiry = Database['public']['Tables']['contact_inquiries']['Row'];
@@ -70,6 +73,8 @@ export default function AdminInquiriesPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [notesDraft, setNotesDraft] = useState('');
   const [busyId, setBusyId] = useState<string | null>(null);
+  // which drawer button started the current update, so only that one shows the spinner
+  const [busyAction, setBusyAction] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Inquiry | null>(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -251,7 +256,6 @@ export default function AdminInquiriesPage() {
                 </thead>
                 <tbody className="divide-y divide-[#E8D5C5]/70">
                   {pageRows.map((i) => {
-                    const wa = whatsappLink(i.phone, `Hello ${i.name.split(' ')[0]}, thank you for contacting Sushi Jewels.`);
                     return (
                       <tr key={i.id} className={`hover:bg-[#F5EEE7]/50 transition-colors ${i.status === 'new' ? 'bg-sky-50/40' : ''}`}>
                         <td className="py-3.5 px-5">
@@ -296,11 +300,12 @@ export default function AdminInquiriesPage() {
                               </option>
                             ))}
                           </select>
+                            {busyId === i.id && <Spinner size={16} className="ml-1.5 align-middle text-[#8A6F3C]" />}
                         </td>
                         <td className="py-3.5 px-4 text-[#2D2024]/70 whitespace-nowrap">{formatDateTime(i.created_at)}</td>
                         <td className="py-3.5 px-5 text-right whitespace-nowrap">
                           <div className="inline-flex items-center gap-0.5">
-                            {wa && <IconButton icon="chat" title="WhatsApp" tone="whatsapp" href={wa} external />}
+                            <WhatsAppButton phone={i.phone} message={`Hello ${i.name.split(' ')[0]}, thank you for contacting Sushi Jewels.`} title="WhatsApp" />
                             <IconButton icon="reply" title="Reply by email" href={`mailto:${i.email}?subject=${replySubject(i)}`} />
                             <IconButton icon="visibility" title="Open inquiry" onClick={() => openInquiry(i)} />
                             <IconButton icon="delete" title="Delete inquiry" tone="danger" onClick={() => setDeleteTarget(i)} />
@@ -362,6 +367,7 @@ export default function AdminInquiriesPage() {
                     </option>
                   ))}
                 </select>
+                {busyId === selected.id && busyAction === null && <Spinner size={16} className="text-[#8A6F3C]" />}
               </div>
 
               <Field label="Internal notes" htmlFor="inq-notes" hint="Only visible to the admin team.">
@@ -388,14 +394,14 @@ export default function AdminInquiriesPage() {
                     href={whatsappLink(selected.phone, `Hello ${selected.name.split(' ')[0]}, thank you for contacting Sushi Jewels.`) || '#'}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-colors"
+                    className="flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1EBE5A] text-white py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-colors"
                   >
-                    <span className="material-symbols-outlined text-base">chat</span>
+                    <WhatsAppIcon size={16} className="text-white" />
                     WhatsApp
                   </a>
                 ) : (
                   <span className="flex items-center justify-center bg-[#2D2024]/5 text-[#2D2024]/40 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider">
-                    No phone
+                    {selected.phone ? 'Invalid number' : 'No phone'}
                   </span>
                 )}
               </div>
@@ -405,7 +411,11 @@ export default function AdminInquiriesPage() {
                 <SecondaryButton
                   icon="task_alt"
                   disabled={busyId === selected.id}
-                  onClick={() => updateInquiry(selected, { status: 'resolved', admin_notes: notesDraft.trim() || null }, 'Marked as resolved')}
+                  loading={busyId === selected.id && busyAction === 'resolve'}
+                  onClick={() => {
+                    setBusyAction('resolve');
+                    updateInquiry(selected, { status: 'resolved', admin_notes: notesDraft.trim() || null }, 'Marked as resolved').finally(() => setBusyAction(null));
+                  }}
                 >
                   Mark Resolved
                 </SecondaryButton>
@@ -413,7 +423,11 @@ export default function AdminInquiriesPage() {
               <PrimaryButton
                 icon="save"
                 disabled={busyId === selected.id}
-                onClick={() => updateInquiry(selected, { admin_notes: notesDraft.trim() || null }, 'Notes saved')}
+                loading={busyId === selected.id && busyAction === 'notes'}
+                onClick={() => {
+                  setBusyAction('notes');
+                  updateInquiry(selected, { admin_notes: notesDraft.trim() || null }, 'Notes saved').finally(() => setBusyAction(null));
+                }}
               >
                 Save Notes
               </PrimaryButton>

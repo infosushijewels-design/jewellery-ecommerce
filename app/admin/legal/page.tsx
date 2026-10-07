@@ -303,6 +303,7 @@ export default function AdminLegalPagesPage() {
                             <Toggle
                               checked={row.page.is_active}
                               disabled={togglingId === row.page.id}
+                              loading={togglingId === row.page.id}
                               onChange={(next) => handleToggle(row.page, next)}
                               label={row.page.is_active ? `Deactivate ${title}` : `Activate ${title}`}
                             />
@@ -413,7 +414,7 @@ export default function AdminLegalPagesPage() {
           </div>
           <DrawerFooter>
             <SecondaryButton onClick={closeForm}>Cancel</SecondaryButton>
-            <PrimaryButton type="submit" icon={saving ? undefined : 'save'} disabled={saving}>
+            <PrimaryButton type="submit" icon="save" loading={saving}>
               {saving ? 'Saving…' : editingId ? 'Update Page' : 'Publish Page'}
             </PrimaryButton>
           </DrawerFooter>

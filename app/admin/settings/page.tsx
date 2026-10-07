@@ -295,7 +295,7 @@ function RazorpayPanel({ readOnly }: { readOnly: boolean }) {
             </div>
           </div>
           {!readOnly && (
-            <PrimaryButton icon={saving ? undefined : 'save'} onClick={handleSave} disabled={saving}>
+            <PrimaryButton icon="save" onClick={handleSave} loading={saving}>
               {saving ? 'Saving…' : 'Save Razorpay Keys'}
             </PrimaryButton>
           )}
@@ -907,7 +907,7 @@ export default function AdminSettingsPage() {
           <SecondaryButton onClick={() => setDraft(saved)} disabled={saving || !dirty}>
             Discard
           </SecondaryButton>
-          <PrimaryButton icon={saving ? undefined : 'save'} onClick={handleSave} disabled={saving || readOnly}>
+          <PrimaryButton icon="save" onClick={handleSave} loading={saving} disabled={readOnly}>
             {saving ? 'Saving…' : 'Save Changes'}
           </PrimaryButton>
         </div>

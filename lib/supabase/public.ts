@@ -54,8 +54,8 @@ export async function getPublicTestimonials(limit = 12) {
     const { data, error } = await createPublicClient()
       .from('product_reviews')
       .select('id, reviewer_name, rating, title, comment, created_at')
+      // Exactly the reviews an admin approved (Admin → Reviews) — approval is the only gate
       .eq('status', 'approved')
-      .gte('rating', 4)
       .not('comment', 'is', null)
       .order('created_at', { ascending: false })
       .limit(limit);

@@ -1,34 +1,6 @@
 import TestimonialsCarousel, { type Testimonial } from './TestimonialsCarousel';
 import { getPublicTestimonials } from '@/lib/supabase/public';
 
-// Curated patron stories shown alongside (and until there are enough) approved reviews
-const CURATED: Testimonial[] = [
-  {
-    id: 'curated-1',
-    name: 'Ananya Sharma',
-    subtitle: 'Verified Buyer · Mumbai',
-    rating: 5,
-    date: '2026-05-12',
-    text: 'The solitaire I purchased for my 10th anniversary exceeded all expectations. The certification and the sheer brilliance of the cut is unmatched. The packaging itself was an experience.',
-  },
-  {
-    id: 'curated-2',
-    name: 'Dr. Rakesh Mehta',
-    subtitle: 'Verified Buyer · Delhi',
-    rating: 5,
-    date: '2026-04-28',
-    text: "We bought our daughter's bridal set from Sushi Jewels. The craftsmanship on the Jadau choker is so intricate, it looks like a museum piece. The concierge team was incredibly patient.",
-  },
-  {
-    id: 'curated-3',
-    name: 'Priya Patel',
-    subtitle: 'Verified Buyer · Bangalore',
-    rating: 5,
-    date: '2026-04-03',
-    text: "I love their everyday luxury edit. The rose gold huggies I bought are so comfortable I never take them off. It's rare to find fine jewellery that feels so effortless and modern.",
-  },
-];
-
 export default async function Testimonials() {
   const reviews = await getPublicTestimonials(12);
   const fromReviews: Testimonial[] = reviews.map((r) => ({
@@ -39,7 +11,10 @@ export default async function Testimonials() {
     date: r.created_at,
     text: r.comment || r.title || '',
   }));
-  const items = [...fromReviews, ...CURATED].filter((t) => t.text.trim()).slice(0, 12);
+  // Only real, approved customer reviews from the database (Admin → Reviews decides what is shown).
+  const items = fromReviews.filter((t) => t.text.trim()).slice(0, 12);
+  // No approved reviews yet: leave the section out rather than show an empty block
+  if (items.length === 0) return null;
 
   return (
     <section className="py-12 sm:py-20 bg-surface-container-low" id="testimonials">

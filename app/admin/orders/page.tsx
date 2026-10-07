@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from 'react';
+import Spinner from '@/components/ui/Spinner';
 import { getAllOrdersAdmin, updateOrderPaymentStatus, updateOrderStatus, FullOrder } from '@/lib/supabase/orderService';
 import { useToast } from '@/lib/context/ToastContext';
 import { downloadCsv } from '@/lib/utils/csv';
@@ -433,6 +434,7 @@ export default function AdminOrdersPage() {
                                 </option>
                               ))}
                             </select>
+                            {updatingId === order.id && <Spinner size={16} className="ml-1.5 align-middle text-[#8A6F3C]" />}
                           </div>
                         </td>
                         <td className="py-4 px-4">
@@ -450,6 +452,7 @@ export default function AdminOrdersPage() {
                               </option>
                             ))}
                           </select>
+                            {updatingId === order.id && <Spinner size={16} className="ml-1.5 align-middle text-[#8A6F3C]" />}
                         </td>
                         <td className="py-4 px-4 text-[#2D2024]/75 whitespace-nowrap">
                           {formatDateTime(order.created_at)}

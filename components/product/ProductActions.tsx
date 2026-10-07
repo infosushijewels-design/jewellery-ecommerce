@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import Spinner from '@/components/ui/Spinner';
 import { useRouter } from 'next/navigation';
 
 import { useCart } from '@/lib/context/CartContext';
@@ -31,7 +32,9 @@ export default function ProductActions({ product }: ProductActionsProps) {
   const [isTryItOnOpen, setIsTryItOnOpen] = useState(false);
 
   const { addToCart, openCart } = useCart();
-  const { wishlistIds, toggleWishlist: toggleWishlistBase } = useWishlist();
+  const { wishlistIds, toggleWishlist: toggleWishlistBase, pendingIds } = useWishlist();
+  const isLikePending = pendingIds.has(product.id);
+  const [buyingNow, setBuyingNow] = useState(false);
   const { showToast } = useToast();
   const router = useRouter();
 
@@ -58,9 +61,12 @@ export default function ProductActions({ product }: ProductActionsProps) {
   };
 
   const handleBuyNow = () => {
-    if (isSoldOut) return;
+    if (isSoldOut || buyingNow) return;
+    setBuyingNow(true);
     addToCart(buildCartItem());
     router.push('/checkout');
+    // the page normally navigates away; if it somehow doesn't, let the customer try again
+    setTimeout(() => setBuyingNow(false), 8000);
   };
 
   const toggleWishlist = async (productId: string) => {
@@ -164,20 +170,23 @@ export default function ProductActions({ product }: ProductActionsProps) {
           <button
             onClick={() => toggleWishlist(product.id)}
             aria-label="Save to Wishlist"
+            disabled={isLikePending}
+            aria-busy={isLikePending || undefined}
             className={`flex-shrink-0 w-14 h-14 rounded-full border flex items-center justify-center transition-colors
-              ${isSaved ? 'border-error text-error bg-error-container/20' : 'border-outline-variant/60 text-on-surface-variant hover:text-error hover:border-error'}
+              ${isSaved ? 'border-red-500/60 text-red-500 bg-red-50' : 'border-outline-variant/60 text-on-surface-variant hover:text-red-500 hover:border-red-500'}
             `}
           >
-            <span className={`material-symbols-outlined ${isSaved ? 'font-variation-fill-1' : ''}`}>favorite</span>
+            {isLikePending ? <Spinner size={22} /> : <span className={`material-symbols-outlined ${isSaved ? 'font-variation-fill-1' : ''}`}>favorite</span>}
           </button>
         </div>
         <button
           onClick={handleBuyNow}
-          disabled={isSoldOut}
+          disabled={isSoldOut || buyingNow}
+          aria-busy={buyingNow || undefined}
           className="flex-1 bg-secondary text-white px-6 py-4 rounded-full font-label-lg text-label-lg uppercase tracking-wider hover:bg-secondary-fixed-dim transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <span className="material-symbols-outlined">bolt</span>
-          Buy Now
+          {buyingNow ? <Spinner size={22} /> : <span className="material-symbols-outlined">bolt</span>}
+          {buyingNow ? 'Opening checkout…' : 'Buy Now'}
         </button>
       </div>
 

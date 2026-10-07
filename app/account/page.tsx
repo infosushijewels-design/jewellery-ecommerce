@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
+import Spinner, { LoadingLabel } from '@/components/ui/Spinner';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/layout/Header';
@@ -66,6 +67,8 @@ export default function AccountPage() {
   const [addressForm, setAddressForm] = useState(emptyAddressForm);
   const [savingAddress, setSavingAddress] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<AddressRow | null>(null);
+  const [deletingAddress, setDeletingAddress] = useState(false);
+  const [defaultingId, setDefaultingId] = useState<string | null>(null);
 
   // Field-level validation: an error shows once the field was visited (blur) or Save was pressed
   const [profileTouched, setProfileTouched] = useState<Partial<Record<ProfileField, boolean>>>({});
@@ -234,7 +237,8 @@ export default function AccountPage() {
   }
 
   async function handleDeleteAddress() {
-    if (!deleteTarget) return;
+    if (!deleteTarget || deletingAddress) return;
+    setDeletingAddress(true);
     try {
       const { data, error } = await supabase.from('customer_addresses').delete().eq('id', deleteTarget.id).select('id');
       if (error || !data?.length) throw error || new Error('permission denied');
@@ -244,11 +248,14 @@ export default function AccountPage() {
       console.error('Error deleting address:', err);
       showToast('Could not remove this address. Please try again.', 'error');
     } finally {
+      setDeletingAddress(false);
       setDeleteTarget(null);
     }
   }
 
   async function handleSetDefault(a: AddressRow) {
+    if (defaultingId) return;
+    setDefaultingId(a.id);
     try {
       const { data, error } = await supabase.from('customer_addresses').update({ is_default: true }).eq('id', a.id).select('id');
       if (error || !data?.length) throw error || new Error('permission denied');
@@ -256,6 +263,8 @@ export default function AccountPage() {
     } catch (err) {
       console.error('Error setting default address:', err);
       showToast('Could not update the default address.', 'error');
+    } finally {
+      setDefaultingId(null);
     }
   }
 
@@ -638,8 +647,8 @@ export default function AccountPage() {
                             <span className="material-symbols-outlined text-[15px]">edit</span>Edit
                           </button>
                           {!a.is_default && (
-                            <button onClick={() => handleSetDefault(a)} className="text-xs font-medium text-on-surface-variant hover:text-primary flex items-center gap-1">
-                              <span className="material-symbols-outlined text-[15px]">star</span>Set Default
+                            <button onClick={() => handleSetDefault(a)} disabled={!!defaultingId} aria-busy={defaultingId === a.id || undefined} className="text-xs font-medium text-on-surface-variant hover:text-primary flex items-center gap-1 disabled:opacity-60 disabled:cursor-wait">
+                              {defaultingId === a.id ? <Spinner size={15} /> : <span className="material-symbols-outlined text-[15px]">star</span>}Set Default
                             </button>
                           )}
                           <button onClick={() => setDeleteTarget(a)} className="text-xs font-medium text-error hover:underline flex items-center gap-1 ml-auto">
@@ -713,8 +722,8 @@ export default function AccountPage() {
               <button onClick={() => setDeleteTarget(null)} className="px-5 py-2.5 rounded-full font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant hover:text-primary transition-colors">
                 Cancel
               </button>
-              <button onClick={handleDeleteAddress} className="px-5 py-2.5 rounded-full font-label-sm text-label-sm uppercase tracking-wider bg-error text-surface hover:opacity-90 transition-opacity">
-                Remove
+              <button onClick={handleDeleteAddress} disabled={deletingAddress} aria-busy={deletingAddress || undefined} className="px-5 py-2.5 rounded-full font-label-sm text-label-sm uppercase tracking-wider bg-error text-surface hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-wait">
+                <LoadingLabel loading={deletingAddress} loadingText="Removing…">Remove</LoadingLabel>
               </button>
             </div>
           </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from 'react';
+import Spinner from '@/components/ui/Spinner';
 import Link from 'next/link';
 import type { FullOrder } from '@/lib/supabase/orderService';
 import { printOrderInvoice } from '@/lib/utils/printInvoice';
@@ -147,6 +148,7 @@ export default function OrderDetailsDrawer({
                 </option>
               ))}
             </select>
+            {updating && <Spinner size={16} className="text-[#8A6F3C]" />}
           </div>
         </Section>
 

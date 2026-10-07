@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
+import { LoadingLabel } from '@/components/ui/Spinner';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import {
@@ -620,7 +621,9 @@ export default function ProductForm({ mode, productId, initialProduct }: Product
             disabled={isSubmitting}
             className="bg-[#2D2024] text-[#FAF7F2] hover:bg-[#4B2949] px-6 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-colors shadow-lg disabled:opacity-50"
           >
-            {isSubmitting ? 'Saving...' : mode === 'edit' ? 'Update Piece' : 'Add to Boutique'}
+            <LoadingLabel loading={isSubmitting} loadingText="Saving...">
+              {mode === 'edit' ? 'Update Piece' : 'Add to Boutique'}
+            </LoadingLabel>
           </button>
         </div>
       </form>

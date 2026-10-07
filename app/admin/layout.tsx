@@ -133,8 +133,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   // Contextual "create" shortcut for the current section
   const QUICK_ACTIONS: Partial<Record<PermissionModule, { label: string; href: string; action: 'create' }>> = {
-    products: { label: 'Add Product', href: '/admin/products/new', action: 'create' },
-    categories: { label: 'Add Category', href: '/admin/categories?new=1', action: 'create' },
+    // Products and Categories have their own "Add" button in the page header, so none is repeated up here
     legal: { label: 'Add Page', href: '/admin/legal?new=1', action: 'create' },
   };
   const quickAction = currentLink?.module ? QUICK_ACTIONS[currentLink.module] : undefined;
@@ -158,27 +157,66 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] text-[#2D2024]">
+    // admin-numeric: clean, upright figures for every price, count and ID in the admin panel (see globals.css)
+    <div className="admin-numeric min-h-screen bg-[#FAF7F2] text-[#2D2024]">
 
       {/* Sidebar Navigation */}
       <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-[#FFFCF7] border-r border-[#E8D5C5]/70 flex flex-col transition-all duration-300 lg:translate-x-0 lg:fixed lg:inset-y-0 lg:h-screen flex-shrink-0 ${collapsed ? 'lg:w-[84px]' : 'lg:w-72'} ${mobileNavOpen ? 'translate-x-0' : '-translate-x-full'
         }`}>
 
         <div className="flex-1 min-h-0 flex flex-col">
-          {/* Brand Header */}
-          <div className={`py-3.5 border-b border-[#E8D5C5]/70 flex-shrink-0 ${collapsed ? 'lg:px-0' : ''} px-5`}>
-            <Link href="/admin" className={`flex items-center gap-2.5 ${collapsed ? 'lg:justify-center' : ''}`} title={store.name}>
+          {/* Brand Header — Minimal with Accent */}
+          <div className="flex-shrink-0 border-b border-[#E8D5C5]/70">
+            <Link
+              href="/admin"
+              title={store.name}
+              className={`flex flex-col items-center pt-5 pb-0 w-full transition-all duration-300 ${collapsed ? 'lg:pt-3' : ''}`}
+            >
+              {/* Logo or Gold Monogram */}
               {store.logoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={store.logoUrl} alt={store.name} className="h-9 w-auto max-w-[56px] object-contain" />
+                <img
+                  src={store.logoUrl}
+                  alt={store.name}
+                  className={`object-contain transition-all duration-300 ${collapsed ? 'lg:h-9' : 'h-14'} w-auto`}
+                />
               ) : (
-                <span className="material-symbols-outlined text-[#B99A62] text-3xl">diamond</span>
+                <div className={`flex items-center justify-center rounded-full border-2 border-[#B99A62]/60 bg-[#B99A62]/10 text-[#8A6F3C] font-serif font-bold transition-all duration-300 ${collapsed ? 'lg:h-9 lg:w-9 lg:text-base' : 'h-14 w-14 text-2xl'}`}>
+                  {store.name?.charAt(0)?.toUpperCase() || 'S'}
+                </div>
               )}
-              <div className={`min-w-0 ${collapsed ? 'lg:hidden' : ''}`}>
-                <span className="font-headline-sm text-lg font-bold tracking-wide text-[#2D2024] block uppercase truncate">{store.name}</span>
-                <span className="font-label-sm text-[10px] uppercase tracking-widest bg-[#B99A62]/15 text-[#8A6F3C] px-2 py-0.5 rounded-full font-semibold">
-                  Admin Panel
+
+              {/* Brand Name + Accent Bar + Admin Label */}
+              <div className={`w-full flex flex-col items-center mt-3 ${collapsed ? 'lg:hidden' : ''}`}>
+                {/* Brand Name */}
+                <span
+                  className="block text-center text-[11px] uppercase tracking-[0.28em] text-[#2D2024] font-light truncate w-full px-3"
+                  style={{ fontFamily: 'Georgia, "Times New Roman", serif', letterSpacing: '0.28em' }}
+                >
+                  {store.name}
                 </span>
+
+                {/* Gold Gradient Accent Bar */}
+                <div
+                  className="w-full mt-2.5 mb-1"
+                  style={{ height: '1.5px', background: 'linear-gradient(90deg, transparent 0%, #B99A62 40%, #D4AF74 50%, #B99A62 60%, transparent 100%)' }}
+                />
+
+                {/* ADMIN label */}
+                <span
+                  className="block text-center text-[8px] text-[#B99A62] font-medium mb-3"
+                  style={{ letterSpacing: '0.35em' }}
+                >
+                  ADMIN
+                </span>
+              </div>
+
+              {/* Collapsed state: just the accent line */}
+              <div className={`w-full mt-2 ${collapsed ? 'lg:block' : 'hidden'}`}>
+                <div
+                  className="w-full"
+                  style={{ height: '1.5px', background: 'linear-gradient(90deg, transparent 0%, #B99A62 50%, transparent 100%)' }}
+                />
               </div>
             </Link>
           </div>

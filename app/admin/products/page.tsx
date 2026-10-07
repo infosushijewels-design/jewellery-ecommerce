@@ -381,6 +381,7 @@ export default function AdminProductsPage() {
                           <Toggle
                             checked={!!product.is_featured}
                             disabled={togglingKey === `${product.id}:is_featured`}
+                            loading={togglingKey === `${product.id}:is_featured`}
                             onChange={(next) => handleToggleFlag(product, 'is_featured', next)}
                             label={`Featured: ${product.title}`}
                           />
@@ -389,6 +390,7 @@ export default function AdminProductsPage() {
                           <Toggle
                             checked={!!product.is_new_arrival}
                             disabled={togglingKey === `${product.id}:is_new_arrival`}
+                            loading={togglingKey === `${product.id}:is_new_arrival`}
                             onChange={(next) => handleToggleFlag(product, 'is_new_arrival', next)}
                             label={`New arrival: ${product.title}`}
                           />
@@ -399,9 +401,11 @@ export default function AdminProductsPage() {
                             <IconButton icon="open_in_new" title="View on store" href={`/product/${product.slug}`} external />
                             <IconButton icon="edit" title="Edit product" onClick={() => router.push(`/admin/products/${product.id}/edit`)} />
                             <IconButton
-                              icon={duplicatingId === product.id ? 'progress_activity' : 'content_copy'}
+                              icon="content_copy"
                               title="Duplicate product"
-                              onClick={() => duplicatingId || handleDuplicate(product)}
+                              loading={duplicatingId === product.id}
+                              disabled={!!duplicatingId && duplicatingId !== product.id}
+                              onClick={() => handleDuplicate(product)}
                             />
                             <IconButton icon="delete" title="Delete product" tone="danger" onClick={() => setDeletingProduct(product)} />
                           </div>

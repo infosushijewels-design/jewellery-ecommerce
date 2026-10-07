@@ -68,6 +68,9 @@ export default function AdminAppointmentsPage() {
   const [notesDraft, setNotesDraft] = useState('');
   const [followupDraft, setFollowupDraft] = useState('');
   const [busy, setBusy] = useState(false);
+  // which button started the current action, so only that button shows the spinner
+  const [busyAction, setBusyAction] = useState<string | null>(null);
+  const isRunning = (action: string) => busy && busyAction === action;
   const [cancelTarget, setCancelTarget] = useState<Appointment | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Appointment | null>(null);
 
@@ -417,7 +420,7 @@ export default function AdminAppointmentsPage() {
                       placeholder="Auto-created on confirm, or paste https://zoom.us/j/..."
                     />
                   </Field>
-                  <PrimaryButton icon={selected.status === 'confirmed' ? 'forward_to_inbox' : 'event_available'} disabled={busy} onClick={() => handleConfirm(selected)}>
+                  <PrimaryButton icon={selected.status === 'confirmed' ? 'forward_to_inbox' : 'event_available'} loading={isRunning('confirm')} disabled={busy} onClick={() => { setBusyAction('confirm'); handleConfirm(selected); }}>
                     {selected.status === 'confirmed' ? 'Update Link & Resend Email' : zoomDraft.trim() ? 'Confirm & Email Customer' : 'Confirm & Create Zoom Meeting'}
                   </PrimaryButton>
                   {selected.zoom_passcode && (
@@ -473,7 +476,7 @@ export default function AdminAppointmentsPage() {
                       placeholder="Thank you for your time! Here are the pieces we discussed: https://..."
                     />
                   </Field>
-                  <SecondaryButton icon="send" disabled={busy || !followupDraft.trim()} onClick={() => handleFollowup(selected)}>
+                  <SecondaryButton icon="send" loading={isRunning('followup')} disabled={busy || !followupDraft.trim()} onClick={() => { setBusyAction('followup'); handleFollowup(selected); }}>
                     {selected.followup_sent_at ? 'Send Another Follow-up' : 'Send Follow-up Email'}
                   </SecondaryButton>
                   {selected.followup_sent_at && <p className="text-xs text-[#2D2024]/60">Last follow-up sent {formatDateTime(selected.followup_sent_at)}</p>}
@@ -490,13 +493,14 @@ export default function AdminAppointmentsPage() {
               {selected.status === 'confirmed' && (
                 <SecondaryButton
                   icon="task_alt"
+                  loading={isRunning('complete')}
                   disabled={busy}
-                  onClick={() => updateDirect(selected, { status: 'completed', admin_notes: notesDraft.trim() || null }, 'Marked as completed')}
+                  onClick={() => { setBusyAction('complete'); updateDirect(selected, { status: 'completed', admin_notes: notesDraft.trim() || null }, 'Marked as completed'); }}
                 >
                   Mark Completed
                 </SecondaryButton>
               )}
-              <PrimaryButton icon="save" disabled={busy} onClick={() => updateDirect(selected, { admin_notes: notesDraft.trim() || null }, 'Notes saved')}>
+              <PrimaryButton icon="save" loading={isRunning('notes')} disabled={busy} onClick={() => { setBusyAction('notes'); updateDirect(selected, { admin_notes: notesDraft.trim() || null }, 'Notes saved'); }}>
                 Save Notes
               </PrimaryButton>
             </DrawerFooter>

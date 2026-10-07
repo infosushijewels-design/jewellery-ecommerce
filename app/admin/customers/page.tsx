@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from 'react';
+import Spinner from '@/components/ui/Spinner';
 import {
   addCustomerNote,
   deleteCustomerNote,
@@ -32,6 +33,8 @@ import {
   getInitials,
   inputClass,
   whatsappLink,
+  WhatsAppButton,
+  WhatsAppIcon,
 } from '@/components/admin/AdminUI';
 
 type TypeTab = 'all' | 'registered' | 'guest' | 'repeat' | 'admin';
@@ -151,6 +154,7 @@ export default function AdminCustomersPage() {
   const [activityLoading, setActivityLoading] = useState(false);
   const [noteDraft, setNoteDraft] = useState('');
   const [savingNote, setSavingNote] = useState(false);
+  const [deletingNoteId, setDeletingNoteId] = useState<string | null>(null);
 
   useEffect(() => {
     loadCustomers();
@@ -279,14 +283,19 @@ export default function AdminCustomersPage() {
   }
 
   async function handleDeleteNote(id: string) {
-    if (!selected) return;
-    const ok = await deleteCustomerNote(id);
-    if (!ok) {
-      showToast('Could not delete the note', 'error');
-      return;
+    if (!selected || deletingNoteId) return;
+    setDeletingNoteId(id);
+    try {
+      const ok = await deleteCustomerNote(id);
+      if (!ok) {
+        showToast('Could not delete the note', 'error');
+        return;
+      }
+      setActivity((prev) => (prev ? { ...prev, notes: prev.notes.filter((n) => n.id !== id) } : prev));
+      showToast('Note deleted', 'success');
+    } finally {
+      setDeletingNoteId(null);
     }
-    setActivity((prev) => (prev ? { ...prev, notes: prev.notes.filter((n) => n.id !== id) } : prev));
-    showToast('Note deleted', 'success');
   }
 
   const activityCounts: Record<ActivityTab, number> = {
@@ -374,7 +383,6 @@ export default function AdminCustomersPage() {
                 </thead>
                 <tbody className="divide-y divide-[#E8D5C5]/70">
                   {pageRows.map((c) => {
-                    const wa = whatsappLink(c.phone, conciergeMessage(c));
                     return (
                       <tr key={c.id} className="hover:bg-[#F5EEE7]/50 transition-colors">
                         <td className="py-3.5 px-5">
@@ -399,7 +407,7 @@ export default function AdminCustomersPage() {
                         <td className="py-3.5 px-4 text-[#2D2024]/70 whitespace-nowrap">{formatDate(c.createdAt)}</td>
                         <td className="py-3.5 px-5 text-right whitespace-nowrap">
                           <div className="inline-flex items-center gap-0.5">
-                            {wa && <IconButton icon="chat" title="WhatsApp customer" tone="whatsapp" href={wa} external />}
+                            <WhatsAppButton phone={c.phone} message={conciergeMessage(c)} title="WhatsApp customer" />
                             <IconButton icon="mail" title="Email customer" href={`mailto:${c.email}`} />
                             <IconButton icon="visibility" title="View full profile" onClick={() => openCustomer(c.id)} />
                           </div>
@@ -463,14 +471,14 @@ export default function AdminCustomersPage() {
                       href={whatsappLink(selected.phone, conciergeMessage(selected)) || '#'}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-colors"
+                      className="flex items-center justify-center gap-1.5 bg-[#25D366] hover:bg-[#1EBE5A] text-white py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-colors"
                     >
-                      <span className="material-symbols-outlined text-base">chat</span>
+                      <WhatsAppIcon size={16} className="text-white" />
                       WhatsApp
                     </a>
                   ) : (
                     <span className="flex items-center justify-center bg-[#2D2024]/5 text-[#2D2024]/40 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider">
-                      No phone
+                      {selected.phone ? 'Invalid number' : 'No phone'}
                     </span>
                   )}
                   <a
@@ -690,7 +698,7 @@ export default function AdminCustomersPage() {
                           disabled={savingNote || !noteDraft.trim()}
                           className="inline-flex items-center gap-1.5 bg-[#2D2024] text-[#FAF7F2] hover:bg-[#4B2949] px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wider transition-colors disabled:opacity-50"
                         >
-                          <span className="material-symbols-outlined text-base">{savingNote ? 'progress_activity' : 'add'}</span>
+                          {savingNote ? <Spinner size={16} /> : <span className="material-symbols-outlined text-base">add</span>}
                           {savingNote ? 'Saving…' : 'Add Note'}
                         </button>
                       </div>
@@ -702,7 +710,7 @@ export default function AdminCustomersPage() {
                           <li key={n.id} className="bg-white border border-[#E8D5C5] rounded-xl p-3.5">
                             <div className="flex items-start justify-between gap-3">
                               <p className="text-sm text-[#2D2024]/85 whitespace-pre-line flex-1">{n.note}</p>
-                              <IconButton icon="delete" title="Delete note" tone="danger" onClick={() => handleDeleteNote(n.id)} />
+                              <IconButton icon="delete" title="Delete note" tone="danger" loading={deletingNoteId === n.id} disabled={!!deletingNoteId && deletingNoteId !== n.id} onClick={() => handleDeleteNote(n.id)} />
                             </div>
                             <p className="text-[11px] text-[#2D2024]/50 mt-1.5">
                               {n.author_email || 'Admin'} · {formatDateTime(n.created_at)}

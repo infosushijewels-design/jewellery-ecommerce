@@ -1,6 +1,8 @@
 "use client";
 
 import CartButton from '@/components/cart/CartButton';
+import LogoutConfirmDialog from '@/components/auth/LogoutConfirmDialog';
+import Spinner from '@/components/ui/Spinner';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/context/AuthContext';
@@ -165,6 +167,14 @@ const navLinks: NavItem[] = [
           { label: 'White Gold', href: '/category/bracelets?metal=18k-white' },
         ],
       },
+      {
+        heading: 'Shop by Price',
+        links: [
+          { label: 'Under ₹25,000', href: '/category/bracelets?maxPrice=25000' },
+          { label: '₹25k – ₹50k', href: '/category/bracelets?minPrice=25000&maxPrice=50000' },
+          { label: 'Above ₹50,000', href: '/category/bracelets?minPrice=50000' },
+        ],
+      },
     ],
   },
   {
@@ -177,6 +187,15 @@ const navLinks: NavItem[] = [
           { label: 'Traditional Bangles', href: '/category/bangles?style=traditional' },
           { label: 'Diamond Bangles', href: '/category/bangles?style=diamond' },
           { label: 'Gold Bangles', href: '/category/bangles?style=gold' },
+        ],
+      },
+      {
+        heading: 'Shop by Metal',
+        links: [
+          { label: 'Yellow Gold', href: '/category/bangles?metal=18k-yellow' },
+          { label: 'Rose Gold', href: '/category/bangles?metal=18k-rose' },
+          { label: 'White Gold', href: '/category/bangles?metal=18k-white' },
+          { label: '22K Gold', href: '/category/bangles?metal=22k-gold' },
         ],
       },
       {
@@ -196,6 +215,20 @@ const navLinks: NavItem[] = [
 export default function Header() {
   const pathname = usePathname();
   const { user, signOut } = useAuth();
+  const [signingOut, setSigningOut] = useState(false);
+  // Logout is confirmed first ("Are you sure you want to log out?"), then runs
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
+  const handleSignOut = async (afterSignOut?: () => void) => {
+    if (signingOut) return;
+    setSigningOut(true);
+    try {
+      await signOut();
+      afterSignOut?.();
+      window.location.href = '/login?signedOut=1';
+    } catch {
+      setSigningOut(false); // failed: allow another try (on success the page navigates away)
+    }
+  };
   const { wishlistIds } = useWishlist();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -252,8 +285,8 @@ export default function Header() {
                   <Link href="/orders" className="flex items-center gap-2.5 px-4 py-2.5 text-xs hover:bg-surface-container-low transition-colors text-primary font-medium">
                     <span className="material-symbols-outlined text-[18px] text-tertiary">package_2</span>My Orders
                   </Link>
-                  <button onClick={async () => { await signOut(); window.location.href = '/login?signedOut=1'; }} className="w-full flex items-center gap-2.5 text-left px-4 py-2.5 text-xs hover:bg-surface-container-low transition-colors text-error border-t border-outline-variant/20">
-                    <span className="material-symbols-outlined text-[18px]">logout</span>Sign Out
+                  <button onClick={() => setLogoutConfirmOpen(true)} disabled={signingOut} aria-busy={signingOut || undefined} className="w-full flex items-center gap-2.5 text-left px-4 py-2.5 text-xs hover:bg-surface-container-low transition-colors text-error border-t border-outline-variant/20 disabled:opacity-60 disabled:cursor-wait">
+                    {signingOut ? <Spinner size={18} /> : <span className="material-symbols-outlined text-[18px]">logout</span>}{signingOut ? 'Signing out…' : 'Sign Out'}
                   </button>
                 </div>
               </div>
@@ -413,8 +446,8 @@ export default function Header() {
                 <Link href="/orders" onClick={closeMobileMenu} className="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-label-lg text-label-lg hover:bg-surface-container-low hover:text-primary transition-colors">
                   <span className="material-symbols-outlined text-secondary text-[20px]">package_2</span>My Orders
                 </Link>
-                <button onClick={async () => { await signOut(); closeMobileMenu(); window.location.href = '/login?signedOut=1'; }} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-error font-label-lg text-label-lg hover:bg-error-container/20 transition-colors">
-                  <span className="material-symbols-outlined text-[20px]">logout</span>Sign Out
+                <button onClick={() => { closeMobileMenu(); setLogoutConfirmOpen(true); }} disabled={signingOut} aria-busy={signingOut || undefined} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-error font-label-lg text-label-lg hover:bg-error-container/20 transition-colors disabled:opacity-60 disabled:cursor-wait">
+                  {signingOut ? <Spinner size={20} /> : <span className="material-symbols-outlined text-[20px]">logout</span>}{signingOut ? 'Signing out…' : 'Sign Out'}
                 </button>
               </>
             ) : (
@@ -436,6 +469,12 @@ export default function Header() {
           </Link>
         </div>
       </div>
+      <LogoutConfirmDialog
+        open={logoutConfirmOpen}
+        busy={signingOut}
+        onConfirm={() => handleSignOut()}
+        onCancel={() => setLogoutConfirmOpen(false)}
+      />
     </>
   );
 }

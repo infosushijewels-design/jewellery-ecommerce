@@ -375,6 +375,7 @@ export default function AdminStoresPage() {
                         <Toggle
                           checked={s.is_active}
                           disabled={!canEdit || togglingId === s.id}
+                          loading={togglingId === s.id}
                           onChange={(next) => handleToggle(s, next)}
                           label={s.is_active ? `Hide ${s.name}` : `Show ${s.name}`}
                         />
@@ -501,7 +502,7 @@ export default function AdminStoresPage() {
           <DrawerFooter>
             <SecondaryButton onClick={() => setFormOpen(false)}>Cancel</SecondaryButton>
             {!readOnly && (
-              <PrimaryButton type="submit" icon={saving ? undefined : 'save'} disabled={saving}>
+              <PrimaryButton type="submit" icon="save" loading={saving}>
                 {saving ? 'Saving…' : editingId ? 'Update Store' : 'Add Store'}
               </PrimaryButton>
             )}

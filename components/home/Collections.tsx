@@ -67,7 +67,7 @@ export default function Collections() {
           </Link>
         </div>
 
-        {/* ── MOBILE: Full-width swipe carousel ── */}
+        {/* ── MOBILE: swipe carousel — each card is ~88% of the screen width, centred, so there is a comfortable margin either side ── */}
         <div className="sm:hidden">
           <div
             className="overflow-hidden rounded-xl"
@@ -81,9 +81,9 @@ export default function Collections() {
             >
               {collections.map((col, i) => (
                 <div key={i} className="w-full flex-shrink-0">
-                  <Link href={col.href} className="group block bg-surface rounded-xl overflow-hidden border border-outline-variant/50">
+                  <Link href={col.href} className="group block w-[88vw] max-w-[420px] mx-auto bg-surface rounded-xl overflow-hidden border border-outline-variant/50">
                     {/* Image */}
-                    <div className="aspect-[4/5] overflow-hidden bg-surface-container">
+                    <div className="aspect-[10/9] overflow-hidden bg-surface-container">
                       <img
                         className="w-full h-full object-cover group-active:scale-105 transition-transform duration-500"
                         src={col.image}
@@ -91,11 +91,11 @@ export default function Collections() {
                       />
                     </div>
                     {/* Text */}
-                    <div className="p-5 flex flex-col gap-1">
+                    <div className="p-4 flex flex-col gap-0.5">
                       <span className="font-label-sm text-label-sm text-secondary tracking-widest uppercase">{col.label}</span>
                       <h3 className="font-headline-md text-headline-md text-primary">{col.title}</h3>
                       <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">{col.desc}</p>
-                      <span className="font-label-md text-label-md font-semibold text-primary group-hover:text-secondary transition-colors inline-flex items-center gap-1 mt-3">
+                      <span className="font-label-md text-label-md font-semibold text-primary group-hover:text-secondary transition-colors inline-flex items-center gap-1 mt-2.5">
                         Explore Collection <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
                       </span>
                     </div>
@@ -106,7 +106,7 @@ export default function Collections() {
           </div>
 
           {/* Dots + prev/next + counter */}
-          <div className="flex items-center justify-between mt-5 px-1">
+          <div className="flex items-center justify-between mt-4 w-[88vw] max-w-[420px] mx-auto">
             <button
               type="button"
               onClick={() => goTo(active - 1)}

@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from 'react';
-import { getInitials } from './AdminUI';
+import Spinner from '@/components/ui/Spinner';
+import { ConfirmDialog, getInitials } from './AdminUI';
 
 export default function ProfileMenu({
   name,
@@ -16,6 +17,17 @@ export default function ProfileMenu({
 }) {
   const [open, setOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+  // Logout is confirmed first ("Are you sure you want to log out?"), then runs
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const confirmLogout = async () => {
+    if (signingOut) return;
+    setSigningOut(true);
+    try {
+      await onSignOut();
+    } catch {
+      setSigningOut(false); // failed: allow another try (on success the page navigates away)
+    }
+  };
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -81,18 +93,29 @@ export default function ProfileMenu({
               type="button"
               role="menuitem"
               disabled={signingOut}
-              onClick={async () => {
-                setSigningOut(true);
-                await onSignOut();
+              onClick={() => {
+                setOpen(false);
+                setConfirmOpen(true);
               }}
               className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors w-full text-left disabled:opacity-60"
             >
-              <span className="material-symbols-outlined text-[20px]">logout</span>
+              {signingOut ? <Spinner size={20} /> : <span className="material-symbols-outlined text-[20px]">logout</span>}
               {signingOut ? 'Signing out…' : 'Sign Out'}
             </button>
           </div>
         </div>
       )}
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Are you sure you want to log out?"
+        message="You will need to sign in again to manage the store."
+        icon="logout"
+        confirmLabel="Logout"
+        busy={signingOut}
+        busyLabel="Logging out…"
+        onConfirm={confirmLogout}
+        onCancel={() => !signingOut && setConfirmOpen(false)}
+      />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import Spinner, { LoadingLabel } from '@/components/ui/Spinner';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/layout/Header';
@@ -134,7 +135,10 @@ export default function TrackOrderPage() {
     boxes.current[0]?.focus();
   }
 
+  const [loggingOut, setLoggingOut] = useState(false);
   async function logout() {
+    if (loggingOut) return;
+    setLoggingOut(true);
     await fetch('/api/guest/logout', { method: 'POST' }).catch(() => null);
     setOrders([]);
     setVerifiedAs('');
@@ -142,6 +146,7 @@ export default function TrackOrderPage() {
     setDigits(Array(OTP_LENGTH).fill(''));
     setError('');
     setStage('email');
+    setLoggingOut(false);
   }
 
   const setDigit = (index: number, value: string) => {
@@ -192,10 +197,12 @@ export default function TrackOrderPage() {
               <button
                 type="button"
                 onClick={logout}
-                className="text-xs font-label-md uppercase tracking-wider border border-outline-variant hover:border-primary text-primary px-4 py-2 rounded-full transition-colors flex items-center gap-1.5"
+                disabled={loggingOut}
+                aria-busy={loggingOut || undefined}
+                className="text-xs font-label-md uppercase tracking-wider border border-outline-variant hover:border-primary text-primary px-4 py-2 rounded-full transition-colors flex items-center gap-1.5 disabled:opacity-60 disabled:cursor-wait"
               >
-                <span className="material-symbols-outlined text-[16px]">logout</span>
-                Exit Order History
+                {loggingOut ? <Spinner size={16} /> : <span className="material-symbols-outlined text-[16px]">logout</span>}
+                {loggingOut ? 'Exiting…' : 'Exit Order History'}
               </button>
             </div>
 
@@ -279,7 +286,7 @@ export default function TrackOrderPage() {
                   </div>
                   {errorLine}
                   <button type="submit" disabled={busy || !email.trim() || cooldown > 0} className={primaryButton}>
-                    {busy ? 'Sending…' : cooldown > 0 ? `Please wait ${cooldown}s` : 'Send OTP'}
+                    {busy ? <LoadingLabel loading loadingText="Sending…">{null}</LoadingLabel> : cooldown > 0 ? `Please wait ${cooldown}s` : 'Send OTP'}
                   </button>
                 </form>
               ) : (
@@ -322,7 +329,7 @@ export default function TrackOrderPage() {
                   </div>
                   {errorLine && <div className="text-center flex justify-center">{errorLine}</div>}
                   <button type="submit" disabled={busy || digits.join('').length !== OTP_LENGTH} className={primaryButton}>
-                    {busy ? 'Verifying…' : 'Verify OTP'}
+                    <LoadingLabel loading={busy} loadingText="Verifying…">Verify OTP</LoadingLabel>
                   </button>
                   <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-xs text-on-surface-variant">
                     <button type="button" onClick={() => sendCode()} disabled={busy || cooldown > 0} className="underline underline-offset-2 hover:text-primary disabled:opacity-50 disabled:no-underline">

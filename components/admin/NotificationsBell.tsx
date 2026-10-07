@@ -16,6 +16,18 @@ type Alert = {
 };
 
 const LOW_STOCK_THRESHOLD = 5;
+const SEEN_KEY = 'sushi:admin-seen-alerts';
+const POLL_MS = 60_000;
+
+/** Alert ids this admin has already seen (opened the panel while they were listed), kept in this browser. */
+function readSeen(): Set<string> {
+  try {
+    const parsed: unknown = JSON.parse(localStorage.getItem(SEEN_KEY) || '[]');
+    return new Set(Array.isArray(parsed) ? parsed.filter((v): v is string => typeof v === 'string') : []);
+  } catch {
+    return new Set();
+  }
+}
 
 export default function NotificationsBell() {
   const access = useAdminAccess();
@@ -23,6 +35,23 @@ export default function NotificationsBell() {
   const [alerts, setAlerts] = useState<Alert[] | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  // The badge counts only alerts not seen yet. Opening the panel marks everything listed as seen, so the badge clears
+  // at once; anything that shows up afterwards counts as new again.
+  const [seen, setSeen] = useState<Set<string>>(() => (typeof window === 'undefined' ? new Set() : readSeen()));
+  const seenRef = useRef(seen);
+  const [newInPanel, setNewInPanel] = useState<Set<string>>(new Set());
+  const markSeen = useCallback((list: Alert[]) => {
+    setNewInPanel(new Set(list.filter((a) => !seenRef.current.has(a.id)).map((a) => a.id)));
+    // only ids still listed are kept, so an item that goes away and comes back later counts as new
+    const next = new Set(list.map((a) => a.id));
+    seenRef.current = next;
+    setSeen(next);
+    try {
+      localStorage.setItem(SEEN_KEY, JSON.stringify([...next]));
+    } catch {
+      /* storage unavailable: the badge still clears for this visit */
+    }
+  }, []);
 
   const load = useCallback(async () => {
     const supabase = createClient();
@@ -108,24 +137,31 @@ export default function NotificationsBell() {
     }
 
     setAlerts(next);
+    return next;
   }, [access]);
 
   // Manual refresh from the panel header
   const refresh = async () => {
     setRefreshing(true);
-    await load();
+    const list = await load();
+    markSeen(list);
     setRefreshing(false);
   };
 
   // Load once for the badge, then refresh whenever the panel is opened
   useEffect(() => {
     void Promise.resolve().then(load);
+    // keep the badge current while the admin works
+    const timer = setInterval(() => void load(), POLL_MS);
+    return () => clearInterval(timer);
   }, [load]);
 
 
   useEffect(() => {
     if (!open) return;
-    void Promise.resolve().then(load);
+    void Promise.resolve()
+      .then(load)
+      .then((list) => markSeen(list));
     const onPointer = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     };
@@ -136,9 +172,10 @@ export default function NotificationsBell() {
       document.removeEventListener('mousedown', onPointer);
       document.removeEventListener('keydown', onKey);
     };
-  }, [open, load]);
+  }, [open, load, markSeen]);
 
   const count = alerts?.length ?? 0;
+  const unread = alerts ? alerts.filter((a) => !seen.has(a.id)).length : 0;
 
   return (
     <div ref={ref} className="relative">
@@ -146,14 +183,14 @@ export default function NotificationsBell() {
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="relative p-2 rounded-full hover:bg-[#E8D5C5]/30 transition-colors"
-        title={count ? `${count} item${count === 1 ? '' : 's'} need attention` : 'Notifications'}
-        aria-label="Notifications"
+        title={unread ? `${unread} new item${unread === 1 ? '' : 's'} need attention` : count ? `${count} item${count === 1 ? '' : 's'} need attention` : 'Notifications'}
+        aria-label={unread ? `Notifications, ${unread} unread` : 'Notifications'}
         aria-expanded={open}
       >
         <span className="material-symbols-outlined text-[20px] text-[#2D2024]/70">notifications</span>
-        {count > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-semibold rounded-full flex items-center justify-center">
-            {count > 9 ? '9+' : count}
+        {unread > 0 && (
+          <span data-testid="notifications-badge" className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-semibold rounded-full flex items-center justify-center">
+            {unread > 9 ? '9+' : unread}
           </span>
         )}
       </button>
@@ -190,7 +227,10 @@ export default function NotificationsBell() {
                         <span className="material-symbols-outlined text-[18px]">{a.icon}</span>
                       </span>
                       <span className="min-w-0">
-                        <span className="block text-sm text-[#2D2024] truncate">{a.title}</span>
+                        <span className="flex items-center gap-1.5 text-sm text-[#2D2024]">
+                          {newInPanel.has(a.id) && <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" aria-label="New" />}
+                          <span className="truncate">{a.title}</span>
+                        </span>
                         <span className="block text-xs text-[#2D2024]/55">{a.detail}</span>
                       </span>
                     </Link>

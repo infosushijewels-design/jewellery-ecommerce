@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from 'react';
+import Spinner from '@/components/ui/Spinner';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useToast } from '@/lib/context/ToastContext';
@@ -523,6 +524,7 @@ export default function AdminStaffPage() {
                                 {isSuper ? 'Admin' : roleNameById.get(m.staff_role_id!) || 'Unknown role'}
                               </span>
                             ) : (
+                              <>
                               <select
                                 value={m.staff_role_id || SUPER_ADMIN_VALUE}
                                 disabled={updatingMemberId === m.id}
@@ -537,6 +539,8 @@ export default function AdminStaffPage() {
                                   </option>
                                 ))}
                               </select>
+                              {updatingMemberId === m.id && <Spinner size={16} className="ml-1.5 align-middle text-[#8A6F3C]" />}
+                              </>
                             )}
                           </td>
                           <td className="py-3.5 px-4 text-[#2D2024]/70 whitespace-nowrap">{formatDate(m.created_at)}</td>
@@ -656,7 +660,7 @@ export default function AdminStaffPage() {
           </div>
           <DrawerFooter>
             <SecondaryButton onClick={() => setRoleFormOpen(false)}>Cancel</SecondaryButton>
-            <PrimaryButton type="submit" icon={savingRole ? undefined : 'save'} disabled={savingRole}>
+            <PrimaryButton type="submit" icon="save" loading={savingRole}>
               {savingRole ? 'Saving…' : editingRole ? 'Update Role' : 'Create Role'}
             </PrimaryButton>
           </DrawerFooter>
@@ -700,7 +704,7 @@ export default function AdminStaffPage() {
           </div>
           <DrawerFooter>
             <SecondaryButton onClick={() => setMemberFormOpen(false)}>Cancel</SecondaryButton>
-            <PrimaryButton type="submit" icon={savingMember ? undefined : 'person_add'} disabled={savingMember}>
+            <PrimaryButton type="submit" icon="person_add" loading={savingMember}>
               {savingMember ? 'Adding…' : 'Grant Access'}
             </PrimaryButton>
           </DrawerFooter>

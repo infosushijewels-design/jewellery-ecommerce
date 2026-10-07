@@ -327,6 +327,7 @@ export default function AdminCouponsPage() {
                           <Toggle
                             checked={c.is_active}
                             disabled={togglingId === c.id}
+                            loading={togglingId === c.id}
                             onChange={(next) => handleToggle(c, next)}
                             label={c.is_active ? `Deactivate ${c.code}` : `Activate ${c.code}`}
                           />
@@ -471,7 +472,7 @@ export default function AdminCouponsPage() {
           </div>
           <DrawerFooter>
             <SecondaryButton onClick={closeForm}>Cancel</SecondaryButton>
-            <PrimaryButton type="submit" icon={saving ? undefined : 'save'} disabled={saving}>
+            <PrimaryButton type="submit" icon="save" loading={saving}>
               {saving ? 'Saving…' : editingId ? 'Update Coupon' : 'Create Coupon'}
             </PrimaryButton>
           </DrawerFooter>

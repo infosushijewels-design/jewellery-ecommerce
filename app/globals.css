@@ -146,6 +146,11 @@
   line-height: 1;
 }
 
+/* Solid (filled) version of a Material Symbol — used for a liked heart. The class was used in the components but never defined. */
+.material-symbols-outlined.font-variation-fill-1 {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
 .custom-scroll::-webkit-scrollbar {
   height: 4px;
   width: 4px;
@@ -184,4 +189,59 @@ html {
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------
+   Admin panel: clear numbers.
+   Prices, order totals, counts and KPIs were set in Playfair Display, whose old-style figures are hard to scan in
+   tables and dashboards. "AdminDigits" is a clean system sans-serif (Segoe UI on Windows, Helvetica Neue on Mac,
+   Roboto on Android/Chrome OS, Arial as a fallback) that only covers digits, the rupee sign and %. Putting it first
+   in the admin font stacks means ONLY those characters switch font — every letter keeps its Playfair / Manrope style.
+   Scoped to .admin-numeric (the admin layout), so the storefront is untouched.
+   ------------------------------------------------------------------------------------------------------------------ */
+@font-face {
+  font-family: 'AdminDigits';
+  src: local('Segoe UI'), local('SegoeUI'), local('Helvetica Neue'), local('HelveticaNeue'), local('Roboto'), local('Roboto-Regular'), local('Arial'), local('ArialMT');
+  font-weight: 100 500;
+  font-style: normal;
+  unicode-range: U+0030-0039, U+20B9, U+0025;
+  /* system sans digits are larger than Playfair's; scale them to sit with the surrounding text */
+  size-adjust: 90%;
+}
+@font-face {
+  font-family: 'AdminDigits';
+  src: local('Segoe UI Semibold'), local('SegoeUI-Semibold'), local('Helvetica Neue Medium'), local('HelveticaNeue-Medium'), local('Roboto Medium'), local('Roboto-Medium'), local('Arial Bold'), local('Arial-BoldMT');
+  font-weight: 600;
+  font-style: normal;
+  unicode-range: U+0030-0039, U+20B9, U+0025;
+  /* system sans digits are larger than Playfair's; scale them to sit with the surrounding text */
+  size-adjust: 90%;
+}
+@font-face {
+  font-family: 'AdminDigits';
+  src: local('Segoe UI Bold'), local('SegoeUI-Bold'), local('Helvetica Neue Bold'), local('HelveticaNeue-Bold'), local('Roboto Bold'), local('Roboto-Bold'), local('Arial Bold'), local('Arial-BoldMT');
+  font-weight: 700 900;
+  font-style: normal;
+  unicode-range: U+0030-0039, U+20B9, U+0025;
+  /* system sans digits are larger than Playfair's; scale them to sit with the surrounding text */
+  size-adjust: 90%;
+}
+
+.admin-numeric {
+  --font-headline-md: 'AdminDigits', Playfair Display, serif;
+  --font-display-lg-mobile: 'AdminDigits', Playfair Display, serif;
+  --font-display-lg: 'AdminDigits', Playfair Display, serif;
+  --font-display-md-mobile: 'AdminDigits', Playfair Display, serif;
+  --font-display-md: 'AdminDigits', Playfair Display, serif;
+  --font-headline-sm: 'AdminDigits', Playfair Display, serif;
+  --font-headline-lg: 'AdminDigits', Playfair Display, serif;
+  --font-body-lg: 'AdminDigits', Manrope, sans-serif;
+  --font-body-md: 'AdminDigits', Manrope, sans-serif;
+  --font-body-sm: 'AdminDigits', Manrope, sans-serif;
+  --font-label-sm: 'AdminDigits', Manrope, sans-serif;
+  --font-label-md: 'AdminDigits', Manrope, sans-serif;
+  --font-label-lg: 'AdminDigits', Manrope, sans-serif;
+  font-family: 'AdminDigits', var(--default-font-family, ui-sans-serif, system-ui, sans-serif);
+  /* upright, evenly spaced figures so columns of amounts line up */
+  font-variant-numeric: lining-nums tabular-nums;
 }

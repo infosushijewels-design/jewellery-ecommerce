@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import { LoadingLabel } from '@/components/ui/Spinner';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import AnnouncementBar from '@/components/layout/AnnouncementBar';
@@ -83,7 +84,7 @@ export default function ForgotPasswordPage() {
               disabled={isLoading}
               className="w-full bg-primary text-surface py-3.5 rounded-full font-label-lg uppercase tracking-wider hover:bg-tertiary transition-colors disabled:opacity-50 mt-4"
             >
-              {isLoading ? 'Sending Link...' : 'Send Reset Link'}
+              <LoadingLabel loading={isLoading} loadingText="Sending Link...">Send Reset Link</LoadingLabel>
             </button>
           </form>
 

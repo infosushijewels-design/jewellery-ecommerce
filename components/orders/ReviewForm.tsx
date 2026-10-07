@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import { LoadingLabel } from '@/components/ui/Spinner';
 import Modal from '@/components/ui/Modal';
 import { useCaptchaPost } from '@/components/ui/TurnstileChallenge';
 import { useToast } from '@/lib/context/ToastContext';
@@ -107,7 +108,7 @@ export default function ReviewForm({ productId, productTitle, reviewerName, revi
               Cancel
             </button>
             <button type="submit" disabled={saving} className="rounded-full bg-primary px-5 py-2.5 text-xs font-semibold uppercase tracking-wide text-surface disabled:opacity-50">
-              {saving ? 'Sending…' : 'Submit review'}
+              <LoadingLabel loading={saving} loadingText="Sending…">Submit review</LoadingLabel>
             </button>
           </div>
         </form>

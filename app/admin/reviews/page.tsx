@@ -54,11 +54,11 @@ const STATUS_STYLES: Record<ReviewStatus, string> = {
 
 const RATING_OPTIONS = [
   { value: 'all', label: 'All ratings' },
-  { value: '5', label: '★★★★★ 5' },
-  { value: '4', label: '★★★★ 4' },
-  { value: '3', label: '★★★ 3' },
-  { value: '2', label: '★★ 2' },
-  { value: '1', label: '★ 1' },
+  { value: '5', label: '5 Star' },
+  { value: '4', label: '4 Star' },
+  { value: '3', label: '3 Star' },
+  { value: '2', label: '2 Star' },
+  { value: '1', label: '1 Star' },
 ];
 
 function Stars({ rating, size = 'text-base' }: { rating: number; size?: string }) {
@@ -92,6 +92,8 @@ export default function AdminReviewsPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [replyDraft, setReplyDraft] = useState('');
   const [busyId, setBusyId] = useState<string | null>(null);
+  // which button (approve / reject) started the current update, so only that one shows the spinner
+  const [busyStatus, setBusyStatus] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Review | null>(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -337,10 +339,10 @@ export default function AdminReviewsPage() {
                         <td className="py-3.5 px-5 text-right whitespace-nowrap">
                           <div className="inline-flex items-center gap-0.5">
                             {r.status !== 'approved' && (
-                              <IconButton icon="check_circle" title="Approve" tone="whatsapp" onClick={() => busyId || updateReview(r, { status: 'approved' }, 'Review approved and published')} />
+                              <IconButton icon="check_circle" title="Approve" tone="whatsapp" loading={busyId === r.id && busyStatus === 'approved'} disabled={!!busyId && !(busyId === r.id && busyStatus === 'approved')} onClick={() => { if (busyId) return; setBusyStatus('approved'); updateReview(r, { status: 'approved' }, 'Review approved and published'); }} />
                             )}
                             {r.status !== 'rejected' && (
-                              <IconButton icon="block" title="Reject" onClick={() => busyId || updateReview(r, { status: 'rejected' }, 'Review rejected')} />
+                              <IconButton icon="block" title="Reject" loading={busyId === r.id && busyStatus === 'rejected'} disabled={!!busyId && !(busyId === r.id && busyStatus === 'rejected')} onClick={() => { if (busyId) return; setBusyStatus('rejected'); updateReview(r, { status: 'rejected' }, 'Review rejected'); }} />
                             )}
                             <IconButton icon="reply" title="View & reply" onClick={() => openReview(r)} />
                             <IconButton icon="delete" title="Delete review" tone="danger" onClick={() => setDeleteTarget(r)} />
@@ -412,7 +414,11 @@ export default function AdminReviewsPage() {
                 <SecondaryButton
                   icon="block"
                   disabled={busyId === selected.id}
-                  onClick={() => updateReview(selected, { status: 'rejected', admin_reply: replyDraft.trim() || null }, 'Review rejected')}
+                  loading={busyId === selected.id && busyStatus === 'rejected'}
+                  onClick={() => {
+                    setBusyStatus('rejected');
+                    updateReview(selected, { status: 'rejected', admin_reply: replyDraft.trim() || null }, 'Review rejected');
+                  }}
                 >
                   Reject
                 </SecondaryButton>
@@ -420,7 +426,9 @@ export default function AdminReviewsPage() {
               <PrimaryButton
                 icon="check"
                 disabled={busyId === selected.id}
+                loading={busyId === selected.id && busyStatus === 'approved'}
                 onClick={async () => {
+                  setBusyStatus('approved');
                   const ok = await updateReview(
                     selected,
                     { status: 'approved', admin_reply: replyDraft.trim() || null },

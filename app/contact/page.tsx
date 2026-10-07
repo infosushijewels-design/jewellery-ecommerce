@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState, FormEvent } from 'react';
+import { LoadingLabel } from '@/components/ui/Spinner';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import AnnouncementBar from '@/components/layout/AnnouncementBar';
@@ -199,7 +200,7 @@ export default function ContactPage() {
                   disabled={isSubmitting}
                   className="w-full bg-primary text-surface py-3.5 rounded-full font-label-md uppercase tracking-wide hover:bg-tertiary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isSubmitting ? 'Sending...' : 'Submit Enquiry'}
+                  <LoadingLabel loading={isSubmitting} loadingText="Sending...">Submit Enquiry</LoadingLabel>
                 </button>
               </form>
             </div>

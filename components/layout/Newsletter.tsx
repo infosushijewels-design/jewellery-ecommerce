@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import { LoadingLabel } from '@/components/ui/Spinner';
 import { useToast } from '@/lib/context/ToastContext';
 import { validateNewsletterEmail } from '@/lib/formValidation';
 import { useCaptchaPost } from '@/components/ui/TurnstileChallenge';
@@ -93,7 +94,7 @@ export default function Newsletter() {
             type="submit"
             disabled={submitted || submitting}
           >
-            {submitting ? 'Subscribing…' : submitted ? 'Subscribed' : 'Subscribe'}
+            {submitting ? <LoadingLabel loading loadingText="Subscribing…">{null}</LoadingLabel> : submitted ? 'Subscribed' : 'Subscribe'}
           </button>
         </form>
         {error && (

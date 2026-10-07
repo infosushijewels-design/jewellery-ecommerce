@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState, ReactNode } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from './AuthContext';
 
@@ -9,6 +9,8 @@ interface WishlistContextType {
   // Resolves to 'added' | 'removed' | null. Works for guests too (no login needed).
   toggleWishlist: (productId: string) => Promise<'added' | 'removed' | null>;
   isLoading: boolean;
+  /** Products whose like/unlike is still being saved — their heart shows a spinner and ignores clicks. */
+  pendingIds: Set<string>;
 }
 
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
@@ -92,7 +94,17 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     };
   }, [user, supabase]);
 
+  const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
+  const pendingRef = useRef<Set<string>>(new Set());
+  const setPending = (productId: string, on: boolean) => {
+    if (on) pendingRef.current.add(productId);
+    else pendingRef.current.delete(productId);
+    setPendingIds(new Set(pendingRef.current));
+  };
+
   const toggleWishlist = async (productId: string) => {
+    // A change for this product is already being saved: ignore the extra click
+    if (pendingRef.current.has(productId)) return null;
     const newSet = new Set(wishlistIds);
     const isAdding = !newSet.has(productId);
 
@@ -110,6 +122,8 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     }
 
     // Background database update
+    setPending(productId, true);
+    try {
     if (isAdding) {
       const { error } = await supabase.from('wishlist_items').insert({ user_id: user.id, product_id: productId });
 
@@ -131,11 +145,14 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
         setWishlistIds(revertSet);
       }
     }
+    } finally {
+      setPending(productId, false);
+    }
 
     return isAdding ? 'added' : 'removed';
   };
 
-  return <WishlistContext.Provider value={{ wishlistIds, toggleWishlist, isLoading }}>{children}</WishlistContext.Provider>;
+  return <WishlistContext.Provider value={{ wishlistIds, toggleWishlist, isLoading, pendingIds }}>{children}</WishlistContext.Provider>;
 }
 
 export function useWishlist() {
