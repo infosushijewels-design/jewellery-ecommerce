@@ -23,7 +23,7 @@ import {
 
 const MIGRATION = '010_staff_roles_and_settings.sql';
 
-type TabKey = 'general' | 'homepage' | 'payments' | 'tax' | 'shipping' | 'orders' | 'appointments' | 'social' | 'announcement' | 'seo';
+type TabKey = 'general' | 'homepage' | 'payments' | 'tax' | 'shipping' | 'orders' | 'appointments' | 'social' | 'announcement';
 
 const TABS: { key: TabKey; label: string; icon: string }[] = [
   { key: 'general', label: 'General Store Settings', icon: 'storefront' },
@@ -35,7 +35,6 @@ const TABS: { key: TabKey; label: string; icon: string }[] = [
   { key: 'appointments', label: 'Video Appointments', icon: 'videocam' },
   { key: 'social', label: 'Social Media Settings', icon: 'public' },
   { key: 'announcement', label: 'Announcement Bar', icon: 'campaign' },
-  { key: 'seo', label: 'SEO Settings', icon: 'search' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -381,8 +380,6 @@ export default function AdminSettingsPage() {
     if (ap.closedDays.length >= 7) return { tab: 'appointments', message: 'Leave at least one day open for appointments' };
     const badUrl = Object.entries(s.social).find(([, url]) => url.trim() && !/^https?:\/\//i.test(url.trim()));
     if (badUrl) return { tab: 'social', message: `${badUrl[0]} link must start with https://` };
-    if (s.seo.metaTitle.length > 70) return { tab: 'seo', message: 'Meta title should be 70 characters or fewer' };
-    if (s.seo.metaDescription.length > 170) return { tab: 'seo', message: 'Meta description should be 170 characters or fewer' };
     return null;
   }
 
@@ -631,6 +628,7 @@ export default function AdminSettingsPage() {
               {tab === 'payments' && (
                 <>
                   <SwitchRow title="Cash on Delivery (COD)" hint="Customers pay in cash or UPI when the order arrives." checked={d.payments.codEnabled} onChange={(v) => set('payments', 'codEnabled', v)} disabled={readOnly} />
+                  <SwitchRow title="Allow COD for Guest Users" hint="When disabled, guest users must log in to use Cash on Delivery." checked={d.payments.guestCodEnabled} onChange={(v) => set('payments', 'guestCodEnabled', v)} disabled={readOnly} />
                   <SwitchRow title="Online Payment (Card / UPI)" hint="Instant payment at checkout via Razorpay — configure the keys below." checked={d.payments.onlineEnabled} onChange={(v) => set('payments', 'onlineEnabled', v)} disabled={readOnly} />
                   <div className="max-w-md">
                     <Label htmlFor="p-codmax" hint="Orders above this must be paid online. 0 = no limit.">Max Order Value for COD</Label>
@@ -854,32 +852,6 @@ export default function AdminSettingsPage() {
                       </div>
                     </div>
                   )}
-                </>
-              )}
-
-              {tab === 'seo' && (
-                <>
-                  <div>
-                    <Label htmlFor="seo-title">Meta Title · {d.seo.metaTitle.length}/70</Label>
-                    <IconInput id="seo-title" icon="title" value={d.seo.metaTitle} onChange={(v) => set('seo', 'metaTitle', v)} />
-                  </div>
-                  <div>
-                    <Label htmlFor="seo-desc">Meta Description · {d.seo.metaDescription.length}/170</Label>
-                    <IconTextarea id="seo-desc" icon="description" value={d.seo.metaDescription} onChange={(v) => set('seo', 'metaDescription', v)} />
-                  </div>
-                  <div>
-                    <Label htmlFor="seo-keywords" hint="Comma-separated.">Keywords</Label>
-                    <IconInput id="seo-keywords" icon="sell" value={d.seo.keywords} onChange={(v) => set('seo', 'keywords', v)} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-[#2D2024] mb-2">Google Preview</p>
-                    <div className="bg-white border border-[#E8D5C5] rounded-xl p-4">
-                      <p className="text-xs text-emerald-800">{d.store.websiteUrl.replace(/^https?:\/\//, '') || 'sushijewels.com'}</p>
-                      <p className="text-[#1a0dab] text-lg leading-snug truncate">{d.seo.metaTitle || d.store.name}</p>
-                      <p className="text-sm text-[#4d5156] line-clamp-2">{d.seo.metaDescription}</p>
-                    </div>
-                    <p className="text-xs text-[#2D2024]/55 mt-2">Store pages refresh their metadata within 5 minutes; search engines can take a few days.</p>
-                  </div>
                 </>
               )}
             </fieldset>

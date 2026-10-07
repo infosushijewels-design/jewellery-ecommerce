@@ -286,7 +286,7 @@ export default function AdminReviewsPage() {
           <EmptyState icon="search_off" title="No reviews match your filters." />
         ) : (
           <>
-            <div className="overflow-x-auto">
+            <div className="w-full overflow-x-auto custom-scroll">
               <table className="w-full text-left text-sm min-w-[1050px]">
                 <thead>
                   <tr className="border-b border-[#E8D5C5] bg-[#F5EEE7]/60 text-[#2D2024]/60 uppercase tracking-wider text-[11px] font-semibold">

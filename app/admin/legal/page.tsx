@@ -253,7 +253,7 @@ export default function AdminLegalPagesPage() {
         ) : rows.length === 0 ? (
           <EmptyState icon="gavel" title="No pages match your search." />
         ) : (
-          <div className="overflow-x-auto">
+          <div className="w-full overflow-x-auto custom-scroll">
             <table className="w-full text-left text-sm min-w-[900px]">
               <thead>
                 <tr className="border-b border-[#E8D5C5] bg-[#F5EEE7]/60 text-[#2D2024]/60 uppercase tracking-wider text-[11px] font-semibold">

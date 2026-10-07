@@ -49,6 +49,8 @@ export interface StoreSettings {
     codEnabled: boolean;
     onlineEnabled: boolean;
     codMaxOrderValue: number; // 0 = no limit
+    /** Feature flag: guests (not signed in) may use Cash on Delivery. Off = guests must sign in for COD. */
+    guestCodEnabled: boolean;
     // Razorpay key ID/secret live in public.razorpay_credentials (migration 017),
     // never here — this JSON blob is public-readable so the storefront can show
     // contact/shipping/tax info, which would otherwise expose the secret key.
@@ -120,6 +122,7 @@ export const DEFAULT_STORE_SETTINGS: StoreSettings = {
     codEnabled: true,
     onlineEnabled: true,
     codMaxOrderValue: 0,
+    guestCodEnabled: true,
   },
   announcement: {
     enabled: true,

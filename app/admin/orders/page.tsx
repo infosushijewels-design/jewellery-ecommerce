@@ -359,7 +359,7 @@ export default function AdminOrdersPage() {
           <EmptyState icon="search_off" title="No orders match the current search or filter." />
         ) : (
           <>
-            <div className="overflow-x-auto">
+            <div className="w-full overflow-x-auto custom-scroll">
               <table className="w-full text-left text-sm min-w-[1000px]">
                 <thead>
                   <tr className="border-b border-[#E8D5C5] bg-[#F5EEE7]/60 text-[#2D2024]/60 uppercase tracking-wider text-[11px] font-semibold">

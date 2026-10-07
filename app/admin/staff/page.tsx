@@ -482,7 +482,7 @@ export default function AdminStaffPage() {
             {filteredMembers.length === 0 ? (
               <EmptyState icon="group_off" title={members.length ? 'No staff match your search.' : 'No staff members yet.'} />
             ) : (
-              <div className="overflow-x-auto">
+              <div className="w-full overflow-x-auto custom-scroll">
                 <table className="w-full text-left text-sm min-w-[760px]">
                   <thead>
                     <tr className="border-b border-[#E8D5C5] bg-[#F5EEE7]/60 text-[#2D2024]/60 uppercase tracking-wider text-[11px] font-semibold">
@@ -604,7 +604,8 @@ export default function AdminStaffPage() {
                   {countPermissions(rolePerms) === totalPossible ? 'Clear all' : 'Select all'}
                 </button>
               </div>
-              <table className="w-full text-sm">
+              <div className="w-full overflow-x-auto custom-scroll">
+              <table className="w-full text-sm min-w-[480px]">
                 <thead>
                   <tr className="text-[11px] uppercase tracking-wider text-[#2D2024]/55">
                     <th className="text-left font-semibold py-2.5 px-4">Module</th>
@@ -653,6 +654,7 @@ export default function AdminStaffPage() {
                   })}
                 </tbody>
               </table>
+              </div>
             </div>
             <p className="text-xs text-[#2D2024]/55">
               Granting Create, Edit or Delete automatically grants View. Staff only see the sections their role can view.

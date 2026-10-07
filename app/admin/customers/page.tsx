@@ -367,7 +367,7 @@ export default function AdminCustomersPage() {
           <EmptyState icon="group_off" title="No customers match your search." />
         ) : (
           <>
-            <div className="overflow-x-auto">
+            <div className="w-full overflow-x-auto custom-scroll">
               <table className="w-full text-left text-sm min-w-[1000px]">
                 <thead>
                   <tr className="border-b border-[#E8D5C5] bg-[#F5EEE7]/60 text-[#2D2024]/60 uppercase tracking-wider text-[11px] font-semibold">

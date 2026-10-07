@@ -94,7 +94,10 @@ export function priceOrder(
   if (minOrderValue > 0 && subtotal < minOrderValue) {
     return { ok: false, error: `The minimum order value is ₹${minOrderValue.toLocaleString('en-IN')}.` };
   }
-  const { codEnabled, codMaxOrderValue, onlineEnabled } = settings.payments;
+  const { codEnabled, codMaxOrderValue, onlineEnabled, guestCodEnabled } = settings.payments;
+  if (paymentMethod === 'cod' && isGuest && guestCodEnabled === false) {
+    return { ok: false, error: 'COD is not available for guest users. Please login or create an account to use Cash on Delivery.' };
+  }
   if (paymentMethod === 'cod' && !(codEnabled && (codMaxOrderValue <= 0 || total <= codMaxOrderValue))) {
     return { ok: false, error: 'Cash on delivery is not available for this order. Please choose online payment.' };
   }

@@ -214,8 +214,8 @@ export default function AdminDashboardPage() {
               <p className="font-body-sm text-body-sm">No orders recorded yet.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs sm:text-sm">
+            <div className="w-full overflow-x-auto custom-scroll">
+              <table className="w-full text-left text-xs sm:text-sm min-w-[640px]">
                 <thead>
                   <tr className="border-b border-[#E8D5C5] text-[#2D2024]/50 font-label-sm text-label-sm uppercase tracking-wider">
                     <th className="py-3 px-3">Order ID</th>

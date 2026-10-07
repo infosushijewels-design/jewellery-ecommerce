@@ -58,8 +58,10 @@ export default function CheckoutPage() {
   // Shipping & payment rules come from Admin → Settings
   const shippingFee = shippingFeeFor(subtotal, storeSettings);
   const calculatedTotal = subtotal + tax + shippingFee;
-  const { codEnabled, onlineEnabled, codMaxOrderValue } = storeSettings.payments;
-  const codAllowed = codEnabled && (codMaxOrderValue <= 0 || calculatedTotal <= codMaxOrderValue);
+  const { codEnabled, onlineEnabled, codMaxOrderValue, guestCodEnabled } = storeSettings.payments;
+  // Admin → Settings → "Allow COD for Guest Users": when off, only signed-in customers may pay cash on delivery
+  const guestCodBlocked = codEnabled && !user && !guestCodEnabled;
+  const codAllowed = codEnabled && !guestCodBlocked && (codMaxOrderValue <= 0 || calculatedTotal <= codMaxOrderValue);
   const noPaymentMethod = !codAllowed && !onlineEnabled;
   const { minOrderValue } = storeSettings.orders;
   const belowMinimum = minOrderValue > 0 && subtotal < minOrderValue;
@@ -537,7 +539,24 @@ export default function CheckoutPage() {
                         Online and cash-on-delivery payments are currently unavailable. Please contact our concierge to place this order.
                       </p>
                     )}
-                    {codEnabled && !codAllowed && (
+                    {guestCodBlocked && (
+                      <div className="flex items-start gap-3.5 p-4 rounded-xl border border-outline-variant/50 bg-surface-container-low/60" aria-disabled="true">
+                        <input type="radio" name="paymentMethod" value="cod" disabled checked={false} readOnly className="mt-1" aria-label="Cash on Delivery (not available for guests)" />
+                        <div className="flex-1">
+                          <span className="flex items-center gap-1.5 font-label-md text-on-surface-variant font-semibold">
+                            <span className="material-symbols-outlined text-[16px]" aria-hidden="true">lock</span>
+                            Cash on Delivery (COD)
+                          </span>
+                          <p role="note" className="text-xs text-on-surface-variant mt-1">
+                            COD is not available for guest users. Please login or create an account to use Cash on Delivery.
+                          </p>
+                          <Link href="/login" className="inline-block mt-2 text-xs font-semibold text-primary underline underline-offset-2 hover:text-secondary">
+                            Login / Create Account
+                          </Link>
+                        </div>
+                      </div>
+                    )}
+                    {codEnabled && !guestCodBlocked && !codAllowed && (
                       <p className="text-xs text-on-surface-variant">
                         Cash on Delivery is available for orders up to ₹{codMaxOrderValue.toLocaleString('en-IN')}.
                       </p>
