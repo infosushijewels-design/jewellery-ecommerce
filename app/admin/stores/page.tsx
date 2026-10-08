@@ -295,7 +295,7 @@ export default function AdminStoresPage() {
 
       <MigrationNotice migration={MIGRATION} show={missingTable} />
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
         <StatTile icon="storefront" value={stores.length} label="Total Stores" tone="bg-[#B99A62]/15 text-[#8A6F3C]" />
         <StatTile icon="visibility" value={activeCount} label="Live on Website" tone="bg-emerald-100 text-emerald-700" />
         <StatTile icon="location_city" value={cities.length} label="Cities" tone="bg-indigo-100 text-indigo-700" />
@@ -328,7 +328,7 @@ export default function AdminStoresPage() {
           <EmptyState icon="search_off" title="No stores match your search." />
         ) : (
           <div className="w-full overflow-x-auto custom-scroll">
-            <table className="w-full text-left text-sm min-w-[900px]">
+            <table className="w-full text-left text-sm min-w-[900px] md:min-w-[1000px] xl:min-w-[900px]">
               <thead>
                 <tr className="border-b border-[#E8D5C5] bg-[#F5EEE7]/60 text-[#2D2024]/60 uppercase tracking-wider text-[11px] font-semibold">
                   <th className="py-3.5 px-5">Store</th>

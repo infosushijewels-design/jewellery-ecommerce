@@ -10,6 +10,9 @@ import { useToast } from '@/lib/context/ToastContext';
 import { confirmOnlinePayment, createOrder, getUserOrders, orderTrackingPath, type PlacedOrder } from '@/lib/supabase/orderService';
 import StateCitySelect from '@/components/ui/StateCitySelect';
 import { canonicalState } from '@/lib/indianStatesCities';
+import UseCurrentLocationButton, { type DetectedLocation } from '@/components/ui/UseCurrentLocationButton';
+import AddressSuggestionsDropdown from '@/components/ui/AddressSuggestionsDropdown';
+import { useAddressAutocomplete } from '@/lib/hooks/useAddressAutocomplete';
 import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 import { shippingFeeFor } from '@/lib/storeSettings';
 import {
@@ -39,6 +42,7 @@ export default function CheckoutPage() {
   // Field-level validation: a field's error shows once it was visited (blur) or Place Order was pressed
   const [touched, setTouched] = useState<Partial<Record<CheckoutField, boolean>>>({});
   const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [showAddressSuggestions, setShowAddressSuggestions] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -54,6 +58,7 @@ export default function CheckoutPage() {
     cardNumber: '4242 •••• •••• 4242',
     notes: '',
   });
+  const { suggestions: addressSuggestions, isLoading: addressSuggestionsLoading } = useAddressAutocomplete(formData.address);
 
   // Shipping & payment rules come from Admin → Settings
   const shippingFee = shippingFeeFor(subtotal, storeSettings);
@@ -465,6 +470,20 @@ export default function CheckoutPage() {
                     <span className="w-6 h-6 rounded-full bg-primary text-surface text-xs flex items-center justify-center font-bold">2</span>
                     Insured Delivery Address
                   </h2>
+                  <div className="flex items-center gap-3 flex-wrap bg-surface-container-low/60 border border-outline-variant/30 rounded-xl px-4 py-3 mb-4">
+                    <UseCurrentLocationButton
+                      onLocationDetected={(location: DetectedLocation) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          address: location.address,
+                          city: location.city,
+                          state: location.state,
+                          pincode: location.pincode || prev.pincode,
+                        }))
+                      }
+                    />
+                    <p className="text-xs text-on-surface-variant">Auto-fill address, city, state &amp; pincode from your location.</p>
+                  </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label htmlFor="checkout-firstName" className="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-1.5 block">First Name *</label>
@@ -486,13 +505,32 @@ export default function CheckoutPage() {
                       />
                       {renderError('lastName')}
                     </div>
-                    <div className="sm:col-span-2">
+                    <div className="sm:col-span-2 relative">
                       <label htmlFor="checkout-address" className="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-1.5 block">Street Address / Suite *</label>
                       <input
                         type="text"
                         required
                         {...fieldProps('address')}
+                        onFocus={() => setShowAddressSuggestions(true)}
+                        onBlur={() => {
+                          setTouched((prev) => ({ ...prev, address: true }));
+                          setShowAddressSuggestions(false);
+                        }}
                         placeholder="House / Flat No., Luxury Avenue, Landmark"
+                      />
+                      <AddressSuggestionsDropdown
+                        suggestions={addressSuggestions}
+                        isLoading={addressSuggestionsLoading}
+                        visible={showAddressSuggestions}
+                        onPick={(s) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            address: s.address,
+                            city: s.city || prev.city,
+                            state: s.state || prev.state,
+                            pincode: s.pincode || prev.pincode,
+                          }))
+                        }
                       />
                       {renderError('address')}
                     </div>

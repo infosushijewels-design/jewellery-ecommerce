@@ -136,11 +136,24 @@ export default function CartSidebar() {
                     <div className="flex justify-between items-end mt-2">
                       <div className="flex items-center border border-outline-variant/60 rounded-full">
                         <button
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          className="w-8 h-8 flex items-center justify-center text-on-surface-variant hover:text-primary"
-                          aria-label="Decrease quantity"
+                          onClick={() => {
+                            if (item.quantity <= 1) {
+                              handleRemove(item.id);
+                            } else {
+                              updateQuantity(item.id, item.quantity - 1);
+                            }
+                          }}
+                          className={`w-8 h-8 flex items-center justify-center transition-colors ${
+                            item.quantity === 1
+                              ? 'text-on-surface-variant hover:text-error'
+                              : 'text-on-surface-variant hover:text-primary'
+                          }`}
+                          aria-label={item.quantity === 1 ? 'Remove from bag' : 'Decrease quantity'}
+                          title={item.quantity === 1 ? 'Remove from bag' : 'Decrease quantity'}
                         >
-                          <span className="material-symbols-outlined text-[16px]">remove</span>
+                          <span className="material-symbols-outlined text-[16px]">
+                            {item.quantity === 1 ? 'delete' : 'remove'}
+                          </span>
                         </button>
                         <span className="w-6 text-center font-label-sm tabular-nums">{item.quantity}</span>
                         <button
@@ -183,12 +196,16 @@ export default function CartSidebar() {
                 Proceed to Checkout
                 <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
               </Link>
-              <button
+              <Link
+                href="/collections"
+                prefetch={true}
+                role="button"
                 onClick={closeCart}
-                className="w-full mt-3 text-label-md font-label-md uppercase tracking-wider text-on-surface-variant hover:text-primary py-2"
+                className="w-full mt-3 border border-outline-variant/60 text-primary hover:border-primary hover:bg-surface-container-low transition-all duration-200 py-2.5 sm:py-3 font-label-md text-label-md uppercase tracking-wider text-center cursor-pointer flex items-center justify-center gap-1.5"
               >
+                <span className="material-symbols-outlined text-[16px]">arrow_back</span>
                 Continue Shopping
-              </button>
+              </Link>
             </div>
           </>
         )}

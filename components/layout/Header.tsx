@@ -7,8 +7,9 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useWishlist } from '@/lib/context/WishlistContext';
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import SearchBox from './SearchBox';
+import AvatarCircle from '@/components/ui/AvatarCircle';
 
 interface DropdownColumn {
   heading: string;
@@ -214,10 +215,37 @@ const navLinks: NavItem[] = [
 
 export default function Header() {
   const pathname = usePathname();
-  const { user, signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const [signingOut, setSigningOut] = useState(false);
-  // Logout is confirmed first ("Are you sure you want to log out?"), then runs
+  // Logout is confirmed first ("Confirm sign out?"), then runs
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close user menu on outside click or Escape
+  useEffect(() => {
+    if (!isUserMenuOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsUserMenuOpen(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isUserMenuOpen]);
+
+  // Close user menu on route change
+  useEffect(() => {
+    setIsUserMenuOpen(false);
+  }, [pathname]);
+
   const handleSignOut = async (afterSignOut?: () => void) => {
     if (signingOut) return;
     setSigningOut(true);
@@ -231,7 +259,6 @@ export default function Header() {
   };
   const { wishlistIds } = useWishlist();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
@@ -273,22 +300,61 @@ export default function Header() {
               <span className="hidden xl:inline font-label-md text-label-md uppercase tracking-wider">Stores</span>
             </Link>
             {user ? (
-              <div className="group relative">
-                <button className="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface-container" title="Account">
-                  <span className="material-symbols-outlined text-[22px]">person</span>
+              <div ref={userMenuRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsUserMenuOpen((v) => !v)}
+                  aria-haspopup="menu"
+                  aria-expanded={isUserMenuOpen}
+                  className={`w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors rounded-full ${
+                    isUserMenuOpen ? 'bg-surface-container text-primary ring-2 ring-primary/20' : 'hover:bg-surface-container'
+                  }`}
+                  title="Account"
+                >
+                  <AvatarCircle avatarUrl={profile?.avatar_url ?? null} fullName={profile?.full_name ?? null} size={32} />
                 </button>
-                <div className="absolute right-0 mt-1 w-52 bg-surface rounded-xl shadow-xl border border-outline-variant/30 hidden group-hover:block z-50 overflow-hidden py-1">
-                  <div className="px-4 py-2.5 border-b border-outline-variant/30 text-xs text-on-surface-variant truncate font-medium">{user.email}</div>
-                  <Link href="/account" className="flex items-center gap-2.5 px-4 py-2.5 text-xs hover:bg-surface-container-low transition-colors text-primary font-medium">
-                    <span className="material-symbols-outlined text-[18px] text-tertiary">account_circle</span>My Profile
-                  </Link>
-                  <Link href="/orders" className="flex items-center gap-2.5 px-4 py-2.5 text-xs hover:bg-surface-container-low transition-colors text-primary font-medium">
-                    <span className="material-symbols-outlined text-[18px] text-tertiary">package_2</span>My Orders
-                  </Link>
-                  <button onClick={() => setLogoutConfirmOpen(true)} disabled={signingOut} aria-busy={signingOut || undefined} className="w-full flex items-center gap-2.5 text-left px-4 py-2.5 text-xs hover:bg-surface-container-low transition-colors text-error border-t border-outline-variant/20 disabled:opacity-60 disabled:cursor-wait">
-                    {signingOut ? <Spinner size={18} /> : <span className="material-symbols-outlined text-[18px]">logout</span>}{signingOut ? 'Signing out…' : 'Sign Out'}
-                  </button>
-                </div>
+                {isUserMenuOpen && (
+                  <div
+                    role="menu"
+                    className="absolute right-0 top-full mt-2 w-56 bg-surface rounded-2xl shadow-[0_16px_36px_rgba(45,32,36,0.16)] border border-outline-variant/40 z-[60] overflow-hidden py-1.5"
+                  >
+                    <div className="px-4 py-2.5 border-b border-outline-variant/30 text-xs text-on-surface-variant truncate font-medium">
+                      {user.email}
+                    </div>
+                    <Link
+                      href="/account"
+                      role="menuitem"
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className="flex items-center gap-2.5 px-4 py-2.5 text-xs hover:bg-surface-container-low transition-colors text-primary font-medium"
+                    >
+                      <span className="material-symbols-outlined text-[18px] text-tertiary">account_circle</span>
+                      My Profile
+                    </Link>
+                    <Link
+                      href="/orders"
+                      role="menuitem"
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className="flex items-center gap-2.5 px-4 py-2.5 text-xs hover:bg-surface-container-low transition-colors text-primary font-medium"
+                    >
+                      <span className="material-symbols-outlined text-[18px] text-tertiary">package_2</span>
+                      My Orders
+                    </Link>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
+                        setLogoutConfirmOpen(true);
+                      }}
+                      disabled={signingOut}
+                      aria-busy={signingOut || undefined}
+                      className="w-full flex items-center gap-2.5 text-left px-4 py-2.5 text-xs hover:bg-surface-container-low transition-colors text-error border-t border-outline-variant/20 disabled:opacity-60 disabled:cursor-wait"
+                    >
+                      {signingOut ? <Spinner size={18} /> : <span className="material-symbols-outlined text-[18px]">logout</span>}
+                      {signingOut ? 'Signing out…' : 'Sign Out'}
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               <>
@@ -418,9 +484,7 @@ export default function Header() {
           <div className="px-2 space-y-1">
             {user && (
               <div className="flex items-center gap-3 px-4 py-3 mb-1 rounded-lg bg-surface-container-low border border-outline-variant/30">
-                <div className="w-10 h-10 flex-shrink-0 rounded-full bg-secondary/20 text-secondary flex items-center justify-center">
-                  <span className="material-symbols-outlined text-[20px]">person</span>
-                </div>
+                <AvatarCircle avatarUrl={profile?.avatar_url ?? null} fullName={profile?.full_name ?? null} size={40} />
                 <div className="min-w-0">
                   <p className="text-primary font-label-lg text-label-lg truncate">{user.email}</p>
                   <p className="text-on-surface-variant text-[11px]">Logged in</p>

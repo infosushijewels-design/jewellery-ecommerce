@@ -77,7 +77,7 @@ export default function ProductCard({
   const toggleWishlist = async (productId: string) => {
     const result = await toggleWishlistBase(productId);
     if (result === 'added') {
-      showToast('❤️ Saved to your Wishlist!', 'success');
+      showToast('🌸 Saved to your Wishlist!', 'success');
     } else if (result === 'removed') {
       showToast('Removed from Wishlist.', 'info');
     }
@@ -162,14 +162,14 @@ export default function ProductCard({
           aria-label="Save to Wishlist"
           disabled={isLikePending}
           aria-busy={isLikePending || undefined}
-          className={`absolute top-2 right-2 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-surface/80 backdrop-blur-sm flex items-center justify-center transition-colors z-10
-            ${isSaved ? 'text-red-500' : 'text-on-surface-variant hover:text-red-500'}
+          className={`absolute top-2 right-2 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-surface/85 backdrop-blur-sm flex items-center justify-center transition-all duration-200 z-10 shadow-sm
+            ${isSaved ? 'text-[#C98A7D] bg-[#FAF4F0]' : 'text-on-surface-variant hover:text-[#C98A7D] hover:scale-110'}
           `}
         >
           {isLikePending ? (
             <Spinner size={15} />
           ) : (
-            <span className={`material-symbols-outlined text-[14px] sm:text-[16px] leading-none ${isSaved ? 'font-variation-fill-1' : ''}`}>
+            <span className={`material-symbols-outlined text-[14px] sm:text-[16px] leading-none transition-transform duration-200 ${isSaved ? 'font-variation-fill-1 scale-110' : ''}`}>
               favorite
             </span>
           )}

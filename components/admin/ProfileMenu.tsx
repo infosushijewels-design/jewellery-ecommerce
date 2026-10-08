@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Spinner from '@/components/ui/Spinner';
-import { ConfirmDialog, getInitials } from './AdminUI';
+import { getInitials } from './AdminUI';
+import AdminLogoutDialog from './AdminLogoutDialog';
 
 export default function ProfileMenu({
   name,
@@ -17,7 +18,7 @@ export default function ProfileMenu({
 }) {
   const [open, setOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
-  // Logout is confirmed first ("Are you sure you want to log out?"), then runs
+  // Logout is confirmed first ("Confirm sign out?"), then runs
   const [confirmOpen, setConfirmOpen] = useState(false);
   const confirmLogout = async () => {
     if (signingOut) return;
@@ -105,14 +106,9 @@ export default function ProfileMenu({
           </div>
         </div>
       )}
-      <ConfirmDialog
+      <AdminLogoutDialog
         open={confirmOpen}
-        title="Are you sure you want to log out?"
-        message="You will need to sign in again to manage the store."
-        icon="logout"
-        confirmLabel="Logout"
         busy={signingOut}
-        busyLabel="Logging out…"
         onConfirm={confirmLogout}
         onCancel={() => !signingOut && setConfirmOpen(false)}
       />

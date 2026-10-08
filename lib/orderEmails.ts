@@ -198,9 +198,18 @@ export function generateOrderEmailHtml(
           <tr><td height="4" bgcolor="${COLORS.gold}" style="height:4px;line-height:4px;font-size:0;background:${COLORS.gold};">&nbsp;</td></tr>
 
           <tr>
-            <td align="center" style="padding:34px 40px 8px 40px;" class="px">
-              <div style="font-family:${SERIF};font-size:24px;line-height:28px;letter-spacing:6px;color:${COLORS.charcoal};text-transform:uppercase;">${store}</div>
-              <div style="font-family:${SANS};font-size:11px;line-height:16px;letter-spacing:4px;color:${COLORS.gold};text-transform:uppercase;padding-top:6px;">Fine Jewellery</div>
+            <td align="center" style="padding:32px 40px 8px 40px;" class="px">
+              <a href="${escapeHtml(storeUrl || 'https://www.sushijewels.in')}" target="_blank" style="text-decoration:none;display:inline-block;">
+                <img
+                  src="${escapeHtml(storeUrl || 'https://www.sushijewels.in')}/logo.jpeg"
+                  alt="${store}"
+                  width="120"
+                  border="0"
+                  style="display:block;margin:0 auto 12px auto;max-width:120px;height:auto;border:0;outline:none;text-decoration:none;"
+                />
+              </a>
+              <div style="font-family:${SERIF};font-size:22px;line-height:26px;letter-spacing:6px;color:${COLORS.charcoal};text-transform:uppercase;">${store}</div>
+              <div style="font-family:${SANS};font-size:10px;line-height:15px;letter-spacing:4px;color:${COLORS.gold};text-transform:uppercase;padding-top:4px;">Fine Jewellery</div>
             </td>
           </tr>
           <tr>

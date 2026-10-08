@@ -16,8 +16,17 @@ export function renderOtpEmail(code: string, brand: { storeName: string; support
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${COLORS.champagne};"><tr><td align="center" style="padding:32px 12px;">
   <table role="presentation" width="520" cellpadding="0" cellspacing="0" style="max-width:520px;width:100%;background:#FFFFFF;border:1px solid ${COLORS.border};">
     <tr><td align="center" style="padding:30px 32px 18px;border-bottom:1px solid ${COLORS.border};">
-      <div style="font-family:${SERIF};font-size:26px;letter-spacing:1px;color:${COLORS.charcoal};">${brand.storeName.replace(/[<>&]/g, '')}</div>
-      <div style="margin-top:6px;font-family:${SANS};font-size:10px;letter-spacing:4px;color:${COLORS.gold};">FINE JEWELLERY</div>
+      <a href="https://www.sushijewels.in" target="_blank" style="text-decoration:none;display:inline-block;">
+        <img
+          src="https://www.sushijewels.in/logo.jpeg"
+          alt="Sushi Jewels"
+          width="110"
+          border="0"
+          style="display:block;margin:0 auto 10px auto;max-width:110px;height:auto;border:0;outline:none;text-decoration:none;"
+        />
+      </a>
+      <div style="font-family:${SERIF};font-size:24px;letter-spacing:4px;color:${COLORS.charcoal};text-transform:uppercase;">${brand.storeName.replace(/[<>&]/g, '')}</div>
+      <div style="margin-top:4px;font-family:${SANS};font-size:10px;letter-spacing:4px;color:${COLORS.gold};">FINE JEWELLERY</div>
     </td></tr>
     <tr><td align="center" style="padding:32px;">
       <p style="margin:0 0 18px;font-family:${SERIF};font-size:16px;line-height:26px;color:${COLORS.charcoal};">Hello,<br>Your verification code for accessing your Sushi Jewels orders is:</p>

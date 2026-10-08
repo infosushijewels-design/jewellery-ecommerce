@@ -242,7 +242,7 @@ export default function AdminProductsPage() {
         }
       />
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
         <StatTile icon="diamond" value={products.length} label="Total Products" tone="bg-[#B99A62]/15 text-[#8A6F3C]" />
         <StatTile icon="inventory_2" value={stats.in} label="In Stock" tone="bg-emerald-100 text-emerald-700" />
         <StatTile icon="warning" value={stats.low} label={`Low Stock (< ${LOW_STOCK_THRESHOLD})`} tone="bg-amber-100 text-amber-700" />
@@ -347,11 +347,10 @@ export default function AdminProductsPage() {
                         </td>
                         <td className="py-3.5 px-4">
                           <span
-                            className={`text-xs px-2.5 py-1 rounded-md border whitespace-nowrap ${
-                              product.category_id
+                            className={`text-xs px-2.5 py-1 rounded-md border whitespace-nowrap ${product.category_id
                                 ? 'bg-[#F5EEE7] border-[#E8D5C5] text-[#2D2024]/80'
                                 : 'bg-amber-50 border-amber-200 text-amber-800'
-                            }`}
+                              }`}
                           >
                             {categoryName(product.category_id)}
                           </span>

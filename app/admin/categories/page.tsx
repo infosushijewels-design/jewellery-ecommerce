@@ -273,7 +273,7 @@ export default function AdminCategoriesPage() {
         }
       />
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
         <StatTile icon="category" value={categories.length} label="Total Categories" tone="bg-[#B99A62]/15 text-[#8A6F3C]" />
         <StatTile icon="visibility" value={activeCount} label="Active on Store" tone="bg-emerald-100 text-emerald-700" />
         <StatTile icon="visibility_off" value={categories.length - activeCount} label="Hidden" tone="bg-[#2D2024]/10 text-[#2D2024]/70" />
@@ -310,7 +310,7 @@ export default function AdminCategoriesPage() {
         ) : (
           <>
             <div className="w-full overflow-x-auto custom-scroll">
-              <table className="w-full text-left text-sm min-w-[860px]">
+              <table className="w-full text-left text-sm min-w-[860px] md:min-w-[1000px] xl:min-w-[860px]">
                 <thead>
                   <tr className="border-b border-[#E8D5C5] bg-[#F5EEE7]/60 text-[#2D2024]/60 uppercase tracking-wider text-[11px] font-semibold">
                     <th className="py-3.5 px-5">Category</th>

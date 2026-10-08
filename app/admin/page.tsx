@@ -127,7 +127,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* 4 Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
         <StatCard
           label="Total Sales"
           value={`₹${overview.totalRevenue.toLocaleString('en-IN')}`}

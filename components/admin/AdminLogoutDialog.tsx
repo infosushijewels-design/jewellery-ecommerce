@@ -3,8 +3,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { LoadingLabel } from '@/components/ui/Spinner';
+import { SprigArt } from '@/components/auth/LogoutConfirmDialog';
 
-export interface LogoutConfirmDialogProps {
+export interface AdminLogoutDialogProps {
   open: boolean;
   busy?: boolean;
   onConfirm: () => void;
@@ -12,16 +13,17 @@ export interface LogoutConfirmDialogProps {
 }
 
 /**
- * "READY TO SIGN OUT?" confirmation modal for Sushi Jewels.
- * Matches the luxury jewelry aesthetic: centered brand logo, serif headline,
- * ✦ diamond star divider, subtle botanical line art, and luxury pill buttons.
+ * "READY TO SIGN OUT?" confirmation modal for Admin Panel.
+ * Uses createPortal into <body> so backdrop blur in the admin header does not trap it.
+ * Matches the client-side modal design with Sushi Jewels logo, serif headline,
+ * star divider, botanical watermark and luxury pill buttons.
  */
-export default function LogoutConfirmDialog({
+export function AdminLogoutDialog({
   open,
   busy,
   onConfirm,
   onCancel,
-}: LogoutConfirmDialogProps) {
+}: AdminLogoutDialogProps) {
   const [mounted, setMounted] = useState(false);
   const cancelRef = useRef<HTMLButtonElement>(null);
 
@@ -52,7 +54,7 @@ export default function LogoutConfirmDialog({
       <div
         role="alertdialog"
         aria-modal="true"
-        aria-labelledby="logout-confirm-title"
+        aria-labelledby="admin-logout-title"
         className="relative w-full max-w-[calc(100%-32px)] sm:max-w-[480px] md:max-w-[520px] overflow-hidden rounded-[24px] bg-[#FAF7F2] border border-[#E8D5C5]/70 p-6 sm:p-8 md:p-9 shadow-[0_24px_60px_-12px_rgba(45,32,36,0.28)]"
         onClick={(e) => e.stopPropagation()}
       >
@@ -81,7 +83,7 @@ export default function LogoutConfirmDialog({
 
         {/* Heading */}
         <h3
-          id="logout-confirm-title"
+          id="admin-logout-title"
           className="relative font-headline-sm text-[22px] sm:text-[26px] md:text-[28px] font-normal leading-tight uppercase tracking-[0.08em] text-[#2D2024] text-center"
         >
           READY TO SIGN OUT?
@@ -133,27 +135,4 @@ export default function LogoutConfirmDialog({
   );
 }
 
-/** Delicate botanical sprig line-art watermark drawn along the right edge */
-export function SprigArt({ className = 'text-[#8A6F3C]' }: { className?: string }) {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 120 180"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.15"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={`pointer-events-none absolute -bottom-3 -right-2 h-44 sm:h-52 w-28 sm:w-32 opacity-[0.22] ${className}`}
-    >
-      {/* Graceful curving stem */}
-      <path d="M104 175 C94 135 76 95 56 46 C50 32 44 18 40 4" />
-      {/* Delicate leaves */}
-      <path d="M94 140 C80 132 68 120 64 105 C76 107 88 118 94 140 Z" />
-      <path d="M88 118 C98 106 104 92 100 76 C90 84 84 98 88 118 Z" />
-      <path d="M76 92 C62 86 54 74 52 60 C64 62 72 72 76 92 Z" />
-      <path d="M68 72 C78 60 82 46 78 32 C70 40 66 52 68 72 Z" />
-      <path d="M54 42 C44 36 40 26 38 14 C46 16 52 24 54 42 Z" />
-    </svg>
-  );
-}
+export default AdminLogoutDialog;

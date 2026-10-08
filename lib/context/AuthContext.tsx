@@ -5,10 +5,19 @@ import { createClient } from '@/lib/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
 import { linkGuestOrdersForUser } from '@/lib/supabase/orderService';
 
+export interface Profile {
+  full_name: string | null;
+  avatar_url: string | null;
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   isLoading: boolean;
+  profile: Profile | null;
+  /** Re-fetches `profiles` for the current user — call after updating name/avatar so every
+   *  screen using this context (e.g. Header) reflects the change immediately. */
+  refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -18,7 +27,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [supabase] = useState(() => createClient());
+
+  async function fetchProfile(userId: string) {
+    const { data } = await supabase.from('profiles').select('full_name, avatar_url').eq('id', userId).maybeSingle();
+    setProfile(data ? { full_name: data.full_name ?? null, avatar_url: data.avatar_url ?? null } : null);
+  }
+
+  const refreshProfile = async () => {
+    if (user?.id) await fetchProfile(user.id);
+  };
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchProfile(user.id);
+    } else {
+      setProfile(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   useEffect(() => {
     let mounted = true;
@@ -63,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, isLoading, signOut }}>
+    <AuthContext.Provider value={{ user, session, isLoading, profile, refreshProfile, signOut }}>
       {children}
     </AuthContext.Provider>
   );

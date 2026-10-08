@@ -61,8 +61,17 @@ export function renderBulkEmail(input: { subject: string; message: string; brand
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${COLORS.champagne};"><tr><td align="center" style="padding:32px 12px;">
   <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#FFFFFF;border:1px solid ${COLORS.border};">
     <tr><td align="center" style="padding:32px 32px 20px;border-bottom:1px solid ${COLORS.border};">
-      <a href="${escapeHtml(brand.storeUrl)}" style="text-decoration:none;font-family:${SERIF};font-size:26px;letter-spacing:1px;color:${COLORS.charcoal};">${escapeHtml(brand.storeName)}</a>
-      <div style="margin-top:6px;font-family:${SANS};font-size:10px;letter-spacing:4px;color:${COLORS.gold};">FINE JEWELLERY</div>
+      <a href="${escapeHtml(brand.storeUrl || 'https://www.sushijewels.in')}" target="_blank" style="text-decoration:none;display:inline-block;">
+        <img
+          src="${escapeHtml(brand.storeUrl || 'https://www.sushijewels.in')}/logo.jpeg"
+          alt="${escapeHtml(brand.storeName)}"
+          width="120"
+          border="0"
+          style="display:block;margin:0 auto 10px auto;max-width:120px;height:auto;border:0;outline:none;text-decoration:none;"
+        />
+      </a>
+      <div style="font-family:${SERIF};font-size:24px;letter-spacing:4px;color:${COLORS.charcoal};text-transform:uppercase;">${escapeHtml(brand.storeName)}</div>
+      <div style="margin-top:4px;font-family:${SANS};font-size:10px;letter-spacing:4px;color:${COLORS.gold};">FINE JEWELLERY</div>
     </td></tr>
     <tr><td style="padding:32px;">
       <h1 style="margin:0 0 22px;font-family:${SERIF};font-size:22px;line-height:30px;font-weight:normal;color:${COLORS.charcoal};">${escapeHtml(subject)}</h1>

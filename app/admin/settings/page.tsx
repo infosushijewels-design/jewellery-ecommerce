@@ -25,16 +25,17 @@ const MIGRATION = '010_staff_roles_and_settings.sql';
 
 type TabKey = 'general' | 'homepage' | 'payments' | 'tax' | 'shipping' | 'orders' | 'appointments' | 'social' | 'announcement';
 
-const TABS: { key: TabKey; label: string; icon: string }[] = [
-  { key: 'general', label: 'General Store Settings', icon: 'storefront' },
-  { key: 'homepage', label: 'Homepage Content', icon: 'home' },
-  { key: 'payments', label: 'Payment Settings', icon: 'credit_card' },
-  { key: 'tax', label: 'Tax Settings (GST)', icon: 'receipt_long' },
-  { key: 'shipping', label: 'Shipping Settings', icon: 'local_shipping' },
-  { key: 'orders', label: 'Order Settings', icon: 'inventory' },
-  { key: 'appointments', label: 'Video Appointments', icon: 'videocam' },
-  { key: 'social', label: 'Social Media Settings', icon: 'public' },
-  { key: 'announcement', label: 'Announcement Bar', icon: 'campaign' },
+// shortLabel is what phones show in the horizontally scrolling tab strip
+const TABS: { key: TabKey; label: string; shortLabel: string; icon: string }[] = [
+  { key: 'general', label: 'General Store Settings', shortLabel: 'General', icon: 'storefront' },
+  { key: 'homepage', label: 'Homepage Content', shortLabel: 'Homepage', icon: 'home' },
+  { key: 'payments', label: 'Payment Settings', shortLabel: 'Payments', icon: 'credit_card' },
+  { key: 'tax', label: 'Tax Settings (GST)', shortLabel: 'Tax (GST)', icon: 'receipt_long' },
+  { key: 'shipping', label: 'Shipping Settings', shortLabel: 'Shipping', icon: 'local_shipping' },
+  { key: 'orders', label: 'Order Settings', shortLabel: 'Orders', icon: 'inventory' },
+  { key: 'appointments', label: 'Video Appointments', shortLabel: 'Appointments', icon: 'videocam' },
+  { key: 'social', label: 'Social Media Settings', shortLabel: 'Social Media', icon: 'public' },
+  { key: 'announcement', label: 'Announcement Bar', shortLabel: 'Announcement', icon: 'campaign' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -467,21 +468,22 @@ export default function AdminSettingsPage() {
           <LoadingState label="Loading settings..." />
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6 items-start">
-          {/* Tabs */}
-          <nav className="bg-[#FFFCF7] border border-[#E8D5C5] rounded-2xl p-2 flex lg:flex-col gap-1 overflow-x-auto no-scrollbar lg:sticky lg:top-20 shadow-[0_2px_10px_rgba(45,32,36,0.05)]">
+        <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] lg:grid-cols-[260px_1fr] gap-6 items-start">
+          {/* Tabs: a scrollable strip on phones, a side list from tablet up */}
+          <nav className="bg-[#FFFCF7] border border-[#E8D5C5] rounded-2xl p-2 flex md:flex-col gap-1 overflow-x-auto custom-scroll scroll-smooth md:sticky md:top-20 shadow-[0_2px_10px_rgba(45,32,36,0.05)]">
             {TABS.map((t) => {
               const active = t.key === tab;
               return (
                 <button
                   key={t.key}
                   onClick={() => setTab(t.key)}
-                  className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm whitespace-nowrap text-left transition-colors ${
+                  className={`flex items-center gap-3 px-3.5 py-2.5 md:px-3 md:py-2 md:text-xs lg:px-3.5 lg:py-2.5 lg:text-sm rounded-xl text-sm whitespace-nowrap text-left transition-colors ${
                     active ? 'bg-[#B99A62]/15 text-[#8A6F3C] font-medium' : 'text-[#2D2024]/75 hover:text-[#2D2024] hover:bg-[#F5EEE7]'
                   }`}
                 >
                   <span className="material-symbols-outlined text-xl">{t.icon}</span>
-                  {t.label}
+                  <span className="md:hidden">{t.shortLabel}</span>
+                  <span className="hidden md:inline">{t.label}</span>
                 </button>
               );
             })}
@@ -501,7 +503,7 @@ export default function AdminSettingsPage() {
             <fieldset disabled={readOnly} className="space-y-5 min-w-0">
               {tab === 'general' && (
                 <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border border-[#E8D5C5] rounded-2xl p-5 bg-[#FAF7F2]/60">
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 border border-[#E8D5C5] rounded-2xl p-5 bg-[#FAF7F2]/60">
                     <BrandImagePicker
                       title="Store Logo"
                       hint="Upload store company brand logo"

@@ -194,7 +194,7 @@ export default function AdminInquiriesPage() {
 
       <MigrationNotice migration={MIGRATION} show={missingTable} />
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
         <StatTile icon="mail" value={inquiries.length} label="Total Inquiries" tone="bg-[#B99A62]/15 text-[#8A6F3C]" />
         <StatTile icon="mark_email_unread" value={counts.new || 0} label="New" tone="bg-sky-100 text-sky-700" />
         <StatTile icon="pending" value={counts.in_progress || 0} label="In Progress" tone="bg-amber-100 text-amber-700" />

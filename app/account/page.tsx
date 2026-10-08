@@ -23,6 +23,11 @@ import {
 } from '@/lib/formValidation';
 import StateCitySelect from '@/components/ui/StateCitySelect';
 import { canonicalState, canonicalCity } from '@/lib/indianStatesCities';
+import UseCurrentLocationButton, { type DetectedLocation } from '@/components/ui/UseCurrentLocationButton';
+import AddressSuggestionsDropdown from '@/components/ui/AddressSuggestionsDropdown';
+import { useAddressAutocomplete } from '@/lib/hooks/useAddressAutocomplete';
+import AvatarCircle from '@/components/ui/AvatarCircle';
+import { useAvatarUpload } from '@/lib/hooks/useAvatarUpload';
 
 type Tab = 'personal' | 'addresses' | 'security';
 
@@ -58,6 +63,8 @@ export default function AccountPage() {
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
+  const sidebarAvatar = useAvatarUpload();
+  const personalAvatar = useAvatarUpload();
 
   // Addresses
   const [addresses, setAddresses] = useState<AddressRow[]>([]);
@@ -69,6 +76,8 @@ export default function AccountPage() {
   const [deleteTarget, setDeleteTarget] = useState<AddressRow | null>(null);
   const [deletingAddress, setDeletingAddress] = useState(false);
   const [defaultingId, setDefaultingId] = useState<string | null>(null);
+  const [showAddressSuggestions, setShowAddressSuggestions] = useState(false);
+  const { suggestions: addressSuggestions, isLoading: addressSuggestionsLoading } = useAddressAutocomplete(addressForm.address);
 
   // Field-level validation: an error shows once the field was visited (blur) or Save was pressed
   const [profileTouched, setProfileTouched] = useState<Partial<Record<ProfileField, boolean>>>({});
@@ -356,9 +365,21 @@ export default function AccountPage() {
           <aside className="space-y-6">
             <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-xl overflow-hidden">
               <div className="px-5 py-4 border-b border-outline-variant/30 flex items-center gap-3">
-                <div className="w-11 h-11 rounded-full bg-secondary/15 text-secondary flex items-center justify-center flex-shrink-0">
-                  <span className="material-symbols-outlined text-[22px]">person</span>
-                </div>
+                <AvatarCircle
+                  avatarUrl={sidebarAvatar.avatarUrl}
+                  fullName={fullName}
+                  size={48}
+                  isUploading={sidebarAvatar.isUploading}
+                  showCameraBadge
+                  onClick={sidebarAvatar.openPicker}
+                />
+                <input
+                  ref={sidebarAvatar.inputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={sidebarAvatar.handleFileSelected}
+                />
                 <div className="min-w-0">
                   <p className="font-label-md text-label-md text-primary truncate">{fullName || 'Welcome'}</p>
                   <p className="text-[11px] text-on-surface-variant truncate">{user.email}</p>
@@ -400,6 +421,52 @@ export default function AccountPage() {
               <div>
                 <h2 className="font-headline-sm text-headline-sm text-primary mb-1">Personal Info</h2>
                 <p className="text-body-sm text-on-surface-variant mb-6">Update your name and phone number.</p>
+
+                {/* Profile photo */}
+                <div className="flex items-center gap-5 mb-8 pb-6 border-b border-outline-variant/30 max-w-md">
+                  <AvatarCircle
+                    avatarUrl={personalAvatar.avatarUrl}
+                    fullName={fullName}
+                    size={80}
+                    isUploading={personalAvatar.isUploading}
+                    className="shadow-[0_4px_14px_rgba(45,32,36,0.12)] border-2 border-[#E8D5C5]"
+                  />
+                  <input
+                    ref={personalAvatar.inputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="hidden"
+                    onChange={personalAvatar.handleFileSelected}
+                  />
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <button
+                        type="button"
+                        onClick={personalAvatar.openPicker}
+                        disabled={personalAvatar.isUploading}
+                        className="inline-flex items-center gap-1.5 bg-primary text-surface px-4 py-2 rounded-full font-label-sm text-label-sm uppercase tracking-wider hover:bg-tertiary transition-colors disabled:opacity-60"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">photo_camera</span>
+                        Upload Photo
+                      </button>
+                      {personalAvatar.avatarUrl && (
+                        <button
+                          type="button"
+                          onClick={personalAvatar.handleRemove}
+                          disabled={personalAvatar.isUploading}
+                          className="inline-flex items-center gap-1.5 text-error font-label-sm text-label-sm uppercase tracking-wider hover:underline disabled:opacity-60"
+                        >
+                          <span className="material-symbols-outlined text-[16px]">close</span>
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-xs text-on-surface-variant mt-2">
+                      Supports JPG, PNG or WEBP (Max 3MB). Square aspect ratio looks best.
+                    </p>
+                  </div>
+                </div>
+
                 {profileLoading ? (
                   <div className="animate-pulse space-y-4 max-w-md">
                     <div className="h-10 bg-surface-container rounded-lg" />
@@ -464,7 +531,7 @@ export default function AccountPage() {
                 <div className="flex items-start justify-between gap-4 mb-6">
                   <div>
                     <h2 className="font-headline-sm text-headline-sm text-primary mb-1">Delivery Addresses</h2>
-                    <p className="text-body-sm text-on-surface-variant">Save addresses for faster checkout.</p>
+                    <p className="text-body-sm text-on-surface-variant">Save multiple addresses (Home, Work, etc.) for seamless checkout.</p>
                   </div>
                   {editingAddressId === null && !addressesUnavailable && (
                     <button
@@ -487,15 +554,64 @@ export default function AccountPage() {
                   </div>
                 ) : editingAddressId !== null ? (
                   <form onSubmit={handleSaveAddress} noValidate className="space-y-5 max-w-lg">
+                    <div className="flex items-center gap-3 flex-wrap bg-surface-container-low/60 border border-outline-variant/30 rounded-xl px-4 py-3">
+                      <UseCurrentLocationButton
+                        onLocationDetected={(location: DetectedLocation) =>
+                          setAddressForm((p) => ({
+                            ...p,
+                            address: location.address,
+                            city: location.city,
+                            state: location.state,
+                            pincode: location.pincode || p.pincode,
+                          }))
+                        }
+                      />
+                      <p className="text-xs text-on-surface-variant">Auto-fill address, city, state &amp; pincode from your location.</p>
+                    </div>
                     <div>
-                      <label className={labelClass}>Label</label>
+                      <label className={labelClass}>Address Type / Label</label>
+                      <div className="flex flex-wrap items-center gap-2 mb-2.5">
+                        {[
+                          { key: 'Home', icon: 'home', text: 'Home' },
+                          { key: 'Work', icon: 'apartment', text: 'Work' },
+                          { key: 'Other', icon: 'location_on', text: 'Other' },
+                        ].map((chip) => {
+                          const isSelected =
+                            chip.key === 'Home'
+                              ? addressForm.label === 'Home'
+                              : chip.key === 'Work'
+                              ? addressForm.label === 'Work' || addressForm.label === 'Office'
+                              : addressForm.label !== 'Home' && addressForm.label !== 'Work' && addressForm.label !== 'Office';
+                          return (
+                            <button
+                              key={chip.key}
+                              type="button"
+                              onClick={() => {
+                                if (chip.key === 'Home') setAddressForm((p) => ({ ...p, label: 'Home' }));
+                                else if (chip.key === 'Work') setAddressForm((p) => ({ ...p, label: 'Work' }));
+                                else if (chip.key === 'Other' && (addressForm.label === 'Home' || addressForm.label === 'Work' || addressForm.label === 'Office')) {
+                                  setAddressForm((p) => ({ ...p, label: '' }));
+                                }
+                              }}
+                              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all ${
+                                isSelected
+                                  ? 'bg-primary text-surface shadow-sm'
+                                  : 'bg-surface border border-outline-variant/60 text-on-surface-variant hover:border-primary hover:text-primary'
+                              }`}
+                            >
+                              <span className="material-symbols-outlined text-[16px]">{chip.icon}</span>
+                              {chip.text}
+                            </button>
+                          );
+                        })}
+                      </div>
                       <input
                         id="address-label"
                         type="text"
                         value={addressForm.label}
                         onChange={(e) => setAddressForm((p) => ({ ...p, label: e.target.value }))}
                         onBlur={() => setAddressTouched((p) => ({ ...p, label: true }))}
-                        placeholder="Home, Work, etc."
+                        placeholder="Home, Work, Studio, etc."
                         maxLength={30}
                         aria-invalid={addressError('label') ? true : undefined}
                         aria-describedby={addressError('label') ? 'address-label-error' : undefined}
@@ -540,7 +656,7 @@ export default function AccountPage() {
                         {renderFieldError('address-phone', addressError('phone'))}
                       </div>
                     </div>
-                    <div>
+                    <div className="relative">
                       <label className={labelClass}>Address</label>
                       <textarea
                         id="address-address"
@@ -549,12 +665,33 @@ export default function AccountPage() {
                         maxLength={200}
                         autoComplete="street-address"
                         value={addressForm.address}
-                        onChange={(e) => setAddressForm((p) => ({ ...p, address: e.target.value }))}
-                        onBlur={() => setAddressTouched((p) => ({ ...p, address: true }))}
+                        onChange={(e) => {
+                          setAddressForm((p) => ({ ...p, address: e.target.value }));
+                          setShowAddressSuggestions(true);
+                        }}
+                        onFocus={() => setShowAddressSuggestions(true)}
+                        onBlur={() => {
+                          setAddressTouched((p) => ({ ...p, address: true }));
+                          setShowAddressSuggestions(false);
+                        }}
                         aria-invalid={addressError('address') ? true : undefined}
                         aria-describedby={addressError('address') ? 'address-address-error' : undefined}
                         className={`${inputClassFor(addressError('address'))} resize-none`}
                         placeholder="House / Flat No., Street, Landmark"
+                      />
+                      <AddressSuggestionsDropdown
+                        suggestions={addressSuggestions}
+                        isLoading={addressSuggestionsLoading}
+                        visible={showAddressSuggestions}
+                        onPick={(s) =>
+                          setAddressForm((p) => ({
+                            ...p,
+                            address: s.address,
+                            city: s.city || p.city,
+                            state: s.state || p.state,
+                            pincode: s.pincode || p.pincode,
+                          }))
+                        }
                       />
                       {renderFieldError('address-address', addressError('address'))}
                     </div>
@@ -629,34 +766,55 @@ export default function AccountPage() {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {addresses.map((a) => (
-                      <div key={a.id} className={`border rounded-xl p-4 relative ${a.is_default ? 'border-primary bg-primary/5' : 'border-outline-variant/50'}`}>
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="font-label-md text-label-md text-primary">{a.label}</span>
-                          {a.is_default && (
-                            <span className="text-[10px] uppercase tracking-wider bg-primary text-surface px-2 py-0.5 rounded-full">Default</span>
-                          )}
-                        </div>
-                        <p className="text-sm font-medium text-on-surface">{a.full_name}</p>
-                        <p className="text-sm text-on-surface-variant leading-relaxed">
-                          {a.address}, {a.city}, {a.state} {a.pincode}
-                        </p>
-                        <p className="text-xs text-on-surface-variant mt-1">{a.phone}</p>
-                        <div className="flex items-center gap-4 mt-3 pt-3 border-t border-outline-variant/30">
-                          <button onClick={() => startEditAddress(a)} className="text-xs font-medium text-primary hover:underline flex items-center gap-1">
-                            <span className="material-symbols-outlined text-[15px]">edit</span>Edit
-                          </button>
-                          {!a.is_default && (
-                            <button onClick={() => handleSetDefault(a)} disabled={!!defaultingId} aria-busy={defaultingId === a.id || undefined} className="text-xs font-medium text-on-surface-variant hover:text-primary flex items-center gap-1 disabled:opacity-60 disabled:cursor-wait">
-                              {defaultingId === a.id ? <Spinner size={15} /> : <span className="material-symbols-outlined text-[15px]">star</span>}Set Default
+                    {addresses.map((a) => {
+                      const isHome = a.label.toLowerCase().includes('home');
+                      const isOffice = a.label.toLowerCase().includes('office') || a.label.toLowerCase().includes('work');
+                      const icon = isHome ? 'home' : isOffice ? 'apartment' : 'location_on';
+                      return (
+                        <div key={a.id} className={`border rounded-xl p-4 relative ${a.is_default ? 'border-primary bg-primary/5' : 'border-outline-variant/50'}`}>
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="flex items-center gap-1.5 font-label-md text-label-md text-primary font-semibold">
+                              <span className="material-symbols-outlined text-[18px] text-secondary">{icon}</span>
+                              {a.label}
+                            </span>
+                            {a.is_default && (
+                              <span className="text-[10px] uppercase tracking-wider bg-primary text-surface px-2 py-0.5 rounded-full font-semibold">Default</span>
+                            )}
+                          </div>
+                          <p className="text-sm font-medium text-on-surface">{a.full_name}</p>
+                          <p className="text-sm text-on-surface-variant leading-relaxed">
+                            {a.address}, {a.city}, {a.state} {a.pincode}
+                          </p>
+                          <p className="text-xs text-on-surface-variant mt-1">{a.phone}</p>
+                          <div className="flex items-center gap-4 mt-3 pt-3 border-t border-outline-variant/30">
+                            <button onClick={() => startEditAddress(a)} className="text-xs font-medium text-primary hover:underline flex items-center gap-1">
+                              <span className="material-symbols-outlined text-[15px]">edit</span>Edit
                             </button>
-                          )}
-                          <button onClick={() => setDeleteTarget(a)} className="text-xs font-medium text-error hover:underline flex items-center gap-1 ml-auto">
-                            <span className="material-symbols-outlined text-[15px]">delete</span>Remove
-                          </button>
+                            {!a.is_default && (
+                              <button onClick={() => handleSetDefault(a)} disabled={!!defaultingId} aria-busy={defaultingId === a.id || undefined} className="text-xs font-medium text-on-surface-variant hover:text-primary flex items-center gap-1 disabled:opacity-60 disabled:cursor-wait">
+                                {defaultingId === a.id ? <Spinner size={15} /> : <span className="material-symbols-outlined text-[15px]">star</span>}Set Default
+                              </button>
+                            )}
+                            <button onClick={() => setDeleteTarget(a)} className="text-xs font-medium text-error hover:underline flex items-center gap-1 ml-auto">
+                              <span className="material-symbols-outlined text-[15px]">delete</span>Remove
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
+
+                    {/* Quick Add Another Address card */}
+                    <button
+                      type="button"
+                      onClick={startNewAddress}
+                      className="border-2 border-dashed border-outline-variant/60 rounded-xl p-6 flex flex-col items-center justify-center gap-2 text-on-surface-variant hover:text-primary hover:border-primary transition-colors min-h-[160px] bg-surface-container-low/30 hover:bg-surface-container-low"
+                    >
+                      <span className="w-10 h-10 rounded-full bg-secondary/10 text-secondary flex items-center justify-center">
+                        <span className="material-symbols-outlined text-[22px]">add</span>
+                      </span>
+                      <span className="text-sm font-medium">Add Another Address</span>
+                      <span className="text-xs text-on-surface-variant/70">(Home, Work, etc.)</span>
+                    </button>
                   </div>
                 )}
               </div>

@@ -72,8 +72,18 @@ function esc(value: string | null | undefined) {
 function layout(inner: string) {
   return `
     <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-      <div style="text-align: center; padding: 20px 0;">
-        <h1 style="color: #B99A62; margin: 0;">Sushi Jewels</h1>
+      <div style="text-align: center; padding: 24px 0 16px;">
+        <a href="https://www.sushijewels.in" target="_blank" style="text-decoration: none; display: inline-block;">
+          <img
+            src="https://www.sushijewels.in/logo.jpeg"
+            alt="Sushi Jewels"
+            width="120"
+            border="0"
+            style="display: block; margin: 0 auto 10px auto; max-width: 120px; height: auto; border: 0; outline: none; text-decoration: none;"
+          />
+        </a>
+        <h1 style="color: #2D2024; font-family: Georgia, serif; font-size: 22px; letter-spacing: 4px; text-transform: uppercase; margin: 0;">Sushi Jewels</h1>
+        <div style="color: #B99A62; font-size: 10px; letter-spacing: 4px; text-transform: uppercase; margin-top: 4px;">Fine Jewellery</div>
       </div>
       <div style="background-color: #fcfcfc; padding: 30px; border-radius: 8px; border: 1px solid #f0f0f0;">
         ${inner}

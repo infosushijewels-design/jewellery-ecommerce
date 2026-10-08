@@ -18,6 +18,11 @@ export default function FooterContact() {
   const waNumber = waDigits.length === 10 ? `91${waDigits}` : waDigits;
 
   const links = [
+    {
+      key: 'whatsapp',
+      title: 'Chat on WhatsApp',
+      href: waNumber ? `https://wa.me/${waNumber}?text=${encodeURIComponent('Hi, I would like to inquire about your jewellery.')}` : '',
+    },
     { key: 'facebook', title: 'Facebook', href: social.facebook },
     { key: 'instagram', title: 'Instagram', href: social.instagram },
     { key: 'youtube', title: 'YouTube', href: social.youtube },

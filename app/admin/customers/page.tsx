@@ -32,9 +32,6 @@ import {
   formatINR,
   getInitials,
   inputClass,
-  whatsappLink,
-  WhatsAppButton,
-  WhatsAppIcon,
 } from '@/components/admin/AdminUI';
 
 type TypeTab = 'all' | 'registered' | 'guest' | 'repeat' | 'admin';
@@ -108,7 +105,7 @@ function exportCustomersCsv(customers: AdminCustomer[]) {
 
 function TierBadge({ customer }: { customer: AdminCustomer }) {
   const t = tier(customer);
-  return <span className={`text-[11px] px-2.5 py-0.5 rounded-full font-semibold border ${t.style}`}>{t.label}</span>;
+  return <span className={`inline-flex items-center whitespace-nowrap text-[11px] px-2.5 py-0.5 rounded-full font-semibold border ${t.style}`}>{t.label}</span>;
 }
 
 function Stars({ rating }: { rating: number }) {
@@ -264,9 +261,6 @@ export default function AdminCustomersPage() {
   const pageStart = (currentPage - 1) * PAGE_SIZE;
   const pageRows = filtered.slice(pageStart, pageStart + PAGE_SIZE);
 
-  const conciergeMessage = (c: AdminCustomer) =>
-    `Hello ${c.fullName.split(' ')[0]}, greetings from Sushi Jewels Concierge. How may we assist you today?`;
-
   async function handleAddNote() {
     if (!selected || !noteDraft.trim()) return;
     setSavingNote(true);
@@ -330,7 +324,7 @@ export default function AdminCustomersPage() {
         }
       />
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
         <StatTile icon="group" value={stats.total} label="Total Customers" tone="bg-[#B99A62]/15 text-[#8A6F3C]" />
         <StatTile icon="workspace_premium" value={stats.vip} label={`VIP (above ${formatINR(VIP_THRESHOLD)})`} tone="bg-[#B99A62]/20 text-[#8A6F3C]" />
         <StatTile icon="replay" value={stats.repeat} label="Repeat Buyers" tone="bg-emerald-100 text-emerald-700" />
@@ -398,16 +392,22 @@ export default function AdminCustomersPage() {
                         </td>
                         <td className="py-3.5 px-4 text-[#2D2024]/75 whitespace-nowrap">{c.phone || '—'}</td>
                         <td className="py-3.5 px-4"><TierBadge customer={c} /></td>
-                        <td className="py-3.5 px-4 text-[#2D2024]/80 tabular-nums">
+                        <td className="py-3.5 px-4 text-[#2D2024]/80 tabular-nums whitespace-nowrap">
                           {c.orderCount}
-                          {c.orderCount > 1 && <span className="ml-1.5 text-[10px] text-emerald-700 font-semibold uppercase">Repeat</span>}
+                          {c.orderCount > 1 && (
+                            <span
+                              title={`Repeat buyer (+${c.orderCount - 1} repeat order${c.orderCount - 1 === 1 ? '' : 's'})`}
+                              className="inline-flex items-center whitespace-nowrap text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/80 ml-1.5"
+                            >
+                              +{c.orderCount - 1}
+                            </span>
+                          )}
                         </td>
                         <td className="py-3.5 px-4 font-semibold text-[#2D2024] tabular-nums whitespace-nowrap">{formatINR(c.totalSpent)}</td>
                         <td className="py-3.5 px-4 text-[#2D2024]/70 whitespace-nowrap">{c.lastOrderAt ? formatDate(c.lastOrderAt) : '—'}</td>
                         <td className="py-3.5 px-4 text-[#2D2024]/70 whitespace-nowrap">{formatDate(c.createdAt)}</td>
                         <td className="py-3.5 px-5 text-right whitespace-nowrap">
                           <div className="inline-flex items-center gap-0.5">
-                            <WhatsAppButton phone={c.phone} message={conciergeMessage(c)} title="WhatsApp customer" />
                             <IconButton icon="mail" title="Email customer" href={`mailto:${c.email}`} />
                             <IconButton icon="visibility" title="View full profile" onClick={() => openCustomer(c.id)} />
                           </div>
@@ -465,42 +465,14 @@ export default function AdminCustomersPage() {
                   </div>
                 )}
 
-                <div className="grid grid-cols-3 gap-2 mt-4">
-                  {whatsappLink(selected.phone) ? (
-                    <a
-                      href={whatsappLink(selected.phone, conciergeMessage(selected)) || '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-1.5 bg-[#25D366] hover:bg-[#1EBE5A] text-white py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-colors"
-                    >
-                      <WhatsAppIcon size={16} className="text-white" />
-                      WhatsApp
-                    </a>
-                  ) : (
-                    <span className="flex items-center justify-center bg-[#2D2024]/5 text-[#2D2024]/40 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider">
-                      {selected.phone ? 'Invalid number' : 'No phone'}
-                    </span>
-                  )}
+                <div className="mt-4">
                   <a
                     href={`mailto:${selected.email}`}
-                    className="flex items-center justify-center gap-1.5 border border-[#E8D5C5] bg-white hover:bg-[#E8D5C5]/40 text-[#2D2024] py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-colors"
+                    className="flex items-center justify-center gap-2 w-full border border-[#E8D5C5] bg-white hover:bg-[#FAF7F2] text-[#2D2024] py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-colors shadow-sm"
                   >
-                    <span className="material-symbols-outlined text-base">mail</span>
-                    Email
+                    <span className="material-symbols-outlined text-base text-[#8A6F3C]">mail</span>
+                    Email Customer
                   </a>
-                  {selected.phone ? (
-                    <a
-                      href={`tel:${selected.phone.replace(/[^\d+]/g, '')}`}
-                      className="flex items-center justify-center gap-1.5 border border-[#E8D5C5] bg-white hover:bg-[#E8D5C5]/40 text-[#2D2024] py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-colors"
-                    >
-                      <span className="material-symbols-outlined text-base">call</span>
-                      Call
-                    </a>
-                  ) : (
-                    <span className="flex items-center justify-center bg-[#2D2024]/5 text-[#2D2024]/40 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider">
-                      No phone
-                    </span>
-                  )}
                 </div>
               </section>
 

@@ -72,7 +72,7 @@ export default function ProductActions({ product }: ProductActionsProps) {
   const toggleWishlist = async (productId: string) => {
     const result = await toggleWishlistBase(productId);
     if (result === 'added') {
-      showToast('❤️ Saved to your Wishlist!', 'success');
+      showToast('🌸 Saved to your Wishlist!', 'success');
     } else if (result === 'removed') {
       showToast('Removed from Wishlist.', 'info');
     }
@@ -172,11 +172,11 @@ export default function ProductActions({ product }: ProductActionsProps) {
             aria-label="Save to Wishlist"
             disabled={isLikePending}
             aria-busy={isLikePending || undefined}
-            className={`flex-shrink-0 w-14 h-14 rounded-full border flex items-center justify-center transition-colors
-              ${isSaved ? 'border-red-500/60 text-red-500 bg-red-50' : 'border-outline-variant/60 text-on-surface-variant hover:text-red-500 hover:border-red-500'}
+            className={`flex-shrink-0 w-14 h-14 rounded-full border flex items-center justify-center transition-all duration-200
+              ${isSaved ? 'border-[#C98A7D]/70 text-[#C98A7D] bg-[#FAF4F0]' : 'border-outline-variant/60 text-on-surface-variant hover:text-[#C98A7D] hover:border-[#C98A7D]'}
             `}
           >
-            {isLikePending ? <Spinner size={22} /> : <span className={`material-symbols-outlined ${isSaved ? 'font-variation-fill-1' : ''}`}>favorite</span>}
+            {isLikePending ? <Spinner size={22} /> : <span className={`material-symbols-outlined text-[24px] transition-transform duration-200 ${isSaved ? 'font-variation-fill-1 scale-110' : ''}`}>favorite</span>}
           </button>
         </div>
         <button

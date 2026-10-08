@@ -275,7 +275,7 @@ export default function AdminAppointmentsPage() {
 
       <MigrationNotice migration={MIGRATION} show={missingTable} />
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
         <StatTile icon="videocam" value={appointments.length} label="Total Bookings" tone="bg-[#B99A62]/15 text-[#8A6F3C]" />
         <StatTile icon="pending" value={counts.pending || 0} label="Pending" tone="bg-amber-100 text-amber-700" />
         <StatTile icon="event_available" value={counts.confirmed || 0} label="Confirmed" tone="bg-sky-100 text-sky-700" />
@@ -312,7 +312,7 @@ export default function AdminAppointmentsPage() {
         ) : (
           <>
             <div className="w-full overflow-x-auto custom-scroll">
-              <table className="w-full text-left text-sm min-w-[900px]">
+              <table className="w-full text-left text-sm min-w-[900px] md:min-w-[1000px] xl:min-w-[900px]">
                 <thead>
                   <tr className="border-b border-[#E8D5C5] bg-[#F5EEE7]/60 text-[#2D2024]/60 uppercase tracking-wider text-[11px] font-semibold">
                     <th className="py-3.5 px-5">Customer</th>

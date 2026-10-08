@@ -280,7 +280,7 @@ export default function AdminCouponsPage() {
           <EmptyState icon="sell" title="No coupons match your search." />
         ) : (
           <div className="w-full overflow-x-auto custom-scroll">
-            <table className="w-full text-left text-sm min-w-[900px]">
+            <table className="w-full text-left text-sm min-w-[900px] md:min-w-[1000px] xl:min-w-[900px]">
               <thead>
                 <tr className="border-b border-[#E8D5C5] bg-[#F5EEE7]/60 text-[#2D2024]/60 uppercase tracking-wider text-[11px] font-semibold">
                   <th className="py-3.5 px-5">Code</th>

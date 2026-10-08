@@ -286,7 +286,7 @@ export default function AdminOrdersPage() {
       />
 
       {/* Stat Tiles */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
         <StatTile icon="shopping_cart" value={stats.total} label="Total Orders" tone="bg-[#B99A62]/15 text-[#8A6F3C]" />
         <StatTile icon="schedule" value={stats.pending} label="Pending" tone="bg-amber-100 text-amber-700" />
         <StatTile icon="local_shipping" value={stats.shipped} label="Shipped" tone="bg-indigo-100 text-indigo-700" />

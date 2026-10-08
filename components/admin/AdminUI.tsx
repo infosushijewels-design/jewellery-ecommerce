@@ -179,7 +179,7 @@ export function FilterPills<T extends string>({
   counts?: Record<string, number>;
 }) {
   return (
-    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 lg:pb-0">
+    <div className="flex md:flex-wrap xl:flex-nowrap items-center gap-2 overflow-x-auto no-scrollbar pb-1 lg:pb-0">
       {tabs.map((tab) => {
         const isActive = active === tab.key;
         return (
