@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { adminCreateProduct, adminDeleteProduct, Product } from '@/lib/supabase/orderService';
 import { useToast } from '@/lib/context/ToastContext';
 import { downloadCsv } from '@/lib/utils/csv';
+import BulkProductImportModal from '@/components/admin/BulkProductImportModal';
 import {
   ConfirmDialog,
   EmptyState,
@@ -85,6 +86,7 @@ export default function AdminProductsPage() {
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -225,6 +227,12 @@ export default function AdminProductsPage() {
         subtitle="Manage your jewellery catalogue, pricing and stock."
         actions={
           <>
+            <SecondaryButton
+              icon="upload_file"
+              onClick={() => setIsImportModalOpen(true)}
+            >
+              Bulk Import (Excel)
+            </SecondaryButton>
             <SecondaryButton
               icon="download"
               onClick={() => exportProductsCsv(filtered, categoryName)}
@@ -439,6 +447,12 @@ export default function AdminProductsPage() {
         busy={isDeleting}
         onConfirm={handleDelete}
         onCancel={() => setDeletingProduct(null)}
+      />
+
+      <BulkProductImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onSuccess={() => loadData(true)}
       />
     </div>
   );

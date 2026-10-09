@@ -32,8 +32,7 @@ type RazorpayWindow = Window & {
 
 export default function CheckoutPage() {
   const { items, subtotal, tax, clearCart } = useCart();
-  const { user, isLoading: authLoading } = useAuth();
-  const [continueAsGuest, setContinueAsGuest] = useState(false);
+  const { user } = useAuth();
   const { showToast } = useToast();
   const router = useRouter();
   const storeSettings = useStoreSettings();
@@ -374,42 +373,6 @@ export default function CheckoutPage() {
               Discover High Jewellery
             </Link>
           </div>
-        ) : !user && !authLoading && !continueAsGuest ? (
-          <div className="max-w-3xl mx-auto">
-            <div className="text-center mb-6 sm:mb-8">
-              <h2 className="text-title-lg font-title-lg text-primary">How would you like to check out?</h2>
-              <p className="text-body-sm text-on-surface-variant mt-1">Your bag is saved — you can pick either way.</p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-              <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-2xl p-6 sm:p-8 flex flex-col">
-                <span className="material-symbols-outlined text-secondary text-[28px] mb-3">shopping_bag</span>
-                <h3 className="text-title-md font-title-lg text-primary mb-1">Continue as Guest</h3>
-                <p className="text-body-sm text-on-surface-variant leading-relaxed mb-6 flex-1">
-                  No account needed. Enter your details, pay securely, and track your order later with a one-time code sent to your email.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setContinueAsGuest(true)}
-                  className="w-full bg-primary text-surface py-3 rounded-full font-label-lg uppercase tracking-wider hover:bg-tertiary transition-colors"
-                >
-                  Continue as Guest
-                </button>
-              </div>
-              <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-2xl p-6 sm:p-8 flex flex-col">
-                <span className="material-symbols-outlined text-secondary text-[28px] mb-3">person</span>
-                <h3 className="text-title-md font-title-lg text-primary mb-1">Login / Create Account</h3>
-                <p className="text-body-sm text-on-surface-variant leading-relaxed mb-6 flex-1">
-                  Faster checkout with your saved details, your wishlist, and every order in one place.
-                </p>
-                <Link
-                  href="/login"
-                  className="w-full text-center border border-primary text-primary py-3 rounded-full font-label-lg uppercase tracking-wider hover:bg-surface-container-low transition-colors"
-                >
-                  Login / Sign Up
-                </Link>
-              </div>
-            </div>
-          </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12">
 
@@ -579,14 +542,14 @@ export default function CheckoutPage() {
                     )}
                     {guestCodBlocked && (
                       <div className="flex items-start gap-3.5 p-4 rounded-xl border border-outline-variant/50 bg-surface-container-low/60" aria-disabled="true">
-                        <input type="radio" name="paymentMethod" value="cod" disabled checked={false} readOnly className="mt-1" aria-label="Cash on Delivery (not available for guests)" />
+                        <input type="radio" name="paymentMethod" value="cod" disabled checked={false} readOnly className="mt-1" aria-label="Cash on Delivery (requires an account)" />
                         <div className="flex-1">
                           <span className="flex items-center gap-1.5 font-label-md text-on-surface-variant font-semibold">
                             <span className="material-symbols-outlined text-[16px]" aria-hidden="true">lock</span>
                             Cash on Delivery (COD)
                           </span>
                           <p role="note" className="text-xs text-on-surface-variant mt-1">
-                            COD is not available for guest users. Please login or create an account to use Cash on Delivery.
+                            COD requires an account. Please login or create an account to use Cash on Delivery.
                           </p>
                           <Link href="/login" className="inline-block mt-2 text-xs font-semibold text-primary underline underline-offset-2 hover:text-secondary">
                             Login / Create Account
