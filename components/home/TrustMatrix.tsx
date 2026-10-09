@@ -5,11 +5,7 @@ import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 
 /** "Sushi Jewels Promises" — trust badges with Zomato-style marquee animation. */
 export default function TrustMatrix() {
-  const { store, commerce } = useStoreSettings();
-  const freeShippingLabel =
-    commerce.freeShippingThreshold > 0
-      ? `Free Shipping above ₹${commerce.freeShippingThreshold.toLocaleString('en-IN')}`
-      : 'Free Insured Shipping';
+  const { store } = useStoreSettings();
 
   const promises = [
     { icon: 'assignment_return', title: 'Easy Returns & Exchange', href: '/return-policy' },
@@ -17,7 +13,6 @@ export default function TrustMatrix() {
     { icon: 'diamond', title: '100% Natural Diamonds', href: '/search?q=diamond' },
     { icon: 'workspace_premium', title: 'BIS Hallmarked Gold', href: '/terms' },
     { icon: 'currency_exchange', title: 'Lifetime Exchange & Buyback*', href: '/return-policy' },
-    { icon: 'local_shipping', title: freeShippingLabel, href: '/shipping-policy' },
   ];
 
   // Duplicate for seamless infinite loop
