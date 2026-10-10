@@ -1,4 +1,3 @@
-import React from 'react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import AnnouncementBar from '@/components/layout/AnnouncementBar';
@@ -17,9 +16,6 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   }
 
   const galleryImages = Array.from(new Set([product.image_url, ...(product.gallery_images || [])]));
-  const hasDiscount = !!product.mrp && product.mrp > product.price;
-  const discountPercent = hasDiscount ? Math.round(((product.mrp! - product.price) / product.mrp!) * 100) : 0;
-  const discountAmount = hasDiscount ? product.mrp! - product.price : 0;
 
   return (
     <>
@@ -75,38 +71,24 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               </p>
             </div>
 
-            <div className="py-6 border-y border-outline-variant/30">
-              <div className="flex items-center flex-wrap gap-3">
-                <span className="text-[28px] sm:text-[36px] font-headline-md text-primary">₹{product.price.toLocaleString('en-IN')}</span>
-                {hasDiscount && (
-                  <>
-                    <span className="text-[18px] sm:text-headline-sm text-on-surface-variant line-through">
-                      ₹{product.mrp!.toLocaleString('en-IN')}
-                    </span>
-                    <span className="bg-emerald-700 text-emerald-50 px-3 py-1 rounded-full text-label-sm font-label-sm uppercase tracking-wide">
-                      Save {discountPercent}% · ₹{discountAmount.toLocaleString('en-IN')} OFF
-                    </span>
-                  </>
-                )}
-                {product.stock <= 0 ? (
-                  <span className="bg-red-700 text-red-50 px-3 py-1 rounded-full text-label-sm font-label-sm uppercase tracking-wide">
-                    Sold Out
-                  </span>
-                ) : product.stock <= 3 ? (
-                  <span className="bg-amber-500 text-amber-950 px-3 py-1 rounded-full text-label-sm font-label-sm uppercase tracking-wide">
-                    Only {product.stock} Left
-                  </span>
-                ) : null}
+            <div className="py-6 border-y border-outline-variant/30 space-y-3">
+              <div>
+                <span className="text-[26px] sm:text-[34px] font-headline-md text-primary italic">Price on Request</span>
+                <p className="text-label-md font-label-md text-on-surface-variant mt-1 max-w-md leading-relaxed">
+                  Each piece is exclusively handcrafted in certified gold &amp; diamonds. Contact our concierge for today&apos;s gold rate and bespoke pricing.
+                </p>
               </div>
-              <span className="block text-label-md font-label-md text-on-surface-variant mt-1">Inclusive of all taxes</span>
+              <span className="inline-flex items-center gap-1.5 bg-[#FAF7F2] border border-[#E8D5C5] text-[#2D2024]/80 text-label-sm font-label-sm uppercase tracking-wider px-3.5 py-1.5 rounded-full">
+                <span className="material-symbols-outlined text-[16px] text-secondary">diamond</span>
+                Made Upon Order • 15–20 Days Atelier Crafting
+              </span>
             </div>
 
             <ProductActions product={{
               id: product.id,
               title: product.title,
-              price: product.price,
+              sku: product.sku,
               imageUrl: product.image_url,
-              stock: product.stock,
               availableSizes: product.available_sizes,
             }} />
           </div>

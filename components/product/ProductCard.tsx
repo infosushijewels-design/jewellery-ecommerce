@@ -5,7 +5,6 @@ import Spinner from '@/components/ui/Spinner';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useWishlist } from '@/lib/context/WishlistContext';
-import { useCart } from '@/lib/context/CartContext';
 import { useToast } from '@/lib/context/ToastContext';
 
 interface ProductCardProps {
@@ -16,9 +15,6 @@ interface ProductCardProps {
   material: string;
   title: string;
   certification: string;
-  price: number;
-  mrp?: number | null;
-  stock?: number;
   isNewArrival?: boolean;
   isFeatured?: boolean;
   slug: string;
@@ -41,35 +37,23 @@ export default function ProductCard({
   material,
   title,
   certification,
-  price,
-  mrp,
-  stock,
   isNewArrival,
   isFeatured,
   slug
 }: ProductCardProps) {
   const { wishlistIds, toggleWishlist: toggleWishlistBase, pendingIds } = useWishlist();
   const isLikePending = pendingIds.has(id);
-  const { addToCart, openCart } = useCart();
   const { showToast } = useToast();
   const router = useRouter();
   const isSaved = wishlistIds.has(id);
-  const [justAdded, setJustAdded] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
 
-  const hasDiscount = !!mrp && mrp > price;
-  const discountPercent = hasDiscount ? Math.round(((mrp! - price) / mrp!) * 100) : 0;
-  const isSoldOut = stock !== undefined && stock <= 0;
-  const isLowStock = stock !== undefined && stock > 0 && stock <= 3;
   const optimizedImage = getOptimizedImageUrl(imageSrc);
 
-  const handleAcquire = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleViewDetails = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
-
-    if (isSoldOut) return;
-
     setIsNavigating(true);
     router.push(`/product/${slug}`);
   };
@@ -111,47 +95,26 @@ export default function ProductCard({
                 <span className="bg-purple-700 text-purple-50 px-2 py-0.5 rounded-full text-[9px] sm:text-label-sm font-label-sm uppercase">
                   Featured
                 </span>
-              ) : hasDiscount ? (
-                <span className="bg-emerald-700 text-emerald-50 px-2 py-0.5 rounded-full text-[9px] sm:text-label-sm font-label-sm uppercase">
-                  Save {discountPercent}%
-                </span>
               ) : null}
             </div>
-            {isSoldOut ? (
-              <div className="absolute inset-0 bg-primary/60 flex items-center justify-center">
-                <span className="bg-red-700 text-red-50 px-3 py-1 rounded-full text-[9px] sm:text-label-sm font-label-sm uppercase">
-                  Sold Out
-                </span>
-              </div>
-            ) : isLowStock ? (
-              <div className="absolute bottom-2 left-2">
-                <span className="bg-amber-500 text-amber-950 px-2 py-0.5 rounded-full text-[9px] sm:text-label-sm font-label-sm uppercase">
-                  Only {stock} Left
-                </span>
-              </div>
-            ) : null}
 
-            {/* Quick Add overlay (always visible on mobile/touch, hover-triggered on desktop) */}
-            {!isSoldOut && (
-              <div className="absolute inset-x-0 bottom-0 flex items-end justify-center pb-2.5 sm:pb-3 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300 pointer-events-auto sm:pointer-events-none sm:group-hover:pointer-events-auto z-10">
-                <button
-                  onClick={handleAcquire}
-                  disabled={isNavigating}
-                  className="bg-primary/95 backdrop-blur-xs text-surface text-[9px] sm:text-xs font-semibold uppercase tracking-widest px-4 sm:px-5 py-1.5 sm:py-2 rounded-full shadow-lg hover:bg-tertiary active:scale-95 transition-all duration-200 border border-outline-variant/30 flex items-center justify-center gap-1.5 disabled:opacity-80 disabled:cursor-wait"
-                >
-                  {isNavigating ? (
-                    <>
-                      <span className="material-symbols-outlined text-[14px] sm:text-[16px] animate-spin">progress_activity</span>
-                      Loading...
-                    </>
-                  ) : justAdded ? (
-                    '✓ Added'
-                  ) : (
-                    'Select Options'
-                  )}
-                </button>
-              </div>
-            )}
+            {/* Quick View overlay (always visible on mobile/touch, hover-triggered on desktop) */}
+            <div className="absolute inset-x-0 bottom-0 flex items-end justify-center pb-2.5 sm:pb-3 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300 pointer-events-auto sm:pointer-events-none sm:group-hover:pointer-events-auto z-10">
+              <button
+                onClick={handleViewDetails}
+                disabled={isNavigating}
+                className="bg-primary/95 backdrop-blur-xs text-surface text-[9px] sm:text-xs font-semibold uppercase tracking-widest px-4 sm:px-5 py-1.5 sm:py-2 rounded-full shadow-lg hover:bg-tertiary active:scale-95 transition-all duration-200 border border-outline-variant/30 flex items-center justify-center gap-1.5 disabled:opacity-80 disabled:cursor-wait"
+              >
+                {isNavigating ? (
+                  <>
+                    <span className="material-symbols-outlined text-[14px] sm:text-[16px] animate-spin">progress_activity</span>
+                    Loading...
+                  </>
+                ) : (
+                  'View Details'
+                )}
+              </button>
+            </div>
           </div>
         </Link>
         <button
@@ -189,43 +152,27 @@ export default function ProductCard({
             <span className="material-symbols-outlined text-[12px] sm:text-[14px] text-secondary">verified</span>
             <span className="text-[9px] sm:text-label-sm">{certification}</span>
           </div>
+          <span className="block font-headline-sm text-[11px] sm:text-[13px] text-[#8A6F3C] font-medium tracking-wide pt-1">
+            Price on Request
+          </span>
         </div>
       </Link>
-      <div className="mt-3 sm:mt-4 pt-2.5 sm:pt-3 border-t border-outline-variant/30 flex items-center justify-between gap-1">
-        <div className="min-w-0">
-          <div className="flex items-baseline gap-1.5 flex-wrap">
-            <span className="font-body-md text-[14px] sm:text-[17px] font-semibold text-primary block tabular-nums tracking-tight">
-              ₹{price.toLocaleString('en-IN')}
-            </span>
-            {hasDiscount && (
-              <span className="text-[10px] sm:text-label-sm font-label-sm text-on-surface-variant line-through">
-                ₹{mrp!.toLocaleString('en-IN')}
-              </span>
-            )}
-          </div>
+      <div className="mt-3 sm:mt-4 pt-2.5 sm:pt-3 border-t border-outline-variant/30 space-y-2">
+        <div className="flex justify-center">
+          <span className="inline-flex items-center gap-1 bg-[#FAF7F2] border border-[#E8D5C5] text-[#2D2024]/80 text-[8px] sm:text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full">
+            <span className="material-symbols-outlined text-[11px] sm:text-[12px]">diamond</span>
+            Handcrafted to Order
+          </span>
         </div>
         <button
-          onClick={handleAcquire}
-          disabled={isSoldOut || isNavigating}
-          className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-label-sm text-[9px] sm:text-label-sm uppercase tracking-wider transition-all duration-200 flex-shrink-0 active:scale-95 flex items-center justify-center gap-1 min-w-[100px] ${
-            isSoldOut
-              ? 'bg-surface-container text-on-surface-variant cursor-not-allowed'
-              : justAdded
-              ? 'bg-secondary text-primary'
-              : 'bg-primary text-surface hover:bg-tertiary disabled:opacity-80 disabled:cursor-wait'
-          }`}
+          onClick={handleViewDetails}
+          disabled={isNavigating}
+          className="w-full px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-label-sm text-[9px] sm:text-label-sm uppercase tracking-wider transition-all duration-200 flex-shrink-0 active:scale-95 flex items-center justify-center gap-1 bg-primary text-surface hover:bg-tertiary disabled:opacity-80 disabled:cursor-wait"
         >
           {isNavigating ? (
             <span className="material-symbols-outlined text-[14px] sm:text-[16px] animate-spin">progress_activity</span>
-          ) : isSoldOut ? (
-            'Sold Out'
-          ) : justAdded ? (
-            <>
-              <span className="material-symbols-outlined text-[12px] sm:text-[14px]">check</span>
-              Added
-            </>
           ) : (
-            'Select Options'
+            'View Details'
           )}
         </button>
       </div>

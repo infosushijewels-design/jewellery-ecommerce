@@ -30,9 +30,6 @@ export default async function NewArrivals() {
             material={product.material}
             title={product.title}
             certification={product.certification || 'Verified'}
-            price={product.price}
-            mrp={product.mrp}
-            stock={product.stock}
             isNewArrival={product.is_new_arrival}
             isFeatured={product.is_featured}
             slug={product.slug}

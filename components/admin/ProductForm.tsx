@@ -207,6 +207,10 @@ export default function ProductForm({ mode, productId, initialProduct }: Product
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.title.trim()) {
+      showToast('Please enter a product title', 'error');
+      return;
+    }
     if (!form.imageUrl.trim()) {
       showToast('Please upload a main product image', 'error');
       return;
@@ -362,42 +366,6 @@ export default function ProductForm({ mode, productId, initialProduct }: Product
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-xs uppercase tracking-wider text-[#2D2024]/65 block mb-1">Price (₹ INR) *</label>
-              <input
-                type="number"
-                required
-                value={form.price}
-                onChange={(e) => setForm({ ...form, price: e.target.value })}
-                placeholder="125000"
-                className="w-full bg-white border border-[#E8D5C5] rounded-xl px-4 py-2.5 text-sm text-[#2D2024] focus:outline-none focus:border-[#B99A62]"
-              />
-            </div>
-            <div>
-              <label className="text-xs uppercase tracking-wider text-[#2D2024]/65 block mb-1">MRP (₹ INR, for strikethrough)</label>
-              <input
-                type="number"
-                value={form.mrp}
-                onChange={(e) => setForm({ ...form, mrp: e.target.value })}
-                placeholder="150000"
-                className="w-full bg-white border border-[#E8D5C5] rounded-xl px-4 py-2.5 text-sm text-[#2D2024] focus:outline-none focus:border-[#B99A62]"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="text-xs uppercase tracking-wider text-[#2D2024]/65 block mb-1">Stock Count</label>
-            <input
-              type="number"
-              min={0}
-              value={form.stock}
-              onChange={(e) => setForm({ ...form, stock: e.target.value })}
-              placeholder="10"
-              className="w-full bg-white border border-[#E8D5C5] rounded-xl px-4 py-2.5 text-sm text-[#2D2024] focus:outline-none focus:border-[#B99A62]"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
               <label className="text-xs uppercase tracking-wider text-[#2D2024]/65 block mb-1">Material & Craft</label>
               <input
                 type="text"
@@ -427,6 +395,44 @@ export default function ProductForm({ mode, productId, initialProduct }: Product
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               className="w-full bg-white border border-[#E8D5C5] rounded-xl px-4 py-2 text-sm text-[#2D2024] focus:outline-none focus:border-[#B99A62]"
             />
+          </div>
+
+          {/* De-emphasized: this is a showcase catalogue, so pricing/stock are optional internal notes only */}
+          <div className="pt-3 border-t border-dashed border-[#E8D5C5]">
+            <p className="text-[11px] uppercase tracking-wider text-[#2D2024]/40 mb-2">Pricing &amp; Inventory (Optional — internal reference only, not shown to customers)</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="text-xs uppercase tracking-wider text-[#2D2024]/50 block mb-1">Price (₹ INR)</label>
+                <input
+                  type="number"
+                  value={form.price}
+                  onChange={(e) => setForm({ ...form, price: e.target.value })}
+                  placeholder="125000"
+                  className="w-full bg-white border border-[#E8D5C5] rounded-xl px-4 py-2.5 text-sm text-[#2D2024] focus:outline-none focus:border-[#B99A62]"
+                />
+              </div>
+              <div>
+                <label className="text-xs uppercase tracking-wider text-[#2D2024]/50 block mb-1">MRP (₹ INR)</label>
+                <input
+                  type="number"
+                  value={form.mrp}
+                  onChange={(e) => setForm({ ...form, mrp: e.target.value })}
+                  placeholder="150000"
+                  className="w-full bg-white border border-[#E8D5C5] rounded-xl px-4 py-2.5 text-sm text-[#2D2024] focus:outline-none focus:border-[#B99A62]"
+                />
+              </div>
+              <div>
+                <label className="text-xs uppercase tracking-wider text-[#2D2024]/50 block mb-1">Stock Count</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={form.stock}
+                  onChange={(e) => setForm({ ...form, stock: e.target.value })}
+                  placeholder="10"
+                  className="w-full bg-white border border-[#E8D5C5] rounded-xl px-4 py-2.5 text-sm text-[#2D2024] focus:outline-none focus:border-[#B99A62]"
+                />
+              </div>
+            </div>
           </div>
         </div>
 

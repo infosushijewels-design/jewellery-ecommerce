@@ -140,14 +140,14 @@ async function processRow(
   const title = String(row.Title || '').trim();
   if (!title) throw new Error('Title is required.');
 
-  const categoryName = String(row.Category || '').trim();
-  if (!categoryName) throw new Error('Category is required.');
+  const categoryName = String(row.Category || '').trim() || 'Jewellery';
 
-  const price = parseNumber(row.Price);
-  if (price === null || price <= 0) throw new Error('Price must be a positive number.');
+  // Price is never a reason to reject a row — unresolved/custom prices come in as text
+  // ("Custom for admin side", blank, etc.) and land here as 0 for the admin to fix later.
+  const priceParsed = parseNumber(row.Price);
+  const price = priceParsed !== null && priceParsed >= 0 ? priceParsed : 0;
 
-  const material = String(row.Material || '').trim();
-  if (!material) throw new Error('Material is required.');
+  const material = String(row.Material || '').trim() || '18K Gold';
 
   const mainImageUrlInput = String(row.Main_Image_Drive_Url || '').trim();
   if (!mainImageUrlInput) throw new Error('Main_Image_Drive_Url is required.');
@@ -156,6 +156,48 @@ async function processRow(
   const stock = parseNumber(row.Stock) ?? 0;
 
   const categoryId = await resolveCategoryId(supabase, categoryCache, categoryName);
+  const sku = String(row.SKU || '').trim();
+
+  // SKU-based upsert: a known SKU updates the existing product in place (slug, created_at
+  // untouched); everything else falls through to a fresh insert below.
+  if (sku) {
+    const { data: existingProduct } = await supabase.from('products').select('id, slug').eq('sku', sku).maybeSingle();
+    if (existingProduct) {
+      const imageUrl = await ingestImage(supabase, mainImageUrlInput, existingProduct.slug, 0);
+
+      const galleryInputs = splitList(row.Gallery_Images);
+      const galleryImages: string[] = [];
+      for (let g = 0; g < galleryInputs.length; g++) {
+        const url = await ingestImage(supabase, galleryInputs[g], existingProduct.slug, g + 1);
+        if (url) galleryImages.push(url);
+      }
+
+      const updatePayload: Record<string, unknown> = {
+        title,
+        price,
+        mrp: mrp !== null && mrp > price ? mrp : null,
+        stock,
+        material,
+        certification: String(row.Certification || '').trim() || null,
+        badge: String(row.Badge || '').trim() || null,
+        description: String(row.Description || '').trim() || null,
+        category_id: categoryId,
+        available_sizes: splitList(row.Available_Sizes),
+        is_featured: parseBool(row.Is_Featured),
+        is_new_arrival: parseBool(row.Is_New_Arrival),
+      };
+      // A failed image re-download must not wipe out the product's existing (working) photo.
+      if (imageUrl) updatePayload.image_url = imageUrl;
+      if (galleryImages.length > 0) updatePayload.gallery_images = galleryImages;
+
+      const { error: updateError } = await supabase.from('products').update(updatePayload).eq('id', existingProduct.id);
+      if (updateError) throw new Error(updateError.message);
+
+      return { title };
+    }
+  }
+
+  // Insert path (new product — unknown or blank SKU)
   const slug = await uniqueSlug(supabase, 'products', slugify(title));
 
   const imageUrl = await ingestImage(supabase, mainImageUrlInput, slug, 0);
@@ -168,12 +210,12 @@ async function processRow(
     if (url) galleryImages.push(url);
   }
 
-  const sku = String(row.SKU || '').trim() || `SJ-${randomSuffix()}${randomSuffix()}`.toUpperCase();
+  const finalSku = sku || `SJ-${randomSuffix()}${randomSuffix()}`.toUpperCase();
 
   const { error: insertError } = await supabase.from('products').insert({
     title,
     slug,
-    sku,
+    sku: finalSku,
     price,
     mrp: mrp !== null && mrp > price ? mrp : null,
     stock,

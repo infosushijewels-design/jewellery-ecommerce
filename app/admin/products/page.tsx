@@ -10,7 +10,6 @@ import BulkProductImportModal from '@/components/admin/BulkProductImportModal';
 import {
   ConfirmDialog,
   EmptyState,
-  FilterPills,
   IconButton,
   LoadingState,
   PageHeader,
@@ -23,34 +22,11 @@ import {
   TableCard,
   Toggle,
   formatDate,
-  formatINR,
 } from '@/components/admin/AdminUI';
 
-type StockTab = 'all' | 'in' | 'low' | 'out';
 type FlagField = 'is_featured' | 'is_new_arrival';
 
 const PAGE_SIZE = 10;
-const LOW_STOCK_THRESHOLD = 5;
-
-const STOCK_TABS: { key: StockTab; label: string }[] = [
-  { key: 'all', label: 'All' },
-  { key: 'in', label: 'In Stock' },
-  { key: 'low', label: 'Low Stock' },
-  { key: 'out', label: 'Out of Stock' },
-];
-
-function stockState(stock: number | null | undefined): Exclude<StockTab, 'all'> {
-  const s = stock ?? 0;
-  if (s <= 0) return 'out';
-  if (s < LOW_STOCK_THRESHOLD) return 'low';
-  return 'in';
-}
-
-const STOCK_META: Record<Exclude<StockTab, 'all'>, { label: string; text: string; bar: string }> = {
-  in: { label: 'In Stock', text: 'text-emerald-700', bar: 'bg-emerald-500' },
-  low: { label: 'Low Stock', text: 'text-amber-700', bar: 'bg-amber-500' },
-  out: { label: 'Out of Stock', text: 'text-red-600', bar: 'bg-red-500' },
-};
 
 function exportProductsCsv(products: Product[], categoryName: (id: string | null) => string) {
   const header = ['Title', 'SKU', 'Slug', 'Category', 'Material', 'Price', 'MRP', 'Stock', 'Featured', 'New Arrival', 'Created'];
@@ -79,7 +55,6 @@ export default function AdminProductsPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
-  const [stockFilter, setStockFilter] = useState<StockTab>('all');
   const [page, setPage] = useState(1);
 
   const [togglingKey, setTogglingKey] = useState<string | null>(null);
@@ -116,14 +91,6 @@ export default function AdminProductsPage() {
   const categoryNameById = useMemo(() => new Map(categories.map((c) => [c.id, c.name])), [categories]);
   const categoryName = (id: string | null) => (id && categoryNameById.get(id)) || 'Uncategorised';
 
-  const stats = useMemo(() => {
-    const counts = { in: 0, low: 0, out: 0 };
-    products.forEach((p) => {
-      counts[stockState(p.stock)] += 1;
-    });
-    return counts;
-  }, [products]);
-
   const categoryOptions = useMemo(
     () => [
       { value: 'all', label: 'All categories' },
@@ -144,16 +111,14 @@ export default function AdminProductsPage() {
         p.slug.toLowerCase().includes(q);
       const matchesCategory =
         categoryFilter === 'all' || (categoryFilter === 'none' ? !p.category_id : p.category_id === categoryFilter);
-      const matchesStock = stockFilter === 'all' || stockState(p.stock) === stockFilter;
-      return matchesSearch && matchesCategory && matchesStock;
+      return matchesSearch && matchesCategory;
     });
-  }, [products, searchQuery, categoryFilter, stockFilter]);
+  }, [products, searchQuery, categoryFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
   const pageStart = (currentPage - 1) * PAGE_SIZE;
   const pageRows = filtered.slice(pageStart, pageStart + PAGE_SIZE);
-  const maxStock = Math.max(20, ...products.map((p) => p.stock ?? 0));
 
   async function handleToggleFlag(product: Product, field: FlagField, next: boolean) {
     const key = `${product.id}:${field}`;
@@ -252,9 +217,7 @@ export default function AdminProductsPage() {
 
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
         <StatTile icon="diamond" value={products.length} label="Total Products" tone="bg-[#B99A62]/15 text-[#8A6F3C]" />
-        <StatTile icon="inventory_2" value={stats.in} label="In Stock" tone="bg-emerald-100 text-emerald-700" />
-        <StatTile icon="warning" value={stats.low} label={`Low Stock (< ${LOW_STOCK_THRESHOLD})`} tone="bg-amber-100 text-amber-700" />
-        <StatTile icon="remove_shopping_cart" value={stats.out} label="Out of Stock" tone="bg-red-100 text-red-600" />
+        <StatTile icon="category" value={categories.length} label="Categories" tone="bg-[#4B2949]/10 text-[#4B2949]" />
       </div>
 
       <div className="flex flex-col xl:flex-row gap-3 xl:items-center">
@@ -277,15 +240,6 @@ export default function AdminProductsPage() {
             ariaLabel="Filter by category"
           />
         </div>
-        <FilterPills
-          tabs={STOCK_TABS}
-          active={stockFilter}
-          counts={{ all: products.length, ...stats }}
-          onChange={(key) => {
-            setStockFilter(key);
-            setPage(1);
-          }}
-        />
       </div>
 
       <TableCard>
@@ -314,10 +268,8 @@ export default function AdminProductsPage() {
                 <tbody className="divide-y divide-[#E8D5C5]/70">
                   {pageRows.map((product) => {
                     const stock = product.stock ?? 0;
-                    const state = stockState(stock);
-                    const meta = STOCK_META[state];
                     const discount =
-                      product.mrp != null && product.mrp > product.price
+                      product.mrp != null && product.price > 0 && product.mrp > product.price
                         ? Math.round(((product.mrp - product.price) / product.mrp) * 100)
                         : 0;
                     return (
@@ -364,25 +316,27 @@ export default function AdminProductsPage() {
                           </span>
                         </td>
                         <td className="py-3.5 px-4 whitespace-nowrap">
-                          <div className="font-semibold text-[#2D2024] tabular-nums">{formatINR(product.price)}</div>
-                          {discount > 0 && (
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                              <span className="text-[11px] text-[#2D2024]/45 line-through">{formatINR(product.mrp)}</span>
-                              <span className="text-[10px] font-semibold text-emerald-700">{discount}% off</span>
-                            </div>
+                          {product.price > 0 ? (
+                            <>
+                              <div className="font-semibold text-[#2D2024] tabular-nums">₹{product.price.toLocaleString('en-IN')}</div>
+                              {discount > 0 && (
+                                <div className="flex items-center gap-1.5 mt-0.5">
+                                  <span className="text-[11px] text-[#2D2024]/45 line-through">₹{(product.mrp as number).toLocaleString('en-IN')}</span>
+                                  <span className="text-[10px] font-semibold text-emerald-700">{discount}% off</span>
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <span className="inline-flex items-center text-[11px] px-2.5 py-1 rounded-full border whitespace-nowrap bg-[#FAF7F2] text-[#8A6F3C] border-[#E8D5C5] font-medium">
+                              Price on Request
+                            </span>
                           )}
                         </td>
-                        <td className="py-3.5 px-4 min-w-[150px]">
-                          <div className="flex items-center justify-between text-xs mb-1.5">
-                            <span className="text-[#2D2024] font-medium tabular-nums">{stock} units</span>
-                            <span className={`font-medium ${meta.text}`}>{meta.label}</span>
-                          </div>
-                          <div className="h-1.5 rounded-full bg-[#E8D5C5]/60 overflow-hidden">
-                            <div
-                              className={`h-full rounded-full ${meta.bar}`}
-                              style={{ width: `${stock <= 0 ? 0 : Math.max(6, Math.min(100, (stock / maxStock) * 100))}%` }}
-                            />
-                          </div>
+                        <td className="py-3.5 px-4 whitespace-nowrap">
+                          <span className="inline-flex items-center text-[11px] px-2.5 py-1 rounded-full border font-medium bg-stone-50 text-stone-600 border-stone-200">
+                            {stock > 0 ? 'Atelier Catalogue' : 'Made to Order'}
+                          </span>
+                          <span className="block text-[10px] text-[#2D2024]/40 mt-1">{stock} {stock === 1 ? 'unit' : 'units'} (internal)</span>
                         </td>
                         <td className="py-3.5 px-4 text-center">
                           <Toggle

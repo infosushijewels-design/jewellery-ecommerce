@@ -2,15 +2,8 @@
 
 import React, { useState } from 'react';
 
-export type PriceRangeKey = 'under25' | '25to50' | 'above50';
 export type MetalKey = '18k-yellow' | '18k-rose' | '18k-white' | '22k-gold' | 'platinum';
 export type GemstoneKey = 'solitaire' | 'gemstone' | 'plain-gold';
-
-export const PRICE_RANGE_OPTIONS: { key: PriceRangeKey; label: string }[] = [
-  { key: 'under25', label: 'Under ₹25,000' },
-  { key: '25to50', label: '₹25,000 – ₹50,000' },
-  { key: 'above50', label: 'Above ₹50,000' },
-];
 
 export const METAL_OPTIONS: { key: MetalKey; label: string }[] = [
   { key: '18k-yellow', label: '18K Yellow Gold' },
@@ -27,8 +20,6 @@ export const GEMSTONE_OPTIONS: { key: GemstoneKey; label: string }[] = [
 ];
 
 interface FilterSidebarProps {
-  priceRange: PriceRangeKey | null;
-  onPriceRangeChange: (key: PriceRangeKey | null) => void;
   selectedMetals: MetalKey[];
   onMetalToggle: (key: MetalKey) => void;
   metalCounts: Record<MetalKey, number>;
@@ -41,8 +32,6 @@ interface FilterSidebarProps {
 }
 
 export default function FilterSidebar({
-  priceRange,
-  onPriceRangeChange,
   selectedMetals,
   onMetalToggle,
   metalCounts,
@@ -77,39 +66,7 @@ export default function FilterSidebar({
         </span>
       </div>
 
-      <div className="space-y-3 pt-2">
-        <span className="font-label-lg text-label-lg text-primary block">Price Range</span>
-        <div className="space-y-2">
-          {PRICE_RANGE_OPTIONS.map((option) => (
-            <label key={option.key} className="flex items-center gap-2.5 cursor-pointer group">
-              <input
-                type="radio"
-                name="price-range"
-                checked={priceRange === option.key}
-                onChange={() => onPriceRangeChange(option.key)}
-                className="text-primary focus:ring-0 accent-primary"
-              />
-              <span
-                className={`font-body-sm text-body-sm transition-colors ${
-                  priceRange === option.key ? 'text-primary font-medium' : 'text-on-surface-variant group-hover:text-primary'
-                }`}
-              >
-                {option.label}
-              </span>
-            </label>
-          ))}
-          {priceRange && (
-            <button
-              onClick={() => onPriceRangeChange(null)}
-              className="font-label-sm text-label-sm text-secondary hover:underline mt-1"
-            >
-              Reset price
-            </button>
-          )}
-        </div>
-      </div>
-
-      <div className="pt-4 border-t border-outline-variant/30 space-y-3">
+      <div className="pt-2 space-y-3">
         <span className="font-label-lg text-label-lg text-primary block">Metal &amp; Purity</span>
         <div className="space-y-2">
           {METAL_OPTIONS.map((option) => (

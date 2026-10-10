@@ -12,6 +12,77 @@ interface BulkProductImportModalProps {
   onSuccess: () => void;
 }
 
+/** Pulls a number out of text like "₹14,999", "14999", or junk like "Custom for admin side" /
+ *  "To be confirmed" / blank — any of which fall back to 0 rather than blocking the row. */
+function extractNumeric(value: unknown): number {
+  if (value === null || value === undefined || value === '') return 0;
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  const match = String(value).replace(/,/g, '').match(/-?\d+(\.\d+)?/);
+  return match ? Number(match[0]) : 0;
+}
+
+function cell(row: Record<string, unknown>, key: string): string {
+  const value = row[key];
+  return value === null || value === undefined ? '' : String(value).trim();
+}
+
+/**
+ * Adaptively maps one raw spreadsheet row — in whatever column layout the client's own export
+ * uses (`Product Name`/`Subcategory`/`Main Category`/`Image 1-3`/`Gold Purity / Karat` etc.) —
+ * into the canonical BulkProductRow shape the API expects. Returns null for genuinely empty
+ * rows (no image AND no title/subcategory to identify the product by).
+ */
+function normalizeImportRow(row: Record<string, unknown>): BulkProductRow | null {
+  const rawTitle = cell(row, 'Product Name') || cell(row, 'Title') || cell(row, 'title');
+  const subcategory = cell(row, 'Subcategory');
+  const mainCategory = cell(row, 'Main Category') || cell(row, 'Category') || 'Jewellery';
+  const sku = cell(row, 'SKU');
+  const productNo = cell(row, 'Product No.');
+
+  const mainImage = cell(row, 'Image 1') || cell(row, 'Main_Image_Drive_Url') || cell(row, 'Image');
+  const galleryParts = [cell(row, 'Image 2'), cell(row, 'Image 3')].filter(Boolean);
+  const galleryFromColumn = cell(row, 'Gallery_Images')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const resolvedGallery = [...galleryParts, ...galleryFromColumn].join(', ');
+
+  // Garbage row: nothing to show (no photo) and nothing to call it by (no title/subcategory)
+  if (!mainImage && !resolvedGallery && !subcategory && !rawTitle) return null;
+
+  const resolvedTitle = rawTitle
+    ? rawTitle
+    : subcategory
+    ? `${subcategory}${sku ? ` (SKU: ${sku})` : ''}`
+    : `${mainCategory} Design ${sku || productNo}`.trim();
+
+  const purity = cell(row, 'Gold Purity / Karat');
+  const colour = cell(row, 'Gold Colour');
+  const type = cell(row, 'Jewellery Type');
+  const resolvedMaterial = [purity, colour, type].filter(Boolean).join(' ') || cell(row, 'Material') || '18K Gold';
+
+  const resolvedPrice = extractNumeric(row['Price (?)'] ?? row['Price']);
+  const resolvedStock = extractNumeric(row['Stock']);
+
+  return {
+    Title: resolvedTitle,
+    Category: mainCategory,
+    Price: resolvedPrice,
+    MRP: cell(row, 'MRP') || undefined,
+    Material: resolvedMaterial,
+    Stock: resolvedStock,
+    Main_Image_Drive_Url: mainImage,
+    Gallery_Images: resolvedGallery,
+    Description: cell(row, 'Description'),
+    Available_Sizes: cell(row, 'Available_Sizes'),
+    Certification: cell(row, 'Certification'),
+    Badge: cell(row, 'Badge'),
+    SKU: sku || undefined,
+    Is_Featured: cell(row, 'Is_Featured'),
+    Is_New_Arrival: cell(row, 'Is_New_Arrival'),
+  };
+}
+
 export default function BulkProductImportModal({
   isOpen,
   onClose,
@@ -124,7 +195,7 @@ export default function BulkProductImportModal({
         const workbook = XLSX.read(data, { type: 'array' });
         const firstSheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[firstSheetName];
-        const json = XLSX.utils.sheet_to_json<BulkProductRow>(worksheet);
+        const json = XLSX.utils.sheet_to_json<Record<string, unknown>>(worksheet, { defval: '' });
 
         if (!json || json.length === 0) {
           showToast('The uploaded sheet is empty', 'error');
@@ -132,13 +203,23 @@ export default function BulkProductImportModal({
         }
 
         const first = json[0];
-        if (!('Title' in first) && !('title' in first)) {
-          showToast('Invalid Excel format. "Title" column is required.', 'error');
+        const hasRecognizedHeader = ['Title', 'title', 'Product Name', 'Subcategory', 'Main Category', 'Product No.'].some(
+          (header) => header in first
+        );
+        if (!hasRecognizedHeader) {
+          showToast('Invalid Excel format. Could not find a Title, Product Name, Subcategory or Category column.', 'error');
           return;
         }
 
-        setParsedRows(json);
-        showToast(`Parsed ${json.length} products from sheet`, 'success');
+        const normalized = json.map(normalizeImportRow).filter((row): row is BulkProductRow => row !== null);
+        if (normalized.length === 0) {
+          showToast('No usable product rows were found in this sheet (every row was missing both an image and a title/subcategory).', 'error');
+          return;
+        }
+
+        setParsedRows(normalized);
+        const skipped = json.length - normalized.length;
+        showToast(`Parsed ${normalized.length} products from sheet${skipped > 0 ? ` (${skipped} empty row${skipped === 1 ? '' : 's'} skipped)` : ''}`, 'success');
       } catch (err) {
         console.error('Error parsing sheet:', err);
         showToast('Failed to parse file. Please upload a valid .xlsx or .csv', 'error');
@@ -308,7 +389,6 @@ export default function BulkProductImportModal({
                       <th className="py-2.5 px-3">#</th>
                       <th className="py-2.5 px-3">Title</th>
                       <th className="py-2.5 px-3">Category</th>
-                      <th className="py-2.5 px-3">Price</th>
                       <th className="py-2.5 px-3">Material</th>
                       <th className="py-2.5 px-3">Image Link</th>
                     </tr>
@@ -319,14 +399,20 @@ export default function BulkProductImportModal({
                         <td className="py-2 px-3 text-[#2D2024]/50">{idx + 1}</td>
                         <td className="py-2 px-3 font-medium text-[#2D2024] truncate max-w-[180px]">{row.Title}</td>
                         <td className="py-2 px-3 text-[#2D2024]/70">{row.Category || 'General'}</td>
-                        <td className="py-2 px-3 font-semibold text-[#8A6F3C]">₹{row.Price}</td>
                         <td className="py-2 px-3 text-[#2D2024]/70 truncate max-w-[140px]">{row.Material || '—'}</td>
                         <td className="py-2 px-3">
                           {row.Main_Image_Drive_Url ? (
-                            <span className="inline-flex items-center gap-1 text-[11px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                              <span className="material-symbols-outlined text-xs">check_circle</span>
-                              Drive Link
-                            </span>
+                            /drive\.google\.com/.test(row.Main_Image_Drive_Url) ? (
+                              <span className="inline-flex items-center gap-1 text-[11px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                                <span className="material-symbols-outlined text-xs">check_circle</span>
+                                Drive Link
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-[11px] text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                                <span className="material-symbols-outlined text-xs">check_circle</span>
+                                Image Link
+                              </span>
+                            )
                           ) : (
                             <span className="text-amber-600 text-[11px]">No link</span>
                           )}

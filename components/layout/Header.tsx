@@ -1,6 +1,5 @@
 "use client";
 
-import CartButton from '@/components/cart/CartButton';
 import LogoutConfirmDialog from '@/components/auth/LogoutConfirmDialog';
 import Spinner from '@/components/ui/Spinner';
 import Link from 'next/link';
@@ -45,14 +44,6 @@ const navLinks: NavItem[] = [
           { label: 'White Gold', href: '/new-arrivals?metal=18k-white' },
         ],
       },
-      {
-        heading: 'Shop by Price',
-        links: [
-          { label: 'Under ₹25,000', href: '/new-arrivals?maxPrice=25000' },
-          { label: '₹25k – ₹50k', href: '/new-arrivals?minPrice=25000&maxPrice=50000' },
-          { label: 'Above ₹50,000', href: '/new-arrivals?minPrice=50000' },
-        ],
-      },
     ],
   },
   {
@@ -74,14 +65,6 @@ const navLinks: NavItem[] = [
           { label: 'Yellow Gold', href: '/category/rings?metal=18k-yellow' },
           { label: 'Rose Gold', href: '/category/rings?metal=18k-rose' },
           { label: 'White Gold', href: '/category/rings?metal=18k-white' },
-        ],
-      },
-      {
-        heading: 'Shop by Price',
-        links: [
-          { label: 'Under ₹25,000', href: '/category/rings?maxPrice=25000' },
-          { label: '₹25k – ₹50k', href: '/category/rings?minPrice=25000&maxPrice=50000' },
-          { label: 'Above ₹50,000', href: '/category/rings?minPrice=50000' },
         ],
       },
     ],
@@ -107,14 +90,6 @@ const navLinks: NavItem[] = [
           { label: 'White Gold', href: '/category/earrings?metal=18k-white' },
         ],
       },
-      {
-        heading: 'Shop by Price',
-        links: [
-          { label: 'Under ₹25,000', href: '/category/earrings?maxPrice=25000' },
-          { label: '₹25k – ₹50k', href: '/category/earrings?minPrice=25000&maxPrice=50000' },
-          { label: 'Above ₹50,000', href: '/category/earrings?minPrice=50000' },
-        ],
-      },
     ],
   },
   {
@@ -136,14 +111,6 @@ const navLinks: NavItem[] = [
           { label: 'Yellow Gold', href: '/category/necklaces?metal=18k-yellow' },
           { label: 'Rose Gold', href: '/category/necklaces?metal=18k-rose' },
           { label: 'White Gold', href: '/category/necklaces?metal=18k-white' },
-        ],
-      },
-      {
-        heading: 'Shop by Price',
-        links: [
-          { label: 'Under ₹25,000', href: '/category/necklaces?maxPrice=25000' },
-          { label: '₹25k – ₹1L', href: '/category/necklaces?minPrice=25000&maxPrice=100000' },
-          { label: 'Above ₹1L', href: '/category/necklaces?minPrice=100000' },
         ],
       },
     ],
@@ -168,14 +135,6 @@ const navLinks: NavItem[] = [
           { label: 'White Gold', href: '/category/bracelets?metal=18k-white' },
         ],
       },
-      {
-        heading: 'Shop by Price',
-        links: [
-          { label: 'Under ₹25,000', href: '/category/bracelets?maxPrice=25000' },
-          { label: '₹25k – ₹50k', href: '/category/bracelets?minPrice=25000&maxPrice=50000' },
-          { label: 'Above ₹50,000', href: '/category/bracelets?minPrice=50000' },
-        ],
-      },
     ],
   },
   {
@@ -197,14 +156,6 @@ const navLinks: NavItem[] = [
           { label: 'Rose Gold', href: '/category/bangles?metal=18k-rose' },
           { label: 'White Gold', href: '/category/bangles?metal=18k-white' },
           { label: '22K Gold', href: '/category/bangles?metal=22k-gold' },
-        ],
-      },
-      {
-        heading: 'Shop by Price',
-        links: [
-          { label: 'Under ₹25,000', href: '/category/bangles?maxPrice=25000' },
-          { label: '₹25k – ₹75k', href: '/category/bangles?minPrice=25000&maxPrice=75000' },
-          { label: 'Above ₹75,000', href: '/category/bangles?minPrice=75000' },
         ],
       },
     ],
@@ -367,14 +318,12 @@ export default function Header() {
               </>
             )}
 
-            <Link href="/wishlist" className="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary relative transition-colors rounded-full hover:bg-surface-container" title="Wishlist">
+            <Link href="/wishlist" className="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary relative transition-colors rounded-full hover:bg-surface-container" title="My Curated Lookbook">
               <span className="material-symbols-outlined text-[22px]">favorite</span>
               {wishlistIds.size > 0 && (
                 <span className="absolute top-1 right-1 bg-secondary text-surface font-label-sm text-[9px] h-4 w-4 rounded-full flex items-center justify-center">{wishlistIds.size}</span>
               )}
             </Link>
-
-            <CartButton />
 
 
             <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface-container ml-1" aria-label="Open menu">

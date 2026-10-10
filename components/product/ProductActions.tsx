@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Spinner from '@/components/ui/Spinner';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
-import { useCart } from '@/lib/context/CartContext';
 import { useWishlist } from '@/lib/context/WishlistContext';
 import { useToast } from '@/lib/context/ToastContext';
+import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 import SizeGuideModal from '@/components/product/SizeGuideModal';
 import TryItOnModal from '@/components/product/TryItOnModal';
 
@@ -14,9 +14,8 @@ interface ProductActionsProps {
   product: {
     id: string;
     title: string;
-    price: number;
+    sku?: string | null;
     imageUrl: string;
-    stock: number;
     availableSizes?: string[];
   };
 }
@@ -31,43 +30,14 @@ export default function ProductActions({ product }: ProductActionsProps) {
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const [isTryItOnOpen, setIsTryItOnOpen] = useState(false);
 
-  const { addToCart, openCart } = useCart();
   const { wishlistIds, toggleWishlist: toggleWishlistBase, pendingIds } = useWishlist();
   const isLikePending = pendingIds.has(product.id);
-  const [buyingNow, setBuyingNow] = useState(false);
   const { showToast } = useToast();
-  const router = useRouter();
+  const { contact } = useStoreSettings();
 
   const isSaved = wishlistIds.has(product.id);
-  const isSoldOut = product.stock <= 0;
-  const isLowStock = product.stock > 0 && product.stock <= 3;
 
   const metals = ["18K Yellow Gold", "18K Rose Gold", "18K White Gold", "Platinum"];
-
-  const buildCartItem = () => ({
-    productId: product.id,
-    title: product.title,
-    price: product.price,
-    imageUrl: product.imageUrl,
-    metal: selectedMetal,
-    size: selectedSize,
-  });
-
-  const handleAddToBag = () => {
-    if (isSoldOut) return;
-    addToCart(buildCartItem());
-    openCart();
-    showToast('✨ Added to your shopping bag!', 'success');
-  };
-
-  const handleBuyNow = () => {
-    if (isSoldOut || buyingNow) return;
-    setBuyingNow(true);
-    addToCart(buildCartItem());
-    router.push('/checkout');
-    // the page normally navigates away; if it somehow doesn't, let the customer try again
-    setTimeout(() => setBuyingNow(false), 8000);
-  };
 
   const toggleWishlist = async (productId: string) => {
     const result = await toggleWishlistBase(productId);
@@ -77,6 +47,18 @@ export default function ProductActions({ product }: ProductActionsProps) {
       showToast('Removed from Wishlist.', 'info');
     }
   };
+
+  // Same number-normalising logic as the footer's WhatsApp link, kept local since it's a one-off here.
+  const waDigits = (contact.whatsapp || '').replace(/\D/g, '');
+  const waNumber = waDigits.length === 10 ? `91${waDigits}` : waDigits;
+  const enquiryMessage = [
+    `Hi! I'd like to enquire about "${product.title}"`,
+    product.sku ? `(SKU: ${product.sku})` : null,
+    `— Metal: ${selectedMetal}, Size: ${selectedSize}.`,
+  ]
+    .filter(Boolean)
+    .join(' ');
+  const whatsappHref = waNumber ? `https://wa.me/${waNumber}?text=${encodeURIComponent(enquiryMessage)}` : null;
 
   return (
     <div className="space-y-8 mt-8">
@@ -139,34 +121,36 @@ export default function ProductActions({ product }: ProductActionsProps) {
         </div>
       </div>
 
-      {/* Stock Scarcity Indicator */}
-      {isSoldOut ? (
-        <div className="flex items-start gap-2.5 bg-surface-container-low rounded-xl p-4 border border-outline-variant/50">
-          <span className="material-symbols-outlined text-on-surface-variant text-[20px]">inventory_2</span>
-          <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
-            <span className="font-semibold text-primary">Exclusively Made to Order.</span> This piece is currently sold out — reach out to our concierge team to commission a bespoke remake.
-          </p>
-        </div>
-      ) : isLowStock ? (
-        <div className="flex items-start gap-2.5 bg-error-container/40 rounded-xl p-4 border border-error/30">
-          <span className="material-symbols-outlined text-error text-[20px]">local_fire_department</span>
-          <p className="font-body-sm text-body-sm text-primary leading-relaxed">
-            Only <span className="font-semibold">{product.stock}</span> {product.stock === 1 ? 'piece' : 'pieces'} handcrafted in this atelier edition — once gone, this design retires.
-          </p>
-        </div>
-      ) : null}
+      {/* Craftsmanship note */}
+      <div className="flex items-start gap-2.5 bg-surface-container-low rounded-xl p-4 border border-outline-variant/50">
+        <span className="material-symbols-outlined text-secondary text-[20px]">auto_awesome</span>
+        <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+          <span className="font-semibold text-primary">Handcrafted to Order.</span> Every piece is made to measure by our master artisans — reach out and we&apos;ll guide you through metal, stone and sizing.
+        </p>
+      </div>
 
       {/* Actions */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 pt-4 border-t border-outline-variant/30">
         <div className="flex items-center gap-3 sm:gap-4 flex-1">
-          <button
-            onClick={handleAddToBag}
-            disabled={isSoldOut}
-            className="flex-1 bg-primary text-surface px-6 py-4 rounded-full font-label-lg text-label-lg uppercase tracking-wider hover:bg-tertiary transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <span className="material-symbols-outlined">shopping_bag</span>
-            {isSoldOut ? 'Sold Out' : 'Add to Bag'}
-          </button>
+          {whatsappHref ? (
+            <a
+              href={whatsappHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 bg-primary text-surface px-6 py-4 rounded-full font-label-lg text-label-lg uppercase tracking-wider hover:bg-tertiary transition-colors flex items-center justify-center gap-2"
+            >
+              <span className="material-symbols-outlined">chat</span>
+              Enquire on WhatsApp
+            </a>
+          ) : (
+            <Link
+              href="/contact"
+              className="flex-1 bg-primary text-surface px-6 py-4 rounded-full font-label-lg text-label-lg uppercase tracking-wider hover:bg-tertiary transition-colors flex items-center justify-center gap-2"
+            >
+              <span className="material-symbols-outlined">mail</span>
+              Enquire
+            </Link>
+          )}
           <button
             onClick={() => toggleWishlist(product.id)}
             aria-label="Save to Wishlist"
@@ -179,15 +163,13 @@ export default function ProductActions({ product }: ProductActionsProps) {
             {isLikePending ? <Spinner size={22} /> : <span className={`material-symbols-outlined text-[24px] transition-transform duration-200 ${isSaved ? 'font-variation-fill-1 scale-110' : ''}`}>favorite</span>}
           </button>
         </div>
-        <button
-          onClick={handleBuyNow}
-          disabled={isSoldOut || buyingNow}
-          aria-busy={buyingNow || undefined}
-          className="flex-1 bg-secondary text-white px-6 py-4 rounded-full font-label-lg text-label-lg uppercase tracking-wider hover:bg-secondary-fixed-dim transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        <Link
+          href="/book-appointment"
+          className="flex-1 border border-secondary text-secondary px-6 py-4 rounded-full font-label-lg text-label-lg uppercase tracking-wider hover:bg-secondary-container/20 transition-colors flex items-center justify-center gap-2"
         >
-          {buyingNow ? <Spinner size={22} /> : <span className="material-symbols-outlined">bolt</span>}
-          {buyingNow ? 'Opening checkout…' : 'Buy Now'}
-        </button>
+          <span className="material-symbols-outlined">event</span>
+          Book Boutique / Video Appointment
+        </Link>
       </div>
 
       <div className="bg-surface-container-low p-4 rounded-xl border border-secondary/40 text-center space-y-2 mt-4">
