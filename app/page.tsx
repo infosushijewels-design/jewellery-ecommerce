@@ -7,6 +7,7 @@ import Campaign from '@/components/home/Campaign';
 import Bestsellers from '@/components/home/Bestsellers';
 import Editorial from '@/components/home/Editorial';
 import Materials from '@/components/home/Materials';
+import ShopByDiamond from '@/components/home/ShopByDiamond';
 import FestiveOffer from '@/components/home/FestiveOffer';
 import GiftFinder from '@/components/home/GiftFinder';
 import Heritage from '@/components/home/Heritage';
@@ -30,6 +31,7 @@ export default function Home() {
         <Bestsellers />
         <Editorial />
         <Materials />
+        <ShopByDiamond />
         <FestiveOffer />
         <GiftFinder />
         <Heritage />
