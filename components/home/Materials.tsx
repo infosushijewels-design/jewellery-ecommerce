@@ -12,7 +12,7 @@ export default function Materials() {
           <img className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="/images/yellow_gold.jpg" alt="Yellow Gold" />
           <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-transparent to-transparent flex flex-col justify-end p-3 sm:p-5 text-surface">
             <span className="font-label-sm text-[8px] sm:text-label-sm text-secondary-fixed tracking-wider uppercase">Pure Gold</span>
-            <h3 className="font-headline-sm text-[13px] sm:text-headline-sm mt-0.5 sm:mt-1">Yellow Gold (22K &amp; 18K)</h3>
+            <h3 className="font-headline-sm text-[14px] sm:text-headline-sm mt-0.5 sm:mt-1">Yellow Gold</h3>
             <p className="font-body-sm text-[11px] sm:text-body-sm opacity-80 mt-0.5 sm:mt-1 hidden sm:block">Warm heritage sheen with government BIS Hallmarking.</p>
           </div>
         </a>
@@ -22,27 +22,27 @@ export default function Materials() {
           <img className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=800&q=80" alt="White Gold" />
           <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-transparent to-transparent flex flex-col justify-end p-3 sm:p-5 text-surface">
             <span className="font-label-sm text-[8px] sm:text-label-sm text-secondary-fixed tracking-wider uppercase">Precious White</span>
-            <h3 className="font-headline-sm text-[13px] sm:text-headline-sm mt-0.5 sm:mt-1">White Gold (18K &amp; 14K)</h3>
+            <h3 className="font-headline-sm text-[14px] sm:text-headline-sm mt-0.5 sm:mt-1">White Gold</h3>
             <p className="font-body-sm text-[11px] sm:text-body-sm opacity-80 mt-0.5 sm:mt-1 hidden sm:block">Lustrous rhodium finish with contemporary modern brilliance.</p>
           </div>
         </a>
 
         {/* Panel 3: Rose Gold */}
         <a className="group relative rounded-xl overflow-hidden aspect-[3/4] sm:aspect-[4/5] bg-surface-container border border-outline-variant/50" href="/search?q=rose%20gold">
-          <img className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80" alt="Rose Gold Elegance" />
+          <img className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80" alt="Rose Gold" />
           <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-transparent to-transparent flex flex-col justify-end p-3 sm:p-5 text-surface">
             <span className="font-label-sm text-[8px] sm:text-label-sm text-secondary-fixed tracking-wider uppercase">Rose Gold</span>
-            <h3 className="font-headline-sm text-[13px] sm:text-headline-sm mt-0.5 sm:mt-1">Rose Gold Elegance</h3>
+            <h3 className="font-headline-sm text-[14px] sm:text-headline-sm mt-0.5 sm:mt-1">Rose Gold</h3>
             <p className="font-body-sm text-[11px] sm:text-body-sm opacity-80 mt-0.5 sm:mt-1 hidden sm:block">Subtle blush alloys formulated for daily skin comfort.</p>
           </div>
         </a>
 
         {/* Panel 4: Three Tone */}
         <a className="group relative rounded-xl overflow-hidden aspect-[3/4] sm:aspect-[4/5] bg-surface-container border border-outline-variant/50" href="/search?q=three%20tone">
-          <img className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://images.unsplash.com/photo-1603561591411-07134e71a2a9?auto=format&fit=crop&w=800&q=80" alt="Three Tone Gold" />
+          <img className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://images.unsplash.com/photo-1603561591411-07134e71a2a9?auto=format&fit=crop&w=800&q=80" alt="Three Tone" />
           <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-transparent to-transparent flex flex-col justify-end p-3 sm:p-5 text-surface">
             <span className="font-label-sm text-[8px] sm:text-label-sm text-secondary-fixed tracking-wider uppercase">Tricolor Harmony</span>
-            <h3 className="font-headline-sm text-[13px] sm:text-headline-sm mt-0.5 sm:mt-1">Three Tone Gold</h3>
+            <h3 className="font-headline-sm text-[14px] sm:text-headline-sm mt-0.5 sm:mt-1">Three Tone</h3>
             <p className="font-body-sm text-[11px] sm:text-body-sm opacity-80 mt-0.5 sm:mt-1 hidden sm:block">Exquisite harmony of yellow, white, and rose gold in one piece.</p>
           </div>
         </a>
