@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="1200" height="675">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FCFAF7"/>
+      <stop offset="100%" stop-color="#F5EFE6"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#C5A059"/>
+      <stop offset="50%" stop-color="#DFBA73"/>
+      <stop offset="100%" stop-color="#B88F46"/>
+    </linearGradient>
+    <linearGradient id="photoOverlay" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="60%" stop-color="#000000" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#1A1215" stop-opacity="0.85"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="16" stdDeviation="24" flood-color="#2D2024" flood-opacity="0.08"/>
+    </filter>
+    <clipPath id="photoClip">
+      <rect x="70" y="70" width="500" height="535" rx="16"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background Canvas -->
+  <rect width="1200" height="675" fill="url(#bgGrad)"/>
+  
+  <!-- Subtle Ornamental Outer Border -->
+  <rect x="24" y="24" width="1152" height="627" rx="20" fill="none" stroke="#E8DCD0" stroke-width="1.5"/>
+  <rect x="32" y="32" width="1136" height="611" rx="16" fill="none" stroke="#C5A059" stroke-opacity="0.25" stroke-dasharray="8 6"/>
+
+  <!-- Main Card Container -->
+  <rect x="50" y="50" width="1100" height="575" rx="20" fill="#FFFFFF" filter="url(#cardShadow)"/>
+  <rect x="50" y="50" width="1100" height="575" rx="20" fill="none" stroke="#EFE6DC" stroke-width="1.5"/>
+
+  <!-- Left: Luxury High-Fashion / Artisan Photo -->
+  <g clip-path="url(#photoClip)">
+    <image href="https://images.unsplash.com/photo-1541123437800-1bb1317badc2?auto=format&amp;fit=crop&amp;w=1000&amp;q=80" x="70" y="70" width="500" height="535" preserveAspectRatio="xMidYMid slice"/>
+    <rect x="70" y="70" width="500" height="535" fill="url(#photoOverlay)"/>
+    
+    <!-- Photo Tag Badge -->
+    <rect x="96" y="96" width="180" height="28" rx="14" fill="#2D2024" fill-opacity="0.75" stroke="#DFBA73" stroke-width="1"/>
+    <text x="186" y="115" font-family="'Cinzel', 'Playfair Display', Georgia, serif" font-size="10.5" fill="#DFBA73" letter-spacing="2" text-anchor="middle" font-weight="600">ATELIER HERITAGE</text>
+
+    <!-- Overlay Caption -->
+    <text x="96" y="540" font-family="'Cinzel', 'Playfair Display', Georgia, serif" font-size="12" fill="#DFBA73" letter-spacing="3" font-weight="600">HANDCRAFTED IN KOTA</text>
+    <text x="96" y="572" font-family="'Playfair Display', Georgia, serif" font-size="22" fill="#FFFFFF" font-weight="500">The Karigar's Master Touch</text>
+  </g>
+
+  <!-- Right: Refined Editorial Story Content -->
+  <!-- Eyebrow -->
+  <text x="620" y="130" font-family="'Cinzel', 'Playfair Display', Georgia, serif" font-size="11.5" fill="#C5A059" letter-spacing="3.5" font-weight="700">THE ATELIER PHILOSOPHY</text>
+
+  <!-- Headline -->
+  <text x="620" y="180" font-family="'Playfair Display', Georgia, serif" font-size="34" fill="#2D2024" font-weight="600">Where Royal Legacy Meets</text>
+  <text x="620" y="222" font-family="'Playfair Display', Georgia, serif" font-size="34" fill="#2D2024" font-weight="600">Modern Diamond Brilliance</text>
+
+  <!-- Gold Accent Divider -->
+  <line x1="620" y1="250" x2="720" y2="250" stroke="url(#goldGrad)" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Quotation Mark Decor -->
+  <text x="618" y="305" font-family="Georgia, serif" font-size="44" fill="#C5A059" fill-opacity="0.5">“</text>
+
+  <!-- Quote -->
+  <text x="642" y="295" font-family="'Playfair Display', Georgia, serif" font-size="18.5" fill="#2D2024" font-style="italic" font-weight="500">Fine jewellery is not merely an ornament;</text>
+  <text x="642" y="322" font-family="'Playfair Display', Georgia, serif" font-size="18.5" fill="#2D2024" font-style="italic" font-weight="500">it is an intimate heirloom of emotion,</text>
+  <text x="642" y="349" font-family="'Playfair Display', Georgia, serif" font-size="18.5" fill="#2D2024" font-style="italic" font-weight="500">crafted to carry your legacy for generations.</text>
+
+  <!-- Narrative Body -->
+  <text x="620" y="405" font-family="'Inter', system-ui, sans-serif" font-size="13.5" fill="#6B5E62" line-height="1.6">
+    <tspan x="620" dy="0">Rooted in Rajasthan's storied traditions, every Sushi Jewels</tspan>
+    <tspan x="620" dy="22">masterpiece harmonizes 100% BIS 916 hallmarked purity</tspan>
+    <tspan x="620" dy="22">with ethically certified natural and lab-grown solitaires.</tspan>
+  </text>
+
+  <!-- Founder Signature Strip -->
+  <g transform="translate(620, 480)">
+    <line x1="0" y1="0" x2="480" y2="0" stroke="#EFE6DC" stroke-width="1"/>
+    
+    <text x="0" y="32" font-family="'Playfair Display', Georgia, serif" font-size="16" fill="#2D2024" font-weight="600">Sushi Jewels Private Atelier</text>
+    <text x="0" y="50" font-family="'Inter', system-ui, sans-serif" font-size="11" fill="#9C8E93" letter-spacing="1">FOUNDER &amp; MASTER CRAFTSMEN</text>
+
+    <!-- Luxury Pill Button -->
+    <rect x="330" y="15" width="150" height="42" rx="21" fill="#2D2024"/>
+    <text x="405" y="41" font-family="'Inter', system-ui, sans-serif" font-size="11" fill="#FFFFFF" letter-spacing="1.5" text-anchor="middle" font-weight="600">READ STORY →</text>
+  </g>
+
+</svg>

@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="1200" height="675">
+  <defs>
+    <linearGradient id="bgG" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FCFAF7"/>
+      <stop offset="100%" stop-color="#F6EFE6"/>
+    </linearGradient>
+    <linearGradient id="goldG" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#C5A059"/>
+      <stop offset="50%" stop-color="#DFBA73"/>
+      <stop offset="100%" stop-color="#B88F46"/>
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#000000" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#1A1215" stop-opacity="0.9"/>
+    </linearGradient>
+    <filter id="shadowF" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="20" flood-color="#2D2024" flood-opacity="0.07"/>
+    </filter>
+    <clipPath id="c1"><rect x="60" y="210" width="250" height="320" rx="16"/></clipPath>
+    <clipPath id="c2"><rect x="330" y="210" width="250" height="320" rx="16"/></clipPath>
+    <clipPath id="c3"><rect x="600" y="210" width="250" height="320" rx="16"/></clipPath>
+    <clipPath id="c4"><rect x="870" y="210" width="250" height="320" rx="16"/></clipPath>
+  </defs>
+
+  <!-- Background Canvas -->
+  <rect width="1200" height="675" fill="url(#bgG)"/>
+  
+  <!-- Outer Decorative Border -->
+  <rect x="24" y="24" width="1152" height="627" rx="20" fill="none" stroke="#EFE6DC" stroke-width="1.5"/>
+
+  <!-- Section Header -->
+  <text x="600" y="80" font-family="'Cinzel', 'Playfair Display', Georgia, serif" font-size="12" fill="#C5A059" letter-spacing="4" text-anchor="middle" font-weight="700">THE ART OF GIFTING</text>
+  <text x="600" y="125" font-family="'Playfair Display', Georgia, serif" font-size="34" fill="#2D2024" text-anchor="middle" font-weight="600">Curated Treasures for Cherished Milestones</text>
+  <text x="600" y="160" font-family="'Inter', system-ui, sans-serif" font-size="14" fill="#6B5E62" text-anchor="middle">
+    Skip the complicated forms — explore curated edits wrapped in our signature velvet packaging with wax-sealed certification.
+  </text>
+
+  <!-- 4 Compact Curated Gift Cards (Swipeable on mobile, 4-col on desktop) -->
+
+  <!-- Card 1: Anniversary & Love -->
+  <g filter="url(#shadowF)">
+    <g clip-path="url(#c1)">
+      <image href="https://images.unsplash.com/photo-1603561591411-07134e71a2a9?auto=format&amp;fit=crop&amp;w=600&amp;q=80" x="60" y="210" width="250" height="320" preserveAspectRatio="xMidYMid slice"/>
+      <rect x="60" y="210" width="250" height="320" fill="url(#cardGrad)"/>
+      <rect x="80" y="230" width="110" height="24" rx="12" fill="#2D2024" fill-opacity="0.8" stroke="#DFBA73" stroke-width="0.8"/>
+      <text x="135" y="246" font-family="'Cinzel', Georgia, serif" font-size="9" fill="#DFBA73" letter-spacing="1.5" text-anchor="middle" font-weight="600">FOR LOVE</text>
+      <text x="80" y="465" font-family="'Playfair Display', Georgia, serif" font-size="20" fill="#FFFFFF" font-weight="600">Anniversary Edits</text>
+      <text x="80" y="490" font-family="'Inter', sans-serif" font-size="11.5" fill="#E8DCD0">Solitaires &amp; Eternity Bands</text>
+      <text x="80" y="514" font-family="'Inter', sans-serif" font-size="11" fill="#DFBA73" font-weight="600">EXPLORE GIFTS →</text>
+    </g>
+    <rect x="60" y="210" width="250" height="320" rx="16" fill="none" stroke="#EFE6DC" stroke-width="1.5"/>
+  </g>
+
+  <!-- Card 2: Bridal & Wedding -->
+  <g filter="url(#shadowF)">
+    <g clip-path="url(#c2)">
+      <image href="https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&amp;fit=crop&amp;w=600&amp;q=80" x="330" y="210" width="250" height="320" preserveAspectRatio="xMidYMid slice"/>
+      <rect x="330" y="210" width="250" height="320" fill="url(#cardGrad)"/>
+      <rect x="350" y="230" width="110" height="24" rx="12" fill="#2D2024" fill-opacity="0.8" stroke="#DFBA73" stroke-width="0.8"/>
+      <text x="405" y="246" font-family="'Cinzel', Georgia, serif" font-size="9" fill="#DFBA73" letter-spacing="1.5" text-anchor="middle" font-weight="600">ROYAL CRAFT</text>
+      <text x="350" y="465" font-family="'Playfair Display', Georgia, serif" font-size="20" fill="#FFFFFF" font-weight="600">Wedding Heirlooms</text>
+      <text x="350" y="490" font-family="'Inter', sans-serif" font-size="11.5" fill="#E8DCD0">Polki &amp; Bridal Diamond Sets</text>
+      <text x="350" y="514" font-family="'Inter', sans-serif" font-size="11" fill="#DFBA73" font-weight="600">EXPLORE GIFTS →</text>
+    </g>
+    <rect x="330" y="210" width="250" height="320" rx="16" fill="none" stroke="#EFE6DC" stroke-width="1.5"/>
+  </g>
+
+  <!-- Card 3: Everyday Luxury Under 50k -->
+  <g filter="url(#shadowF)">
+    <g clip-path="url(#c3)">
+      <image href="https://images.unsplash.com/photo-1611591475152-4735661db190?auto=format&amp;fit=crop&amp;w=600&amp;q=80" x="600" y="210" width="250" height="320" preserveAspectRatio="xMidYMid slice"/>
+      <rect x="600" y="210" width="250" height="320" fill="url(#cardGrad)"/>
+      <rect x="620" y="230" width="110" height="24" rx="12" fill="#2D2024" fill-opacity="0.8" stroke="#DFBA73" stroke-width="0.8"/>
+      <text x="675" y="246" font-family="'Cinzel', Georgia, serif" font-size="9" fill="#DFBA73" letter-spacing="1.5" text-anchor="middle" font-weight="600">EVERYDAY</text>
+      <text x="620" y="465" font-family="'Playfair Display', Georgia, serif" font-size="20" fill="#FFFFFF" font-weight="600">Daily Diamonds</text>
+      <text x="620" y="490" font-family="'Inter', sans-serif" font-size="11.5" fill="#E8DCD0">Minimalist Bracelets &amp; Studs</text>
+      <text x="620" y="514" font-family="'Inter', sans-serif" font-size="11" fill="#DFBA73" font-weight="600">EXPLORE GIFTS →</text>
+    </g>
+    <rect x="600" y="210" width="250" height="320" rx="16" fill="none" stroke="#EFE6DC" stroke-width="1.5"/>
+  </g>
+
+  <!-- Card 4: Bespoke Monogram & Personalized -->
+  <g filter="url(#shadowF)">
+    <g clip-path="url(#c4)">
+      <image href="https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&amp;fit=crop&amp;w=600&amp;q=80" x="870" y="210" width="250" height="320" preserveAspectRatio="xMidYMid slice"/>
+      <rect x="870" y="210" width="250" height="320" fill="url(#cardGrad)"/>
+      <rect x="890" y="230" width="110" height="24" rx="12" fill="#2D2024" fill-opacity="0.8" stroke="#DFBA73" stroke-width="0.8"/>
+      <text x="945" y="246" font-family="'Cinzel', Georgia, serif" font-size="9" fill="#DFBA73" letter-spacing="1.5" text-anchor="middle" font-weight="600">CUSTOM</text>
+      <text x="890" y="465" font-family="'Playfair Display', Georgia, serif" font-size="20" fill="#FFFFFF" font-weight="600">Personalized Gifts</text>
+      <text x="890" y="490" font-family="'Inter', sans-serif" font-size="11.5" fill="#E8DCD0">Engravings &amp; Custom Initials</text>
+      <text x="890" y="514" font-family="'Inter', sans-serif" font-size="11" fill="#DFBA73" font-weight="600">CUSTOMIZE NOW →</text>
+    </g>
+    <rect x="870" y="210" width="250" height="320" rx="16" fill="none" stroke="#EFE6DC" stroke-width="1.5"/>
+  </g>
+
+  <!-- Bottom Bar: Complimentary Luxury Unboxing & Concierge CTA -->
+  <g transform="translate(60, 560)">
+    <rect width="1080" height="60" rx="14" fill="#FFFFFF" stroke="#EFE6DC" stroke-width="1"/>
+    
+    <text x="30" y="36" font-family="'Inter', sans-serif" font-size="12.5" fill="#2D2024" font-weight="600">
+      🎁 Complimentary Luxury Velvet Keepsake Box &amp; Personalized Calligraphy Note with Every Gift
+    </text>
+
+    <!-- WhatsApp Gift Specialist CTA -->
+    <rect x="860" y="10" width="200" height="40" rx="20" fill="#1A4D2E"/>
+    <text x="960" y="35" font-family="'Inter', sans-serif" font-size="11.5" fill="#FFFFFF" letter-spacing="1" text-anchor="middle" font-weight="600">
+      💬 WhatsApp Concierge
+    </text>
+  </g>
+
+</svg>
