@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -19,7 +19,7 @@ export default function FestiveOffer() {
   const trustBadges = [
     { icon: 'verified', label: '100% BIS 916 Hallmarked Gold' },
     { icon: 'local_shipping', label: 'Free Insured Express Delivery' },
-    { icon: 'currency_exchange', label: 'Lifetime Buyback Guarantee' },
+    { icon: 'diamond', label: '100% Certified Diamonds' },
   ];
 
   return (

@@ -58,7 +58,7 @@ export default function Footer() {
           <Link className="font-label-sm text-label-sm text-surface-dim hover:text-surface transition-colors" href="/terms">Terms &amp; Conditions</Link>
           <Link className="font-label-sm text-label-sm text-surface-dim hover:text-surface transition-colors" href="/privacy-policy">Privacy Policy</Link>
           <Link className="font-label-sm text-label-sm text-surface-dim hover:text-surface transition-colors" href="/shipping-policy">Shipping Policy</Link>
-          <Link className="font-label-sm text-label-sm text-surface-dim hover:text-surface transition-colors" href="/return-policy">Returns &amp; Exchanges</Link>
+          <Link className="font-label-sm text-label-sm text-surface-dim hover:text-surface transition-colors" href="/return-policy">Return Policy</Link>
         </div>
       </div>
     </footer>

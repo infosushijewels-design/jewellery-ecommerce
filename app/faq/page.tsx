@@ -74,25 +74,6 @@ const faqCategories: FaqCategory[] = [
     ],
   },
   {
-    id: 'returns',
-    label: 'Returns, Lifetime Buyback & Exchanges',
-    icon: 'autorenew',
-    questions: [
-      {
-        question: 'What is your return policy?',
-        answer: 'We offer a 30-day hassle-free return and exchange window from the date of delivery, provided the piece is unworn and in its original packaging with all certificates.',
-      },
-      {
-        question: 'Do you offer a lifetime buyback guarantee?',
-        answer: 'Yes. We buy back gold at 100% of its prevailing market value and diamonds at 90% of the original certified benchmark value, for exchange or refund, for the lifetime of the piece.',
-      },
-      {
-        question: 'Are custom or engraved pieces returnable?',
-        answer: 'Custom-designed, resized, or engraved items are non-returnable, as they are made specifically to your specifications and cannot be resold.',
-      },
-    ],
-  },
-  {
     id: 'payments',
     label: 'Payments & Taxes',
     icon: 'receipt_long',
@@ -133,7 +114,7 @@ export default function FaqPage() {
           <span className="font-label-sm text-label-sm text-secondary tracking-widest uppercase">Support</span>
           <h1 className="font-headline-lg text-[28px] sm:text-display-md text-primary mt-2">Frequently Asked Questions</h1>
           <p className="font-body-md text-body-md text-on-surface-variant mt-4 leading-relaxed">
-            Everything you need to know about purity, shipping, sizing, returns, and payments.
+            Everything you need to know about purity, shipping, sizing, customization, and payments.
           </p>
         </div>
 

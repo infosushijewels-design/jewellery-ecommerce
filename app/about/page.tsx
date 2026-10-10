@@ -43,7 +43,7 @@ const certifications = [
   {
     icon: 'workspace_premium',
     title: 'Purity Guarantee',
-    description: 'Every invoice discloses exact metal weight, purity, and diamond certification numbers — full transparency, with a lifetime buyback promise to match.',
+    description: 'Every invoice discloses exact metal weight, purity, and diamond certification numbers — full transparency and certified authenticity on every heirloom.',
   },
 ];
 

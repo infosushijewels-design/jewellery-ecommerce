@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from 'next/link';
 import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
@@ -8,11 +8,11 @@ export default function TrustMatrix() {
   const { store } = useStoreSettings();
 
   const promises = [
-    { icon: 'assignment_return', title: 'Easy Returns & Exchange', href: '/return-policy' },
-    { icon: 'verified', title: 'Certified Jewellery', href: '/terms' },
-    { icon: 'diamond', title: '100% Natural Diamonds', href: '/search?q=diamond' },
+    { icon: 'verified', title: '100% Certified Jewellery', href: '/terms' },
     { icon: 'workspace_premium', title: 'BIS Hallmarked Gold', href: '/terms' },
-    { icon: 'currency_exchange', title: 'Lifetime Exchange & Buyback*', href: '/return-policy' },
+    { icon: 'diamond', title: 'Certified Diamonds & Gems', href: '/search?q=diamond' },
+    { icon: 'local_shipping', title: 'Pan-India Insured Shipping', href: '/shipping-policy' },
+    { icon: 'draw', title: 'Bespoke Custom Atelier', href: '/#customize-design' },
   ];
 
   // Duplicate for seamless infinite loop
@@ -60,7 +60,7 @@ export default function TrustMatrix() {
           </ul>
         </div>
 
-        <p className="text-center text-label-sm text-on-surface-variant/70 mt-8">*As per our return &amp; buyback policy.</p>
+        <p className="text-center text-label-sm text-on-surface-variant/70 mt-8">*100% Certified authenticity and insured transit on every order.</p>
       </div>
 
       <style jsx>{`

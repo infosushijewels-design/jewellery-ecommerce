@@ -243,7 +243,7 @@ export default function AuthPanel({ initialMode }: { initialMode: Mode }) {
             {[
               ['verified', 'BIS 916 Hallmarked Gold'],
               ['diamond', 'Certified Natural Diamonds'],
-              ['autorenew', '15-Day Easy Returns'],
+              ['local_shipping', 'Complimentary Insured Shipping'],
             ].map(([icon, text]) => (
               <li key={text} className="flex items-center gap-3 text-body-md">
                 <span className="w-8 h-8 border border-surface/20 bg-surface/5 flex items-center justify-center">
