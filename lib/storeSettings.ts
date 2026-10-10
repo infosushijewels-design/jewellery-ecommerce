@@ -16,6 +16,7 @@ export interface StoreSettings {
   contact: {
     email: string;
     phone: string;
+    phoneSecondary?: string;
     whatsapp: string;
     address: string;
     hoursWeekdays: string;
@@ -87,9 +88,10 @@ export const DEFAULT_STORE_SETTINGS: StoreSettings = {
   },
   contact: {
     email: 'concierge@sushijewels.com',
-    phone: '+91 91669 67234',
+    phone: '+91 91191 87655',
+    phoneSecondary: '+91 91669 67234',
     whatsapp: '919166967234',
-    address: '2Ch4 Dadabari Main Road, 3rd Floor, Pukhraj Prime',
+    address: '2Ch4 Dadabari Main Road, 3rd Floor, Pukhraj Prime, Kota, Rajasthan',
     hoursWeekdays: 'Mon – Sat: 10:00 AM – 7:00 PM (IST)',
     hoursSunday: '',
   },

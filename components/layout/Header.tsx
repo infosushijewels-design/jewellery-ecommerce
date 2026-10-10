@@ -219,14 +219,6 @@ export default function Header() {
 
           {/* Trailing Icons */}
           <div className="flex items-center ml-auto lg:ml-0">
-            <Link
-              href="/stores"
-              className="h-10 px-2 sm:px-3 flex items-center gap-1.5 text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface-container"
-              title="Find a store"
-            >
-              <span className="material-symbols-outlined text-[22px]">location_on</span>
-              <span className="hidden xl:inline font-label-md text-label-md uppercase tracking-wider">Stores</span>
-            </Link>
             {user ? (
               <div ref={userMenuRef} className="relative">
                 <button
@@ -418,10 +410,6 @@ export default function Header() {
               </div>
             )}
 
-            <Link href="/stores" onClick={closeMobileMenu} className="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-label-lg text-label-lg hover:bg-surface-container-low hover:text-primary transition-colors">
-              <span className="material-symbols-outlined text-[20px]">location_on</span>
-              Store Locator
-            </Link>
             <Link href="/wishlist" onClick={closeMobileMenu} className="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-label-lg text-label-lg hover:bg-surface-container-low hover:text-primary transition-colors">
               <span className="material-symbols-outlined text-secondary text-[20px]">favorite</span>
               Wishlist

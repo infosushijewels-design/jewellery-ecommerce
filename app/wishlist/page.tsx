@@ -88,7 +88,7 @@ export default function WishlistPage() {
             <span className="material-symbols-outlined text-[48px] text-outline mb-4">heart_broken</span>
             <h3 className="font-headline-sm text-headline-sm text-primary mb-2">Your wishlist is empty</h3>
             <p className="text-on-surface-variant font-body-sm text-body-sm mb-6">Explore our collections and find something you love.</p>
-            <Link href="/new-arrivals" className="bg-primary text-surface px-6 py-3 rounded-full font-label-md uppercase hover:bg-tertiary transition-colors">
+            <Link href="/collections" className="bg-primary text-surface px-6 py-3 rounded-full font-label-md uppercase hover:bg-tertiary transition-colors">
               Discover Jewellery
             </Link>
           </div>

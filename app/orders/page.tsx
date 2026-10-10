@@ -79,7 +79,7 @@ export default function MyOrdersPage() {
             <p className="text-sm text-on-surface-variant mt-1">Review your bespoke orders and real-time delivery status.</p>
           </div>
           <Link
-            href="/new-arrivals"
+            href="/collections"
             className="self-start sm:self-auto bg-surface border border-outline-variant hover:border-primary text-primary px-5 py-2 rounded-full text-xs font-label-md uppercase tracking-wider transition-colors flex items-center gap-1.5"
           >
             <span>Explore Catalog</span>
@@ -132,7 +132,7 @@ export default function MyOrdersPage() {
               You have not placed any orders yet. Discover our signature collections crafted with certified diamonds and BIS 916 gold.
             </p>
             <Link
-              href="/new-arrivals"
+              href="/collections"
               className="inline-block bg-primary text-surface px-6 py-3 rounded-full text-xs font-label-lg uppercase tracking-wider hover:bg-tertiary transition-colors shadow-sm"
             >
               Discover Jewellery

@@ -33,7 +33,7 @@ export default function GiftFinder() {
     if (budget.min > 0) params.set('minPrice', budget.min.toString());
     if (budget.max < 9999999) params.set('maxPrice', budget.max.toString());
     showToast(`Finding perfect ${selectedOccasion} gifts for you...`, 'success');
-    router.push(`/new-arrivals?${params.toString()}`);
+    router.push(`/collections?${params.toString()}`);
   };
 
   return (

@@ -26,7 +26,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           <ol className="flex items-center space-x-2 text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant">
             <li><Link href="/" className="hover:text-primary transition-colors">Home</Link></li>
             <li><span className="text-outline">/</span></li>
-            <li><Link href="/new-arrivals" className="hover:text-primary transition-colors">Jewellery</Link></li>
+            <li><Link href="/collections" className="hover:text-primary transition-colors">Jewellery</Link></li>
             <li><span className="text-outline">/</span></li>
             <li aria-current="page" className="text-primary font-bold">{product.title}</li>
           </ol>

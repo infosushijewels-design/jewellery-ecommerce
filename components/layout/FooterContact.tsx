@@ -13,8 +13,10 @@ const ICONS: Record<string, string> = {
 /** Footer concierge block — contact details and social links come from Admin → Settings. */
 export default function FooterContact() {
   const { contact, social } = useStoreSettings();
-  const telHref = contact.phone.replace(/[^\d+]/g, '');
-  const waDigits = contact.whatsapp.replace(/\D/g, '');
+  const telHref = (contact.phone || '+91 91191 87655').replace(/[^\d+]/g, '');
+  const secondaryPhone = contact.phoneSecondary || '+91 91669 67234';
+  const secondaryTelHref = secondaryPhone.replace(/[^\d+]/g, '');
+  const waDigits = (contact.whatsapp || '919166967234').replace(/\D/g, '');
   const waNumber = waDigits.length === 10 ? `91${waDigits}` : waDigits;
 
   const links = [
@@ -26,7 +28,6 @@ export default function FooterContact() {
     { key: 'facebook', title: 'Facebook', href: social.facebook },
     { key: 'instagram', title: 'Instagram', href: social.instagram },
     { key: 'youtube', title: 'YouTube', href: social.youtube },
-
     { key: 'pinterest', title: 'Pinterest', href: social.pinterest },
   ].filter((l) => l.href.trim());
 
@@ -38,11 +39,14 @@ export default function FooterContact() {
           {[contact.hoursWeekdays, contact.hoursSunday].filter(Boolean).join('\n')}
         </p>
       )}
-      {contact.phone && (
-        <a className="font-headline-sm text-headline-sm text-secondary-fixed hover:text-surface transition-colors block mb-2" href={`tel:${telHref}`}>
-          {contact.phone}
+      <div className="space-y-1 mb-3">
+        <a className="font-headline-sm text-headline-sm text-secondary-fixed hover:text-surface transition-colors block" href={`tel:${telHref}`}>
+          {contact.phone || '+91 91191 87655'}
         </a>
-      )}
+        <a className="font-body-md text-body-md text-secondary-fixed hover:text-surface transition-colors block" href={`tel:${secondaryTelHref}`}>
+          {secondaryPhone}
+        </a>
+      </div>
       {contact.email && (
         <a className="font-body-sm text-body-sm text-surface-dim hover:text-secondary-fixed transition-colors block mb-2" href={`mailto:${contact.email}`}>
           {contact.email}

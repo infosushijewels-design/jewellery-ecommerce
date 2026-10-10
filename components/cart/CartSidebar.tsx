@@ -80,7 +80,7 @@ export default function CartSidebar() {
               Looks like you haven&apos;t added anything yet. Explore our hallmarked gold and natural diamond jewellery.
             </p>
             <Link
-              href="/new-arrivals"
+              href="/collections"
               onClick={closeCart}
               className="bg-primary text-surface px-7 py-3 font-label-md text-label-md uppercase tracking-wider hover:bg-tertiary transition-colors"
             >

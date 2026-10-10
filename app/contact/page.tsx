@@ -214,13 +214,13 @@ export default function ContactPage() {
                 <div className="flex gap-3">
                   <span className="material-symbols-outlined text-secondary text-[22px] shrink-0">location_on</span>
                   <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
-                    Sushi Jewels Atelier, 4th Floor, Zaveri Bazaar Heritage House, Mumbai, Maharashtra 400002, India
+                    2Ch4 Dadabari Main Road, 3rd Floor, Pukhraj Prime, Kota, Rajasthan
                   </p>
                 </div>
                 <div className="flex gap-3">
                   <span className="material-symbols-outlined text-secondary text-[22px] shrink-0">schedule</span>
                   <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
-                    Open Daily, 10:30 AM – 8:30 PM
+                    Mon – Sat: 10:00 AM – 7:00 PM (IST)
                   </p>
                 </div>
                 <div className="flex gap-3">
@@ -235,9 +235,13 @@ export default function ContactPage() {
             <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-xl p-6 sm:p-8">
               <h3 className="font-headline-sm text-headline-sm text-primary mb-5">Direct Contact</h3>
               <div className="space-y-3">
-                <a href="tel:+918001234567" className="flex items-center gap-3 font-body-sm text-body-sm text-on-surface hover:text-secondary transition-colors">
+                <a href="tel:+919119187655" className="flex items-center gap-3 font-body-sm text-body-sm text-on-surface hover:text-secondary transition-colors">
                   <span className="material-symbols-outlined text-secondary text-[22px]">call</span>
-                  +91 800 123 4567
+                  +91 91191 87655
+                </a>
+                <a href="tel:+919166967234" className="flex items-center gap-3 font-body-sm text-body-sm text-on-surface hover:text-secondary transition-colors">
+                  <span className="material-symbols-outlined text-secondary text-[22px]">call</span>
+                  +91 91669 67234
                 </a>
                 <a href="mailto:concierge@sushijewels.com" className="flex items-center gap-3 font-body-sm text-body-sm text-on-surface hover:text-secondary transition-colors">
                   <span className="material-symbols-outlined text-secondary text-[22px]">mail</span>

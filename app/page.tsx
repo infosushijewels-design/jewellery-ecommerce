@@ -12,7 +12,6 @@ import FestiveOffer from '@/components/home/FestiveOffer';
 import GiftFinder from '@/components/home/GiftFinder';
 import Heritage from '@/components/home/Heritage';
 import TrustMatrix from '@/components/home/TrustMatrix';
-import StoreLocator from '@/components/home/StoreLocator';
 import Testimonials from '@/components/home/Testimonials';
 import Footer from '@/components/layout/Footer';
 
@@ -36,7 +35,6 @@ export default function Home() {
         <GiftFinder />
         <Heritage />
         <TrustMatrix />
-        <StoreLocator />
         <Testimonials />
       </main>
       <Footer />
