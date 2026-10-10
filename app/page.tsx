@@ -9,7 +9,6 @@ import Editorial from '@/components/home/Editorial';
 import Materials from '@/components/home/Materials';
 import ShopByDiamond from '@/components/home/ShopByDiamond';
 import CustomizeDesignCard from '@/components/home/CustomizeDesignCard';
-import FestiveOffer from '@/components/home/FestiveOffer';
 import GiftFinder from '@/components/home/GiftFinder';
 import Heritage from '@/components/home/Heritage';
 import TrustMatrix from '@/components/home/TrustMatrix';
@@ -34,7 +33,6 @@ export default function Home() {
         <Materials />
         <ShopByDiamond />
         <CustomizeDesignCard />
-        <FestiveOffer />
         <GiftFinder />
         <Heritage />
         <TrustMatrix />
