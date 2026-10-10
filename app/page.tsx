@@ -3,7 +3,6 @@ import Header from '@/components/layout/Header';
 import Hero from '@/components/home/Hero';
 import Categories from '@/components/home/Categories';
 import Collections from '@/components/home/Collections';
-import NewArrivals from '@/components/home/NewArrivals';
 import Campaign from '@/components/home/Campaign';
 import Bestsellers from '@/components/home/Bestsellers';
 import Editorial from '@/components/home/Editorial';
@@ -27,7 +26,6 @@ export default function Home() {
         <Hero />
         <Categories />
         <Collections />
-        <NewArrivals />
         <Campaign />
         <Bestsellers />
         <Editorial />

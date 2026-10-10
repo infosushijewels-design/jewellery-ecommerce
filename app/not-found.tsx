@@ -21,10 +21,10 @@ export default function NotFound() {
             Return to Home
           </Link>
           <Link
-            href="/new-arrivals"
+            href="/collections"
             className="bg-transparent text-primary border border-outline-variant px-8 py-3 rounded-full font-label-lg text-label-lg uppercase tracking-wider hover:border-primary transition-colors"
           >
-            Shop New Arrivals
+            Explore Collections
           </Link>
         </div>
       </div>

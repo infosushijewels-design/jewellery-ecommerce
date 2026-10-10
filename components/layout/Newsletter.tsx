@@ -36,7 +36,7 @@ export default function Newsletter() {
         return;
       }
       setSubmitted(true);
-      showToast('✉️ Subscribed! Enjoy exclusive access to new arrivals.', 'success');
+      showToast('✉️ Subscribed! Enjoy exclusive access to new collections.', 'success');
       setEmail('');
       setTimeout(() => setSubmitted(false), 5000);
     } catch (err) {

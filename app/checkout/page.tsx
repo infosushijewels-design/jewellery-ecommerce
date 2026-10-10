@@ -367,7 +367,7 @@ export default function CheckoutPage() {
             <h2 className="text-title-lg font-title-lg text-primary mb-2">Your Jewellery Bag is Empty</h2>
             <p className="text-body-md text-on-surface-variant mb-6">Explore our curated collections of diamond and gold high jewellery.</p>
             <Link
-              href="/new-arrivals"
+              href="/collections"
               className="inline-block bg-primary text-surface px-8 py-3 rounded-full font-label-lg uppercase tracking-wider hover:bg-tertiary transition-colors"
             >
               Discover High Jewellery

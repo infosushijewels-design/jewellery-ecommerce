@@ -24,29 +24,6 @@ interface NavItem {
 
 const navLinks: NavItem[] = [
   {
-    label: 'New Arrivals',
-    href: '/new-arrivals',
-    dropdown: [
-      {
-        heading: 'Shop by Type',
-        links: [
-          { label: 'Latest Rings', href: '/new-arrivals?category=rings' },
-          { label: 'Latest Earrings', href: '/new-arrivals?category=earrings' },
-          { label: 'Latest Necklaces', href: '/new-arrivals?category=necklaces' },
-          { label: 'Latest Bangles', href: '/new-arrivals?category=bangles' },
-        ],
-      },
-      {
-        heading: 'Shop by Metal',
-        links: [
-          { label: 'Yellow Gold', href: '/new-arrivals?metal=18k-yellow' },
-          { label: 'Rose Gold', href: '/new-arrivals?metal=18k-rose' },
-          { label: 'White Gold', href: '/new-arrivals?metal=18k-white' },
-        ],
-      },
-    ],
-  },
-  {
     label: 'Rings',
     href: '/category/rings',
     dropdown: [

@@ -94,8 +94,8 @@ export const DEFAULT_STORE_SETTINGS: StoreSettings = {
     hoursSunday: '',
   },
   social: {
-    facebook: 'https://facebook.com',
-    instagram: 'https://instagram.com',
+    facebook: 'https://www.facebook.com/share/1FwpDokD8W/?mibextid=wwXIfr',
+    instagram: 'https://www.instagram.com/sushijewels?xtok=aGZtYTc1NmQ5M2kz',
     youtube: 'https://youtube.com',
     pinterest: '',
   },
@@ -127,9 +127,9 @@ export const DEFAULT_STORE_SETTINGS: StoreSettings = {
   announcement: {
     enabled: true,
     messages: [
-      'Complimentary Insured Shipping on Orders Above ₹2,000',
-      '100% Certified 18K/22K Gold & Natural Diamonds',
-      '15-Day Easy Returns',
+      'Complimentary Insured Shipping Pan-India',
+      '100% Certified Gold & Diamonds',
+      'BIS Hallmarked Authenticity Guaranteed',
     ],
   },
   appointments: {
