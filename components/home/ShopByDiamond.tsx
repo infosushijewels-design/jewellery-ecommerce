@@ -56,12 +56,12 @@ export default function ShopByDiamond() {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-5">
+      <div className="flex sm:grid sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-5 overflow-x-auto sm:overflow-x-visible pb-3 sm:pb-0 scrollbar-none snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0">
         {diamondCategories.map((item) => (
           <a
             key={item.id}
             href={item.href}
-            className="group relative rounded-xl overflow-hidden aspect-[3/4] sm:aspect-[4/5] bg-surface-container border border-outline-variant/50 hover:border-secondary/60 transition-all duration-300"
+            className="group relative rounded-xl overflow-hidden aspect-[3/4] sm:aspect-[4/5] bg-surface-container border border-outline-variant/50 hover:border-secondary/60 transition-all duration-300 w-[68vw] sm:w-auto flex-shrink-0 snap-start"
           >
             <img
               src={item.image}

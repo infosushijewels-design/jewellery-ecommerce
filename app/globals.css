@@ -241,7 +241,15 @@ html {
   --font-label-sm: 'AdminDigits', Manrope, sans-serif;
   --font-label-md: 'AdminDigits', Manrope, sans-serif;
   --font-label-lg: 'AdminDigits', Manrope, sans-serif;
-  font-family: 'AdminDigits', var(--default-font-family, ui-sans-serif, system-ui, sans-serif);
-  /* upright, evenly spaced figures so columns of amounts line up */
   font-variant-numeric: lining-nums tabular-nums;
 }
+
+/* Hide scrollbars on horizontal swipe rails */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+

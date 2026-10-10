@@ -15,21 +15,22 @@ export default async function Bestsellers() {
         <h2 className="font-headline-lg text-[24px] sm:text-headline-lg text-primary mt-1">Most Loved Creations</h2>
         <p className="font-body-md text-body-md text-on-surface-variant mt-2">Top-selling designs loved by thousands of happy customers across India.</p>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+      <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-6 overflow-x-auto sm:overflow-x-visible pb-3 sm:pb-0 scrollbar-none snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0">
         {products.map((product) => (
-          <ProductCard
-            key={product.id}
-            id={product.id}
-            imageSrc={product.image_url}
-            imageAlt={product.title}
-            badge={product.badge || undefined}
-            material={product.material}
-            title={product.title}
-            certification={product.certification || 'Verified'}
-            isNewArrival={product.is_new_arrival}
-            isFeatured={product.is_featured}
-            slug={product.slug}
-          />
+          <div key={product.id} className="w-[64vw] sm:w-auto flex-shrink-0 snap-start">
+            <ProductCard
+              id={product.id}
+              imageSrc={product.image_url}
+              imageAlt={product.title}
+              badge={product.badge || undefined}
+              material={product.material}
+              title={product.title}
+              certification={product.certification || 'Verified'}
+              isNewArrival={product.is_new_arrival}
+              isFeatured={product.is_featured}
+              slug={product.slug}
+            />
+          </div>
         ))}
       </div>
     </section>
