@@ -55,9 +55,26 @@ function CatImg({ src, alt }: { src: string; alt: string }) {
   );
 }
 
+const DESKTOP_ROW_SIZE = 5;
+
+function CategoryCircle({ cat, imageClass }: { cat: CategoryItem; imageClass: string }) {
+  return (
+    <Link href={cat.href} className="group flex flex-col items-center">
+      <div className={`${imageClass} rounded-full overflow-hidden bg-surface-container border border-outline-variant/60 p-0.5 sm:p-1 group-hover:border-secondary transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg`}>
+        <CatImg src={cat.image} alt={cat.name} />
+      </div>
+      <span className={`text-[10px] sm:text-label-lg text-primary mt-1.5 sm:mt-3 group-hover:text-secondary transition-colors text-center leading-tight w-full ${cat.bold ? 'font-semibold' : ''}`}>
+        {cat.name}
+      </span>
+    </Link>
+  );
+}
+
 export default function CategoryMarquee({ items }: { items: CategoryItem[] }) {
-  // Duplicated for seamless infinite loop
+  // Duplicated for seamless infinite loop (mobile/tablet marquee only)
   const marqueeItems = [...items, ...items];
+  const row1 = items.slice(0, DESKTOP_ROW_SIZE);
+  const row2 = items.slice(DESKTOP_ROW_SIZE);
 
   return (
     <section className="py-10 sm:py-16 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-16 relative" id="categories">
@@ -68,8 +85,8 @@ export default function CategoryMarquee({ items }: { items: CategoryItem[] }) {
         <p className="font-body-md text-body-md text-on-surface-variant mt-2">Discover beautiful jewellery designed for every day and special occasions.</p>
       </div>
 
-      {/* Marquee — works on both mobile & desktop */}
-      <div className="relative overflow-hidden">
+      {/* MOBILE & TABLET: auto-scrolling marquee (unchanged) */}
+      <div className="relative overflow-hidden lg:hidden">
         {/* Left fade edge */}
         <div
           className="pointer-events-none absolute left-0 top-0 h-full w-12 sm:w-20 z-10"
@@ -89,7 +106,7 @@ export default function CategoryMarquee({ items }: { items: CategoryItem[] }) {
               href={cat.href}
               className="group flex flex-col items-center flex-shrink-0 w-[72px] sm:w-[110px]"
             >
-              <div className="w-[60px] h-[60px] sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-full overflow-hidden bg-surface-container border border-outline-variant/60 p-0.5 sm:p-1 group-hover:border-secondary transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg">
+              <div className="w-[60px] h-[60px] sm:w-24 sm:h-24 rounded-full overflow-hidden bg-surface-container border border-outline-variant/60 p-0.5 sm:p-1 group-hover:border-secondary transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg">
                 <CatImg src={cat.image} alt={cat.name} />
               </div>
               <span className={`text-[10px] sm:text-label-lg text-primary mt-1.5 sm:mt-3 group-hover:text-secondary transition-colors text-center leading-tight w-full ${cat.bold ? 'font-semibold' : ''}`}>
@@ -98,6 +115,22 @@ export default function CategoryMarquee({ items }: { items: CategoryItem[] }) {
             </Link>
           ))}
         </div>
+      </div>
+
+      {/* DESKTOP: static balanced grid, 5 categories per row */}
+      <div className="hidden lg:flex flex-col items-center gap-y-10 max-w-5xl mx-auto">
+        <div className="flex justify-center gap-x-10 xl:gap-x-14">
+          {row1.map((cat) => (
+            <CategoryCircle key={cat.name} cat={cat} imageClass="w-24 h-24 xl:w-28 xl:h-28" />
+          ))}
+        </div>
+        {row2.length > 0 && (
+          <div className="flex justify-center gap-x-10 xl:gap-x-14">
+            {row2.map((cat) => (
+              <CategoryCircle key={cat.name} cat={cat} imageClass="w-24 h-24 xl:w-28 xl:h-28" />
+            ))}
+          </div>
+        )}
       </div>
 
       <style jsx>{`
