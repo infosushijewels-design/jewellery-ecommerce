@@ -3,7 +3,7 @@ import HomeCardSlider from './HomeCardSlider';
 import BestsellerCard from './BestsellerCard';
 
 export default async function Bestsellers() {
-  const products = (await getFeaturedProducts()).slice(0, 4);
+  const products = await getFeaturedProducts(); // query already limits to 4
 
   if (products.length === 0) {
     return null;

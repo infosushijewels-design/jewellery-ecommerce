@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from 'react';
 import Link from 'next/link';
 import Spinner from '@/components/ui/Spinner';
 import { useWishlist } from '@/lib/context/WishlistContext';
 import { useToast } from '@/lib/context/ToastContext';
+import ImgWithSkeleton from '@/components/ui/ImgWithSkeleton';
 
 interface BestsellerCardProps {
   id: string;
@@ -30,7 +30,6 @@ export default function BestsellerCard({ id, imageSrc, imageAlt, title, certific
   const isLikePending = pendingIds.has(id);
   const { showToast } = useToast();
   const isSaved = wishlistIds.has(id);
-  const [isLoaded, setIsLoaded] = useState(false);
 
   const optimizedImage = getOptimizedImageUrl(imageSrc);
 
@@ -48,18 +47,7 @@ export default function BestsellerCard({ id, imageSrc, imageAlt, title, certific
       {/* ── Image Block ── */}
       <div className="relative overflow-hidden">
         <Link href={`/product/${slug}`} className="block">
-          <div className="relative aspect-[3/4] w-full bg-[#F5F0EB] overflow-hidden">
-            <img
-              src={optimizedImage}
-              alt={imageAlt}
-              loading="lazy"
-              decoding="async"
-              onLoad={() => setIsLoaded(true)}
-              className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04] ${
-                isLoaded ? 'opacity-100' : 'opacity-70 blur-[3px]'
-              }`}
-            />
-          </div>
+          <ImgWithSkeleton src={optimizedImage} alt={imageAlt} />
         </Link>
 
         {/* Heart / Wishlist — top right */}

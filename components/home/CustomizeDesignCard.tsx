@@ -1,6 +1,11 @@
 'use client';
 
 import React, { useState, useRef, useTransition } from 'react';
+import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
+import { buildWhatsAppLink } from '@/lib/whatsapp';
+import { validateName, validatePhoneNumber } from '@/lib/checkoutValidation';
+
+const NOTES_MAX = 1000;
 
 const METALS = [
   { id: 'yellow-gold', label: 'Yellow Gold', color: '#D4AF37' },
@@ -23,6 +28,7 @@ const BUDGETS = [
 ];
 
 export default function CustomizeDesignCard() {
+  const { contact } = useStoreSettings();
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [metal, setMetal] = useState('Yellow Gold');
@@ -32,6 +38,8 @@ export default function CustomizeDesignCard() {
   const [phone, setPhone] = useState('');
   const [notes, setNotes] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -79,16 +87,18 @@ export default function CustomizeDesignCard() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) {
-      setError('Please enter your name.');
-      return;
-    }
-    const cleanPhone = phone.replace(/\D/g, '').slice(-10);
-    if (cleanPhone.length !== 10) {
-      setError('Please enter a valid 10-digit mobile number.');
+    if (isPending) return; // extra guard alongside the disabled submit button
+
+    const nameErr = validateName(name, 'name');
+    const phoneErr = validatePhoneNumber(phone);
+    setNameError(nameErr || null);
+    setPhoneError(phoneErr || null);
+    if (nameErr || phoneErr) {
+      setError(null);
       return;
     }
 
+    const cleanPhone = phone.replace(/\D/g, '').slice(-10);
     setError(null);
     startTransition(async () => {
       try {
@@ -117,10 +127,8 @@ export default function CustomizeDesignCard() {
     });
   };
 
-  const waNumber = '919166967234';
-  const waText = encodeURIComponent(
-    `Hello Sushi Jewels, I submitted a custom design request!\nName: ${name || 'Customer'}\nMetal: ${metal}\nStone: ${diamond}\nBudget: ${budget}\nI would like to discuss my custom jewellery piece.`
-  );
+  const waMessage = `Hello Sushi Jewels, I submitted a custom design request!\nName: ${name || 'Customer'}\nMetal: ${metal}\nStone: ${diamond}\nBudget: ${budget}\nI would like to discuss my custom jewellery piece.`;
+  const waLink = buildWhatsAppLink(contact.whatsapp, waMessage) || '';
 
   return (
     <section className="py-12 sm:py-20 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-16" id="customize-design">
@@ -152,7 +160,7 @@ export default function CustomizeDesignCard() {
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <a
-                href={`https://wa.me/${waNumber}?text=${waText}`}
+                href={waLink}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#1A4D2E] text-white font-label-md uppercase tracking-wider hover:bg-[#143B23] transition-colors shadow-sm"
@@ -169,6 +177,9 @@ export default function CustomizeDesignCard() {
                   setName('');
                   setPhone('');
                   setNotes('');
+                  setNameError(null);
+                  setPhoneError(null);
+                  setError(null);
                 }}
                 className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full border border-outline-variant/60 text-primary font-label-md uppercase tracking-wider hover:bg-surface-container transition-colors"
               >
@@ -325,20 +336,33 @@ export default function CustomizeDesignCard() {
               {/* Contact Information */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="font-label-md text-label-md text-primary uppercase tracking-wider block mb-1.5">
+                  <label htmlFor="cd-name" className="font-label-md text-label-md text-primary uppercase tracking-wider block mb-1.5">
                     Your Name *
                   </label>
                   <input
+                    id="cd-name"
                     type="text"
                     required
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => {
+                      setName(e.target.value);
+                      if (nameError) setNameError(null);
+                    }}
                     placeholder="e.g. Priya Sharma"
-                    className="w-full bg-surface border border-outline-variant/60 rounded-xl px-4 py-2.5 text-body-md text-primary focus:outline-none focus:border-secondary transition-colors"
+                    aria-invalid={nameError ? true : undefined}
+                    aria-describedby={nameError ? 'cd-name-error' : undefined}
+                    className={`w-full bg-surface border rounded-xl px-4 py-2.5 text-body-md text-primary focus:outline-none transition-colors ${
+                      nameError ? 'border-error focus:border-error' : 'border-outline-variant/60 focus:border-secondary'
+                    }`}
                   />
+                  {nameError && (
+                    <p id="cd-name-error" role="alert" className="mt-1.5 text-[12px] text-error">
+                      {nameError}
+                    </p>
+                  )}
                 </div>
                 <div>
-                  <label className="font-label-md text-label-md text-primary uppercase tracking-wider block mb-1.5">
+                  <label htmlFor="cd-phone" className="font-label-md text-label-md text-primary uppercase tracking-wider block mb-1.5">
                     Your Contact Number *
                   </label>
                   <div className="relative flex">
@@ -346,25 +370,40 @@ export default function CustomizeDesignCard() {
                       🇮🇳 +91
                     </span>
                     <input
+                      id="cd-phone"
                       type="tel"
                       required
                       maxLength={10}
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                      onChange={(e) => {
+                        setPhone(e.target.value.replace(/\D/g, ''));
+                        if (phoneError) setPhoneError(null);
+                      }}
                       placeholder="98765 43210"
-                      className="w-full bg-surface border border-outline-variant/60 rounded-r-xl px-4 py-2.5 text-body-md text-primary focus:outline-none focus:border-secondary transition-colors"
+                      aria-invalid={phoneError ? true : undefined}
+                      aria-describedby={phoneError ? 'cd-phone-error' : undefined}
+                      className={`w-full bg-surface border rounded-r-xl px-4 py-2.5 text-body-md text-primary focus:outline-none transition-colors ${
+                        phoneError ? 'border-error focus:border-error' : 'border-outline-variant/60 focus:border-secondary'
+                      }`}
                     />
                   </div>
+                  {phoneError && (
+                    <p id="cd-phone-error" role="alert" className="mt-1.5 text-[12px] text-error">
+                      {phoneError}
+                    </p>
+                  )}
                 </div>
               </div>
 
               {/* Special Instructions (Optional) */}
               <div>
-                <label className="font-label-md text-label-md text-primary uppercase tracking-wider block mb-1.5">
+                <label htmlFor="cd-notes" className="font-label-md text-label-md text-primary uppercase tracking-wider block mb-1.5">
                   Notes / Design Details <span className="text-on-surface-variant font-normal">(Optional)</span>
                 </label>
                 <textarea
+                  id="cd-notes"
                   rows={2}
+                  maxLength={NOTES_MAX}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Ring size, engraving, specific carat weight, or occasion..."

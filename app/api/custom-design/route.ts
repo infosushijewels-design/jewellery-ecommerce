@@ -1,26 +1,31 @@
 import { NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/serviceRole';
-import { normalizeIndianPhone } from '@/lib/checkoutValidation';
+import { normalizeIndianPhone, validateName, validatePhoneNumber } from '@/lib/checkoutValidation';
+
+const SELECTION_FIELD_MAX = 100; // metal/diamond/budget are chosen from a fixed UI list, never this long
+const NOTES_MAX = 1000;
 
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
     const name = String(formData.get('name') || '').trim();
     const phoneRaw = String(formData.get('phone') || '').trim();
-    const metal = String(formData.get('metal') || 'Yellow Gold').trim();
-    const diamond = String(formData.get('diamond') || 'Natural Diamond').trim();
-    const budget = String(formData.get('budget') || 'Flexible').trim();
-    const notes = String(formData.get('notes') || '').trim();
+    const metal = String(formData.get('metal') || 'Yellow Gold').trim().slice(0, SELECTION_FIELD_MAX);
+    const diamond = String(formData.get('diamond') || 'Natural Diamond').trim().slice(0, SELECTION_FIELD_MAX);
+    const budget = String(formData.get('budget') || 'Flexible').trim().slice(0, SELECTION_FIELD_MAX);
+    const notes = String(formData.get('notes') || '').trim().slice(0, NOTES_MAX);
     const file = formData.get('sketch') as File | null;
 
-    if (!name) {
-      return NextResponse.json({ success: false, error: 'Please enter your name.' }, { status: 400 });
+    const nameError = validateName(name, 'name');
+    if (nameError) {
+      return NextResponse.json({ success: false, error: nameError }, { status: 400 });
     }
 
-    const phone = normalizeIndianPhone(phoneRaw);
-    if (!phone) {
-      return NextResponse.json({ success: false, error: 'Please enter a valid 10-digit mobile number.' }, { status: 400 });
+    const phoneError = validatePhoneNumber(phoneRaw);
+    if (phoneError) {
+      return NextResponse.json({ success: false, error: phoneError }, { status: 400 });
     }
+    const phone = normalizeIndianPhone(phoneRaw)!; // validatePhoneNumber already confirmed this succeeds
 
     const admin = createServiceRoleClient();
     let imageUrl = '';

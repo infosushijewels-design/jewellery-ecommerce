@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useWishlist } from '@/lib/context/WishlistContext';
 import { useToast } from '@/lib/context/ToastContext';
+import ImgWithSkeleton from '@/components/ui/ImgWithSkeleton';
 
 interface ProductCardProps {
   id: string;
@@ -46,7 +47,6 @@ export default function ProductCard({
   const { showToast } = useToast();
   const router = useRouter();
   const isSaved = wishlistIds.has(id);
-  const [isLoaded, setIsLoaded] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
 
   const optimizedImage = getOptimizedImageUrl(imageSrc);
@@ -71,16 +71,7 @@ export default function ProductCard({
     <article className="group bg-white flex flex-col overflow-hidden hover:shadow-xl transition-shadow duration-300">
       <div className="relative overflow-hidden">
         <Link href={`/product/${slug}`} className="block">
-          <div className="relative aspect-[3/4] w-full bg-[#F5F0EB] overflow-hidden">
-            <img
-              src={optimizedImage}
-              alt={imageAlt}
-              loading="lazy"
-              decoding="async"
-              onLoad={() => setIsLoaded(true)}
-              className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04] ${isLoaded ? 'opacity-100' : 'opacity-70 blur-[3px]'}`}
-            />
-          </div>
+          <ImgWithSkeleton src={optimizedImage} alt={imageAlt} />
         </Link>
         <div className="absolute top-2.5 left-2.5 flex items-start z-10">
           {badge ? (

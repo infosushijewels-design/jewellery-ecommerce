@@ -52,9 +52,9 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters long.');
-      showToast('Password must be at least 6 characters long.', 'warning');
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters.');
+      showToast('Password must be at least 8 characters.', 'warning');
       return;
     }
 

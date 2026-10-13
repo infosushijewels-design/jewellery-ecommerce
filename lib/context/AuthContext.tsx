@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
 import { linkGuestOrdersForUser } from '@/lib/supabase/orderService';
@@ -35,9 +35,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(data ? { full_name: data.full_name ?? null, avatar_url: data.avatar_url ?? null } : null);
   }
 
-  const refreshProfile = async () => {
+  const refreshProfile = useCallback(async () => {
     if (user?.id) await fetchProfile(user.id);
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   useEffect(() => {
     if (user?.id) {
@@ -86,15 +87,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [supabase.auth]);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     await supabase.auth.signOut();
-  };
+  }, [supabase]);
 
-  return (
-    <AuthContext.Provider value={{ user, session, isLoading, profile, refreshProfile, signOut }}>
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo(
+    () => ({ user, session, isLoading, profile, refreshProfile, signOut }),
+    [user, session, isLoading, profile, refreshProfile, signOut]
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

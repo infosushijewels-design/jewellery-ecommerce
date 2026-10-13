@@ -1,5 +1,7 @@
 "use client";
 
+import { formatCurrency } from '@/lib/formatCurrency';
+
 interface CategoryDonutChartProps {
   data: { name: string; revenue: number; units: number }[];
 }
@@ -69,13 +71,13 @@ export default function CategoryDonutChart({ data }: CategoryDonutChartProps) {
               strokeDasharray={a.dash}
               strokeDashoffset={a.dashOffset}
             >
-              <title>{`${a.name}: ₹${a.revenue.toLocaleString('en-IN')} (${a.pct}%)`}</title>
+              <title>{`${a.name}: ${formatCurrency(a.revenue)} (${a.pct}%)`}</title>
             </circle>
           ))}
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
           <span className="font-label-sm text-[10px] uppercase tracking-widest text-[#2D2024]/50">Revenue</span>
-          <span className="font-headline-sm text-lg text-[#2D2024]">₹{total.toLocaleString('en-IN')}</span>
+          <span className="font-headline-sm text-lg text-[#2D2024]">{formatCurrency(total)}</span>
         </div>
       </div>
 

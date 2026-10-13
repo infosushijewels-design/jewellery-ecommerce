@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/lib/context/ToastContext';
 import { downloadCsv } from '@/lib/utils/csv';
+import { formatCurrency } from '@/lib/formatCurrency';
 import {
   EmptyState,
   LoadingState,
@@ -66,7 +67,7 @@ function summarize(row: AuditRow): string {
   const d = row.details || {};
   const label = typeof d.label === 'string' && d.label ? `“${d.label}”` : row.resource_id ? `#${row.resource_id.slice(0, 8)}` : '';
   if (row.action === 'refund') {
-    const amount = typeof d.amount === 'number' ? ` ₹${d.amount.toLocaleString('en-IN')}` : '';
+    const amount = typeof d.amount === 'number' ? ` ${formatCurrency(d.amount)}` : '';
     return `Refunded${amount} on order ${row.resource_id ? `#${row.resource_id.slice(0, 8)}` : ''}`.trim();
   }
   if (row.action === 'bulk_email') {

@@ -8,6 +8,7 @@ import { getOrderById, FullOrder } from '@/lib/supabase/orderService';
 import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/context/AuthContext';
+import { formatCurrency } from '@/lib/formatCurrency';
 
 export default function OrderTrackingPage() {
   const params = useParams();
@@ -212,7 +213,7 @@ export default function OrderTrackingPage() {
                             </div>
                           </div>
                           <div className="text-right flex-shrink-0">
-                            <span className="text-sm sm:text-base font-bold text-primary">₹{(Number(item.price) * item.quantity).toLocaleString('en-IN')}</span>
+                            <span className="text-sm sm:text-base font-bold text-primary">{formatCurrency(item.price * item.quantity)}</span>
                           </div>
                         </div>
                       ))
@@ -272,7 +273,7 @@ export default function OrderTrackingPage() {
                   <div className="space-y-2.5 text-xs sm:text-sm">
                     <div className="flex justify-between text-on-surface-variant">
                       <span>Subtotal</span>
-                      <span>₹{Number(order.subtotal).toLocaleString('en-IN')}</span>
+                      <span>{formatCurrency(order.subtotal)}</span>
                     </div>
                     <div className="flex justify-between text-on-surface-variant">
                       <span>GST</span>

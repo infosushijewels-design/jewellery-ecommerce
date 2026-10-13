@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useSwipe } from '@/lib/hooks/useSwipe';
 
 const slides = [
   { id: 1, src: '/images/hero/banner-1.png', alt: 'Timeless Beauty in Every Detail', href: '/collections', cta: 'Shop Now' },
@@ -28,18 +29,7 @@ export default function Hero() {
   }, [nextSlide]);
 
   // Swipe left/right on touch devices
-  const touchStartX = useRef<number | null>(null);
-  const onTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-  };
-  const onTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartX.current == null) return;
-    const delta = e.changedTouches[0].clientX - touchStartX.current;
-    touchStartX.current = null;
-    if (Math.abs(delta) < 50) return;
-    if (delta < 0) nextSlide();
-    else prevSlide();
-  };
+  const { onTouchStart, onTouchEnd } = useSwipe({ onSwipeLeft: nextSlide, onSwipeRight: prevSlide, threshold: 50 });
 
   return (
     <section className="w-full bg-surface-container-low">

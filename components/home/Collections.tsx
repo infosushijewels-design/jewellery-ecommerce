@@ -1,7 +1,8 @@
 ﻿"use client";
 
 import Link from "next/link";
-import { useState, useRef } from "react";
+import { useState } from "react";
+import { useSwipe } from '@/lib/hooks/useSwipe';
 
 const collections = [
   {
@@ -32,24 +33,15 @@ const collections = [
 
 export default function Collections() {
   const [active, setActive] = useState(0);
-  const touchStartX = useRef<number | null>(null);
 
   function goTo(idx: number) {
     setActive(Math.max(0, Math.min(collections.length - 1, idx)));
   }
 
-  function onTouchStart(e: React.TouchEvent) {
-    touchStartX.current = e.touches[0].clientX;
-  }
-
-  function onTouchEnd(e: React.TouchEvent) {
-    if (touchStartX.current === null) return;
-    const dx = e.changedTouches[0].clientX - touchStartX.current;
-    touchStartX.current = null;
-    if (Math.abs(dx) < 40) return;
-    if (dx < 0) goTo(active + 1);
-    else goTo(active - 1);
-  }
+  const { onTouchStart, onTouchEnd } = useSwipe({
+    onSwipeLeft: () => goTo(active + 1),
+    onSwipeRight: () => goTo(active - 1),
+  });
 
   return (
     <section className="py-12 sm:py-20 bg-surface-container-low border-y border-outline-variant/30" id="collections">

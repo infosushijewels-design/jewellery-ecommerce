@@ -1,6 +1,7 @@
 "use client";
 
 import LogoutConfirmDialog from '@/components/auth/LogoutConfirmDialog';
+import Image from 'next/image';
 import Spinner from '@/components/ui/Spinner';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -207,7 +208,7 @@ export default function Header() {
           {/* Brand Logo */}
           <Link href="/" prefetch={true} onClick={handleLogoClick} className="flex items-center flex-shrink-0" aria-label="Sushi Jewels — home">
             {/* mix-blend-multiply drops the logo file's white background so it sits cleanly on the header */}
-            <img src="/logo.jpeg" alt="Sushi Jewels" width={638} height={978} className="h-14 sm:h-[68px] w-auto mix-blend-multiply" />
+            <Image src="/logo.jpeg" alt="Sushi Jewels" width={638} height={978} priority className="h-14 sm:h-[68px] w-auto mix-blend-multiply" />
           </Link>
 
           {/* Center Search Bar */}
@@ -373,7 +374,7 @@ export default function Header() {
       <div className={`fixed top-0 left-0 h-full w-[85vw] max-w-[340px] bg-surface z-[201] flex flex-col shadow-2xl transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="flex items-center justify-between px-5 py-4 border-b border-outline-variant/40">
           <Link href="/" onClick={closeMobileMenu} aria-label="Sushi Jewels — home">
-            <img src="/logo.jpeg" alt="Sushi Jewels" width={638} height={978} className="h-14 w-auto mix-blend-multiply" />
+            <Image src="/logo.jpeg" alt="Sushi Jewels" width={638} height={978} className="h-14 w-auto mix-blend-multiply" />
           </Link>
           <button onClick={closeMobileMenu} className="p-2 text-on-surface-variant hover:text-primary rounded-full hover:bg-surface-container" aria-label="Close menu">
             <span className="material-symbols-outlined text-[22px]">close</span>

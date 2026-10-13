@@ -1,9 +1,14 @@
+"use client";
+
 import React from 'react';
 import Link from 'next/link';
+import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
+import { buildWhatsAppLink } from '@/lib/whatsapp';
 
 export default function FlagshipAtelier() {
+  const { contact } = useStoreSettings();
   const googleMapsUrl = 'https://www.google.com/maps/search/?api=1&query=2Ch4+Dadabari+Main+Road+3rd+Floor+Pukhraj+Prime+Kota+Rajasthan';
-  const waUrl = 'https://wa.me/919166967234?text=' + encodeURIComponent('Hi Sushi Jewels, I would like to schedule a private visit to your Kota atelier.');
+  const waUrl = buildWhatsAppLink(contact.whatsapp, 'Hi Sushi Jewels, I would like to schedule a private visit to your Kota atelier.') || '';
 
   return (
     <section className="py-12 sm:py-20 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-16" id="atelier">
@@ -12,7 +17,7 @@ export default function FlagshipAtelier() {
         {/* Left Visual: Luxury Boutique Atmosphere */}
         <div className="lg:col-span-6 relative min-h-[360px] sm:min-h-[440px] lg:min-h-full bg-surface-container">
           <img
-            src="https://images.unsplash.com/photo-1541123437800-1bb1317badc2?auto=format&fit=crop&w=1200&q=80"
+            src="https://images.unsplash.com/photo-1764512680324-048f158cab2b?auto=format&fit=crop&w=1200&q=80"
             alt="Sushi Jewels Flagship Atelier Kota"
             className="w-full h-full object-cover"
           />

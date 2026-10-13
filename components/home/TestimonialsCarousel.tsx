@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useSwipe } from '@/lib/hooks/useSwipe';
 
 export interface Testimonial {
   id: string;
@@ -55,7 +56,6 @@ function TestimonialCard({ t }: { t: Testimonial }) {
 function MobileCarousel({ items }: { items: Testimonial[] }) {
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
-  const touchStartX = useRef<number | null>(null);
 
   // Auto-advance every 4 seconds
   useEffect(() => {
@@ -72,18 +72,10 @@ function MobileCarousel({ items }: { items: Testimonial[] }) {
     setTimeout(() => setPaused(false), 8000); // resume after 8s
   }
 
-  function onTouchStart(e: React.TouchEvent) {
-    touchStartX.current = e.touches[0].clientX;
-  }
-
-  function onTouchEnd(e: React.TouchEvent) {
-    if (touchStartX.current === null) return;
-    const dx = e.changedTouches[0].clientX - touchStartX.current;
-    touchStartX.current = null;
-    if (Math.abs(dx) < 40) return;
-    if (dx < 0) goTo((active + 1) % items.length);
-    else goTo((active - 1 + items.length) % items.length);
-  }
+  const { onTouchStart, onTouchEnd } = useSwipe({
+    onSwipeLeft: () => goTo((active + 1) % items.length),
+    onSwipeRight: () => goTo((active - 1 + items.length) % items.length),
+  });
 
   return (
     <div className="sm:hidden">

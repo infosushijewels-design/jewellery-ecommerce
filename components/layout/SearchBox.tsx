@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { STYLE_FILTERS, scoreProduct, tokenize } from '@/lib/catalogSearch';
+import { formatCurrency } from '@/lib/formatCurrency';
 
 type LiteProduct = {
   id: string;
@@ -143,7 +144,7 @@ export default function SearchBox({ placeholder, compact = false, onNavigate }: 
   }
 
   const showPanel = open && query.trim().length > 0;
-  const inr = (n: number) => `₹${Number(n).toLocaleString('en-IN')}`;
+  const inr = formatCurrency;
 
   return (
     <div ref={wrapperRef} className="relative w-full">

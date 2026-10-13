@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useWishlist } from '@/lib/context/WishlistContext';
 import { useToast } from '@/lib/context/ToastContext';
 import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
+import { buildWhatsAppLink } from '@/lib/whatsapp';
 import SizeGuideModal from '@/components/product/SizeGuideModal';
 import TryItOnModal from '@/components/product/TryItOnModal';
 
@@ -48,9 +49,6 @@ export default function ProductActions({ product }: ProductActionsProps) {
     }
   };
 
-  // Same number-normalising logic as the footer's WhatsApp link, kept local since it's a one-off here.
-  const waDigits = (contact.whatsapp || '').replace(/\D/g, '');
-  const waNumber = waDigits.length === 10 ? `91${waDigits}` : waDigits;
   const enquiryMessage = [
     `Hi! I'd like to enquire about "${product.title}"`,
     product.sku ? `(SKU: ${product.sku})` : null,
@@ -58,7 +56,7 @@ export default function ProductActions({ product }: ProductActionsProps) {
   ]
     .filter(Boolean)
     .join(' ');
-  const whatsappHref = waNumber ? `https://wa.me/${waNumber}?text=${encodeURIComponent(enquiryMessage)}` : null;
+  const whatsappHref = buildWhatsAppLink(contact.whatsapp, enquiryMessage);
 
   return (
     <div className="space-y-8 mt-8">

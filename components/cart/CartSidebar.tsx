@@ -5,8 +5,9 @@ import Link from 'next/link';
 import { useCart } from '@/lib/context/CartContext';
 import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 import { useToast } from '@/lib/context/ToastContext';
+import { formatCurrency } from '@/lib/formatCurrency';
 
-const inr = (n: number) => `₹${n.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
+const inr = (n: number) => formatCurrency(n, { maximumFractionDigits: 0 });
 
 export default function CartSidebar() {
   const { isCartOpen, closeCart, items, updateQuantity, removeFromCart, subtotal, tax, total } = useCart();

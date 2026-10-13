@@ -8,6 +8,7 @@ import { useCart } from '@/lib/context/CartContext';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useToast } from '@/lib/context/ToastContext';
 import { confirmOnlinePayment, createOrder, getUserOrders, orderTrackingPath, type PlacedOrder } from '@/lib/supabase/orderService';
+import { formatCurrency } from '@/lib/formatCurrency';
 import StateCitySelect from '@/components/ui/StateCitySelect';
 import { canonicalState } from '@/lib/indianStatesCities';
 import UseCurrentLocationButton, { type DetectedLocation } from '@/components/ui/UseCurrentLocationButton';
@@ -284,7 +285,7 @@ export default function CheckoutPage() {
       return;
     }
     if (belowMinimum) {
-      showToast(`The minimum order value is ₹${minOrderValue.toLocaleString('en-IN')}.`, 'error');
+      showToast(`The minimum order value is ${formatCurrency(minOrderValue)}.`, 'error');
       return;
     }
     if (noPaymentMethod) {
@@ -559,7 +560,7 @@ export default function CheckoutPage() {
                     )}
                     {codEnabled && !guestCodBlocked && !codAllowed && (
                       <p className="text-xs text-on-surface-variant">
-                        Cash on Delivery is available for orders up to ₹{codMaxOrderValue.toLocaleString('en-IN')}.
+                        Cash on Delivery is available for orders up to {formatCurrency(codMaxOrderValue)}.
                       </p>
                     )}
                     {/* Option 1: COD */}
@@ -632,7 +633,7 @@ export default function CheckoutPage() {
                         <p className="text-xs text-on-surface-variant mt-0.5">
                           Qty: {item.quantity} {item.metal && `• ${item.metal}`} {item.size && `• Size ${item.size}`}
                         </p>
-                        <p className="font-label-sm text-tertiary font-bold mt-1">₹{(item.price * item.quantity).toLocaleString('en-IN')}</p>
+                        <p className="font-label-sm text-tertiary font-bold mt-1">{formatCurrency(item.price * item.quantity)}</p>
                       </div>
                     </div>
                   ))}
@@ -641,11 +642,11 @@ export default function CheckoutPage() {
                 <div className="space-y-2.5 pt-4 border-t border-outline-variant/30 text-sm">
                   <div className="flex justify-between text-on-surface-variant">
                     <span>Subtotal</span>
-                    <span>₹{subtotal.toLocaleString('en-IN')}</span>
+                    <span>{formatCurrency(subtotal)}</span>
                   </div>
                   <div className="flex justify-between text-on-surface-variant">
                     <span>GST ({storeSettings.commerce.gstRate}% jewellery tax)</span>
-                    <span>₹{tax.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                    <span>{formatCurrency(tax, { maximumFractionDigits: 0 })}</span>
                   </div>
                   <div className="flex justify-between text-on-surface-variant">
                     <span>Insured Shipping</span>
@@ -658,13 +659,13 @@ export default function CheckoutPage() {
                   )}
                   <div className="flex justify-between text-headline-sm text-primary border-t border-outline-variant/30 pt-3 font-semibold">
                     <span>Total</span>
-                    <span>₹{calculatedTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                    <span>{formatCurrency(calculatedTotal, { maximumFractionDigits: 0 })}</span>
                   </div>
                 </div>
 
                 {belowMinimum && (
                   <p className="mt-4 text-xs text-error bg-error-container/40 rounded-lg px-3 py-2">
-                    Add ₹{(minOrderValue - subtotal).toLocaleString('en-IN', { maximumFractionDigits: 0 })} more to reach the minimum order value of ₹{minOrderValue.toLocaleString('en-IN')}.
+                    Add {formatCurrency(minOrderValue - subtotal, { maximumFractionDigits: 0 })} more to reach the minimum order value of {formatCurrency(minOrderValue)}.
                   </p>
                 )}
 

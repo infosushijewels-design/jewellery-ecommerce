@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useRef, useState, ReactNode } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, ReactNode } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from './AuthContext';
 
@@ -96,13 +96,13 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
   const pendingRef = useRef<Set<string>>(new Set());
-  const setPending = (productId: string, on: boolean) => {
+  const setPending = useCallback((productId: string, on: boolean) => {
     if (on) pendingRef.current.add(productId);
     else pendingRef.current.delete(productId);
     setPendingIds(new Set(pendingRef.current));
-  };
+  }, []);
 
-  const toggleWishlist = async (productId: string) => {
+  const toggleWishlist = useCallback(async (productId: string) => {
     // A change for this product is already being saved: ignore the extra click
     if (pendingRef.current.has(productId)) return null;
     const newSet = new Set(wishlistIds);
@@ -150,9 +150,14 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     }
 
     return isAdding ? 'added' : 'removed';
-  };
+  }, [wishlistIds, user, supabase, setPending]);
 
-  return <WishlistContext.Provider value={{ wishlistIds, toggleWishlist, isLoading, pendingIds }}>{children}</WishlistContext.Provider>;
+  const value = useMemo(
+    () => ({ wishlistIds, toggleWishlist, isLoading, pendingIds }),
+    [wishlistIds, toggleWishlist, isLoading, pendingIds]
+  );
+
+  return <WishlistContext.Provider value={value}>{children}</WishlistContext.Provider>;
 }
 
 export function useWishlist() {

@@ -6,6 +6,7 @@ import Footer from '@/components/layout/Footer';
 import AnnouncementBar from '@/components/layout/AnnouncementBar';
 import { useAuth } from '@/lib/context/AuthContext';
 import { getUserOrders, FullOrder } from '@/lib/supabase/orderService';
+import { formatCurrency } from '@/lib/formatCurrency';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import ReviewForm from '@/components/orders/ReviewForm';
@@ -164,7 +165,7 @@ export default function MyOrdersPage() {
                     </div>
                     <div>
                       <span className="text-on-surface-variant block text-[11px] uppercase tracking-wider">Total Amount</span>
-                      <span className="font-semibold text-tertiary font-medium">₹{Number(order.total).toLocaleString('en-IN')}</span>
+                      <span className="font-semibold text-tertiary font-medium">{formatCurrency(order.total)}</span>
                     </div>
                   </div>
 
@@ -212,7 +213,7 @@ export default function MyOrdersPage() {
                           </div>
                         </div>
                         <div className="text-right flex-shrink-0">
-                          <span className="text-sm font-semibold text-primary">₹{(Number(item.price) * item.quantity).toLocaleString('en-IN')}</span>
+                          <span className="text-sm font-semibold text-primary">{formatCurrency(item.price * item.quantity)}</span>
                         </div>
                       </div>
                     ))

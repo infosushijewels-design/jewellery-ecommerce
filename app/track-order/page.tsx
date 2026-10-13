@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import { formatCurrency } from '@/lib/formatCurrency';
 import AnnouncementBar from '@/components/layout/AnnouncementBar';
 import { useAuth } from '@/lib/context/AuthContext';
 import type { FullOrder } from '@/lib/supabase/orderService';
@@ -243,7 +244,7 @@ export default function TrackOrderPage() {
                             {items.length > 4 && <span className="w-10 h-10 rounded-lg bg-surface-container text-xs text-on-surface-variant flex items-center justify-center border border-surface">+{items.length - 4}</span>}
                           </div>
                           <div className="text-right flex-shrink-0">
-                            <p className="font-semibold text-tertiary">₹{Number(order.total).toLocaleString('en-IN')}</p>
+                            <p className="font-semibold text-tertiary">{formatCurrency(order.total)}</p>
                             <p className="text-[11px] text-on-surface-variant capitalize">Payment: {order.payment_status.replace('_', ' ')}</p>
                           </div>
                         </div>

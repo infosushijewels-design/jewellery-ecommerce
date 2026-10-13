@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { adminCreateProduct, adminDeleteProduct, Product } from '@/lib/supabase/orderService';
 import { useToast } from '@/lib/context/ToastContext';
 import { downloadCsv } from '@/lib/utils/csv';
+import { formatCurrency } from '@/lib/formatCurrency';
 import BulkProductImportModal from '@/components/admin/BulkProductImportModal';
 import {
   ConfirmDialog,
@@ -318,10 +319,10 @@ export default function AdminProductsPage() {
                         <td className="py-3.5 px-4 whitespace-nowrap">
                           {product.price > 0 ? (
                             <>
-                              <div className="font-semibold text-[#2D2024] tabular-nums">₹{product.price.toLocaleString('en-IN')}</div>
+                              <div className="font-semibold text-[#2D2024] tabular-nums">{formatCurrency(product.price)}</div>
                               {discount > 0 && (
                                 <div className="flex items-center gap-1.5 mt-0.5">
-                                  <span className="text-[11px] text-[#2D2024]/45 line-through">₹{(product.mrp as number).toLocaleString('en-IN')}</span>
+                                  <span className="text-[11px] text-[#2D2024]/45 line-through">{formatCurrency(product.mrp as number)}</span>
                                   <span className="text-[10px] font-semibold text-emerald-700">{discount}% off</span>
                                 </div>
                               )}

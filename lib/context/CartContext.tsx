@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
 import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 
 export interface CartItem {
@@ -65,7 +65,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [items, hydrated]);
 
-  const addToCart = (newItem: Omit<CartItem, 'id' | 'quantity'>) => {
+  const addToCart = useCallback((newItem: Omit<CartItem, 'id' | 'quantity'>) => {
     const id = `${newItem.productId}-${newItem.metal}-${newItem.size}`;
     setItems((prevItems) => {
       const existing = prevItems.find((item) => item.id === id);
@@ -76,13 +76,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
       return [...prevItems, { ...newItem, id, quantity: 1 }];
     });
-  };
+  }, []);
 
-  const removeFromCart = (id: string) => {
+  const removeFromCart = useCallback((id: string) => {
     setItems((prevItems) => prevItems.filter((item) => item.id !== id));
-  };
+  }, []);
 
-  const updateQuantity = (id: string, quantity: number) => {
+  const updateQuantity = useCallback((id: string, quantity: number) => {
     if (quantity < 1) {
       removeFromCart(id);
       return;
@@ -90,39 +90,38 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems((prevItems) =>
       prevItems.map((item) => (item.id === id ? { ...item, quantity } : item))
     );
-  };
+  }, [removeFromCart]);
 
   const storeSettings = useStoreSettings();
 
-  const toggleCart = () => setIsCartOpen((prev) => !prev);
-  const openCart = () => setIsCartOpen(true);
-  const closeCart = () => setIsCartOpen(false);
-  const clearCart = () => setItems([]);
+  const toggleCart = useCallback(() => setIsCartOpen((prev) => !prev), []);
+  const openCart = useCallback(() => setIsCartOpen(true), []);
+  const closeCart = useCallback(() => setIsCartOpen(false), []);
+  const clearCart = useCallback(() => setItems([]), []);
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const tax = subtotal * (storeSettings.commerce.gstRate / 100);
   const total = subtotal + tax;
 
-  return (
-    <CartContext.Provider
-      value={{
-        items,
-        isCartOpen,
-        addToCart,
-        removeFromCart,
-        updateQuantity,
-        toggleCart,
-        openCart,
-        closeCart,
-        clearCart,
-        subtotal,
-        tax,
-        total,
-      }}
-    >
-      {children}
-    </CartContext.Provider>
+  const value = useMemo(
+    () => ({
+      items,
+      isCartOpen,
+      addToCart,
+      removeFromCart,
+      updateQuantity,
+      toggleCart,
+      openCart,
+      closeCart,
+      clearCart,
+      subtotal,
+      tax,
+      total,
+    }),
+    [items, isCartOpen, addToCart, removeFromCart, updateQuantity, toggleCart, openCart, closeCart, clearCart, subtotal, tax, total]
   );
+
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
 export function useCart() {

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { getAdminDashboardOverview, DashboardOverview } from '@/lib/supabase/orderService';
 import SalesAreaChart from '@/components/admin/SalesAreaChart';
 import CategoryDonutChart from '@/components/admin/CategoryDonutChart';
+import { formatCurrency } from '@/lib/formatCurrency';
 
 const EMPTY_OVERVIEW: DashboardOverview = {
   totalRevenue: 0,
@@ -130,7 +131,7 @@ export default function AdminDashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
         <StatCard
           label="Total Sales"
-          value={`₹${overview.totalRevenue.toLocaleString('en-IN')}`}
+          value={formatCurrency(overview.totalRevenue)}
           icon="payments"
           changePct={overview.revenueChangePct}
         />
@@ -239,7 +240,7 @@ export default function AdminDashboardPage() {
                         {order.items && order.items.length > 1 ? ` +${order.items.length - 1}` : ''}
                       </td>
                       <td className="py-3.5 px-3 font-semibold text-[#2D2024]">
-                        ₹{Number(order.total).toLocaleString('en-IN')}
+                        {formatCurrency(order.total)}
                       </td>
                       <td className="py-3.5 px-3">
                         {getStatusBadge(order.status)}

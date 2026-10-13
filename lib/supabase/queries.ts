@@ -5,13 +5,25 @@ type Product = Database['public']['Tables']['products']['Row'];
 type Category = Database['public']['Tables']['categories']['Row'];
 type Collection = Database['public']['Tables']['collections']['Row'];
 
-export async function getFeaturedProducts(): Promise<Product[]> {
+export interface FeaturedProduct {
+  id: string;
+  title: string;
+  slug: string;
+  image_url: string;
+  certification: string | null;
+}
+
+const FEATURED_PRODUCTS_LIMIT = 4; // matches Bestsellers.tsx's display count exactly
+
+/** Homepage "Most Loved Creations" row — only the columns BestsellerCard actually renders. */
+export async function getFeaturedProducts(): Promise<FeaturedProduct[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from('products')
-    .select('*')
+    .select('id, title, slug, image_url, certification')
     .eq('is_featured', true)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(FEATURED_PRODUCTS_LIMIT);
 
   if (error) {
     console.error('Error fetching featured products:', error);
@@ -24,8 +36,9 @@ export async function getFeaturedProducts(): Promise<Product[]> {
   // Fallback: return latest products if none explicitly marked as featured
   const fallback = await supabase
     .from('products')
-    .select('*')
-    .order('created_at', { ascending: false });
+    .select('id, title, slug, image_url, certification')
+    .order('created_at', { ascending: false })
+    .limit(FEATURED_PRODUCTS_LIMIT);
 
   return fallback.data || [];
 }
@@ -218,25 +231,42 @@ export interface HomeCategory {
  */
 export async function getHomeCategories(): Promise<HomeCategory[]> {
   const supabase = await createClient();
-  const [categoriesResult, productsResult] = await Promise.all([
-    supabase.from('categories').select('id, name, slug, image_url, is_active').order('name'),
-    supabase.from('products').select('category_id, image_url').order('created_at', { ascending: false }),
-  ]);
-  if (categoriesResult.error) {
-    console.error('Error fetching home categories:', categoriesResult.error);
+  const { data: categories, error } = await supabase
+    .from('categories')
+    .select('id, name, slug, image_url, is_active')
+    .order('name');
+  if (error) {
+    console.error('Error fetching home categories:', error);
     return [];
   }
 
+  const activeCategories = (categories || []).filter((c) => c.is_active !== false);
+
+  // Only categories with no explicit Admin-set image need a fallback cover — fetch one most-recent
+  // product photo per *those* categories specifically, instead of scanning the whole products table.
+  const needsFallback = activeCategories.filter((c) => !c.image_url).map((c) => c.id);
   const coverFallback = new Map<string, string>();
-  for (const p of productsResult.data || []) {
-    if (p.category_id && p.image_url && !coverFallback.has(p.category_id)) coverFallback.set(p.category_id, p.image_url);
+  if (needsFallback.length > 0) {
+    const results = await Promise.all(
+      needsFallback.map((categoryId) =>
+        supabase
+          .from('products')
+          .select('image_url')
+          .eq('category_id', categoryId)
+          .not('image_url', 'is', null)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+      )
+    );
+    results.forEach((result, i) => {
+      if (result.data?.image_url) coverFallback.set(needsFallback[i], result.data.image_url);
+    });
   }
 
-  return (categoriesResult.data || [])
-    .filter((c) => c.is_active !== false)
-    .map((c) => ({
-      name: c.name,
-      href: `/category/${c.slug}`,
-      image: c.image_url || coverFallback.get(c.id) || null,
-    }));
+  return activeCategories.map((c) => ({
+    name: c.name,
+    href: `/category/${c.slug}`,
+    image: c.image_url || coverFallback.get(c.id) || null,
+  }));
 }

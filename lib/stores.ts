@@ -1,3 +1,5 @@
+import { buildWhatsAppLink } from '@/lib/whatsapp';
+
 /** Store branches shown on the homepage, /stores and managed in Admin → Stores. */
 export interface StoreBranch {
   id: string;
@@ -103,11 +105,8 @@ export function directionsUrl(store: StoreBranch) {
 }
 
 export function storeWhatsappUrl(store: StoreBranch, fallbackNumber?: string) {
-  const digits = (store.whatsapp || fallbackNumber || '').replace(/\D/g, '');
-  if (!digits) return null;
-  const full = digits.length === 10 ? `91${digits}` : digits;
   const text = `Hello! I'd like to know more about the ${store.name} store.`;
-  return `https://wa.me/${full}?text=${encodeURIComponent(text)}`;
+  return buildWhatsAppLink(store.whatsapp || fallbackNumber, text);
 }
 
 export function sortStores(stores: StoreBranch[]) {

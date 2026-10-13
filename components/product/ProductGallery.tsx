@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, MouseEvent } from 'react';
+import Image from 'next/image';
 
 interface ProductGalleryProps {
   images: string[];
@@ -80,7 +81,7 @@ export default function ProductGallery({ images, alt, badge }: ProductGalleryPro
                   : 'border-outline-variant/40 hover:border-secondary/60'
               }`}
             >
-              <img src={img} alt={`${alt} thumbnail ${index + 1}`} className="w-full h-full object-cover" />
+              <Image src={img} alt={`${alt} thumbnail ${index + 1}`} fill sizes="80px" className="object-cover" />
             </button>
           ))}
         </div>
@@ -96,11 +97,14 @@ export default function ProductGallery({ images, alt, badge }: ProductGalleryPro
           onClick={handleImageClick}
           className="relative aspect-[3/4] sm:aspect-square w-full bg-surface-container-low rounded-2xl border border-outline-variant/40 overflow-hidden cursor-zoom-in"
         >
-          <img
+          <Image
             src={activeImage}
             alt={alt}
+            fill
+            priority
+            sizes="(max-width: 640px) 100vw, 50vw"
             draggable={false}
-            className="w-full h-full object-cover select-none pointer-events-none"
+            className="object-cover select-none pointer-events-none"
           />
 
           {badge && (

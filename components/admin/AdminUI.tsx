@@ -2,6 +2,10 @@
 
 import type { ReactNode } from 'react';
 import Spinner, { LoadingLabel } from '@/components/ui/Spinner';
+import { normalizeWhatsAppNumber as whatsappNumber, buildWhatsAppLink as whatsappLink } from '@/lib/whatsapp';
+import { formatCurrency } from '@/lib/formatCurrency';
+
+export { whatsappNumber, whatsappLink };
 
 /** Shared light-luxury building blocks for admin pages. */
 
@@ -499,33 +503,7 @@ export function formatDate(iso: string) {
 }
 
 export function formatINR(value: number | string | null | undefined) {
-  return `₹${Number(value || 0).toLocaleString('en-IN')}`;
-}
-
-/** wa.me link for an Indian mobile number (adds 91 when a bare 10-digit number is given). */
-/**
- * The number in the form wa.me wants (country code + number, digits only), or null when it isn't a usable mobile
- * number. Spaces, dashes, brackets and "+" are stripped. Indian numbers may be written with or without +91 / 91 / 0;
- * a number from another country must be written with its "+" country code.
- */
-export function whatsappNumber(phone?: string | null): string | null {
-  const raw = (phone || '').trim();
-  if (!raw) return null;
-  const digits = raw.replace(/\D/g, '');
-  let full: string | null = null;
-  if (/^[6-9]\d{9}$/.test(digits)) full = `91${digits}`;
-  else if (/^0[6-9]\d{9}$/.test(digits)) full = `91${digits.slice(1)}`;
-  else if (/^91[6-9]\d{9}$/.test(digits)) full = digits;
-  else if (raw.startsWith('+') && !digits.startsWith('91') && /^[1-9]\d{7,14}$/.test(digits)) full = digits;
-  if (!full || /^(\d)\1+$/.test(full.slice(-10))) return null; // 9999999999 and friends are never real
-  return full;
-}
-
-/** https://wa.me/<number> (with an optional pre-filled message), or null when the phone number isn't valid. */
-export function whatsappLink(phone?: string | null, text?: string) {
-  const full = whatsappNumber(phone);
-  if (!full) return null;
-  return `https://wa.me/${full}${text ? `?text=${encodeURIComponent(text)}` : ''}`;
+  return formatCurrency(typeof value === 'string' ? Number(value) : value);
 }
 
 /** WhatsApp's logo, in its brand green (#25D366) unless a colour class is passed. */
