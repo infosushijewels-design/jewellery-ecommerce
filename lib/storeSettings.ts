@@ -98,7 +98,7 @@ export const DEFAULT_STORE_SETTINGS: StoreSettings = {
   social: {
     facebook: 'https://www.facebook.com/share/1FwpDokD8W/?mibextid=wwXIfr',
     instagram: 'https://www.instagram.com/sushijewels?xtok=aGZtYTc1NmQ5M2kz',
-    youtube: 'https://youtube.com',
+    youtube: 'https://youtube.com/@sushi_jewels?si=z3Cjn6_oftNrtXYh',
     pinterest: '',
   },
   commerce: {

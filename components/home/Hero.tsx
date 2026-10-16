@@ -6,10 +6,10 @@ import Link from 'next/link';
 import { useSwipe } from '@/lib/hooks/useSwipe';
 
 const slides = [
-  { id: 1, src: '/images/hero/banner-1.png', alt: 'Timeless Beauty in Every Detail', href: '/collections', cta: 'Shop Now' },
-  { id: 2, src: '/images/hero/banner-2.png', alt: 'Timeless Elegance for Every You', href: '/collections/premium-collection', cta: 'Explore Collections' },
-  { id: 3, src: '/images/hero/banner-3.png', alt: 'Jewellery that Blooms with You', href: '/anthologies', cta: 'Explore Now' },
-  { id: 4, src: '/images/hero/banner-4.png', alt: 'Timeless Bangles for Every Occasion', href: '/category/bangles', cta: 'Shop Bangles' },
+  { id: 1, src: '/images/hero/banner-1.png', alt: 'Sushi Jewels - Fine handcrafted gold and diamond jewellery showcase', href: '/collections', cta: 'Shop Now' },
+  { id: 2, src: '/images/hero/banner-2.png', alt: 'Sushi Jewels Premium Collection - Timeless elegance and artisan bridal designs', href: '/collections/premium-collection', cta: 'Explore Collections' },
+  { id: 3, src: '/images/hero/banner-3.png', alt: 'Sushi Jewels - Natural diamond jewellery anthology and timeless statement pieces', href: '/anthologies', cta: 'Explore Now' },
+  { id: 4, src: '/images/hero/banner-4.png', alt: 'Sushi Jewels - Handcrafted BIS hallmarked gold bangles collection', href: '/category/bangles', cta: 'Shop Bangles' },
 ];
 
 export default function Hero() {
@@ -58,6 +58,22 @@ export default function Hero() {
         ))}
       </div>
 
+      </div>
+
+      {/* Custom design entry point — sits below the slider so it never overlaps the
+          slide links, dots, or swipe area. */}
+      <div className="border-t border-outline-variant/30 py-3.5 sm:py-4 px-4">
+        <div className="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-5 text-center">
+          <p className="font-body-sm text-body-sm text-on-surface-variant italic">
+            Have a design in mind? Let us bring it to life.
+          </p>
+          <Link
+            href="/customize-your-design"
+            className="flex-shrink-0 px-6 py-2.5 bg-primary text-surface rounded-full font-label-md text-label-md uppercase tracking-wider hover:bg-tertiary transition-colors"
+          >
+            Customize Your Jewellery
+          </Link>
+        </div>
       </div>
     </section>
   );

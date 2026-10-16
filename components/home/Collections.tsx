@@ -8,7 +8,6 @@ const collections = [
   {
     href: "/collections/best-sellers",
     image: "https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?auto=format&fit=crop&w=1000&q=80",
-    alt: "Everyday Luxury",
     label: "Daily Wear",
     title: "The Everyday Edit",
     desc: "Lightweight 18K gold jewellery designed for work, home, and daily elegance.",
@@ -16,7 +15,6 @@ const collections = [
   {
     href: "/collections/festive-collection",
     image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=1000&q=80",
-    alt: "Royal Provenance",
     label: "Royal & Antique",
     title: "Modern Heirlooms",
     desc: "Classic Jadau and antique designs crafted for festive celebrations and weddings.",
@@ -24,7 +22,6 @@ const collections = [
   {
     href: "/collections/bridal-collection",
     image: "https://images.unsplash.com/photo-1543294001-f7cd5d7fb516?auto=format&fit=crop&w=1000&q=80",
-    alt: "The Vivaha Suite",
     label: "Bridal Special",
     title: "Celebration & Bridal",
     desc: "Stunning bridal sets with certified natural diamonds designed for your wedding day.",
@@ -79,7 +76,7 @@ export default function Collections() {
                       <img
                         className="w-full h-full object-cover group-active:scale-105 transition-transform duration-500"
                         src={col.image}
-                        alt={col.alt}
+                        alt={`${col.title} collection`}
                       />
                     </div>
                     {/* Text */}
@@ -147,7 +144,7 @@ export default function Collections() {
               className={`group relative bg-surface rounded-xl overflow-hidden border border-outline-variant/50 hover:shadow-[0_8px_24px_-4px_rgba(45,32,36,0.08)] transition-all duration-300 flex flex-col ${i === 2 ? "sm:col-span-2 md:col-span-1" : ""}`}
             >
               <div className="aspect-[4/5] overflow-hidden bg-surface-container">
-                <img className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src={col.image} alt={col.alt} />
+                <img className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src={col.image} alt={`${col.title} collection`} />
               </div>
               <div className="p-5 sm:p-8 flex flex-col flex-grow justify-between">
                 <div>

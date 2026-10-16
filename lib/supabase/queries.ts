@@ -10,6 +10,7 @@ export interface FeaturedProduct {
   title: string;
   slug: string;
   image_url: string;
+  material: string | null;
   certification: string | null;
 }
 
@@ -20,7 +21,7 @@ export async function getFeaturedProducts(): Promise<FeaturedProduct[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from('products')
-    .select('id, title, slug, image_url, certification')
+    .select('id, title, slug, image_url, material, certification')
     .eq('is_featured', true)
     .order('created_at', { ascending: false })
     .limit(FEATURED_PRODUCTS_LIMIT);
@@ -36,11 +37,29 @@ export async function getFeaturedProducts(): Promise<FeaturedProduct[]> {
   // Fallback: return latest products if none explicitly marked as featured
   const fallback = await supabase
     .from('products')
-    .select('id, title, slug, image_url, certification')
+    .select('id, title, slug, image_url, material, certification')
     .order('created_at', { ascending: false })
     .limit(FEATURED_PRODUCTS_LIMIT);
 
   return fallback.data || [];
+}
+
+const HOME_PRODUCTS_LIMIT = 8; // 2 rows of 4 on desktop for the homepage "Our Products" grid
+
+/** Homepage "Our Products" grid — latest products, same columns ProductCard renders. */
+export async function getHomeProducts(): Promise<Product[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(HOME_PRODUCTS_LIMIT);
+
+  if (error) {
+    console.error('Error fetching home products:', error);
+  }
+
+  return data || [];
 }
 
 export async function getNewArrivals(): Promise<Product[]> {

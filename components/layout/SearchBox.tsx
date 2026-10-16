@@ -250,7 +250,7 @@ export default function SearchBox({ placeholder, compact = false, onNavigate }: 
                           >
                             <span className="w-11 h-11 rounded-md overflow-hidden bg-surface-container flex-shrink-0">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={p.image_url} alt="" className="w-full h-full object-cover" />
+                              <img src={p.image_url} alt={p.title} className="w-full h-full object-cover" />
                             </span>
                             <span className="min-w-0 flex-1">
                               <span className="block text-body-sm text-primary truncate">{p.title}</span>

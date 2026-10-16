@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -12,6 +12,7 @@ const METALS = [
     tag: 'Pure Gold',
     desc: 'Warm heritage sheen with government BIS Hallmarking.',
     image: '/images/yellow_gold.jpg',
+    alt: 'BIS hallmarked pure yellow gold handcrafted fine jewellery',
     href: '/search?q=yellow%20gold',
   },
   {
@@ -22,6 +23,7 @@ const METALS = [
     tag: 'Precious White',
     desc: 'Lustrous rhodium finish with contemporary modern brilliance.',
     image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=800&q=80',
+    alt: 'Lustrous 18K white gold fine diamond ring with contemporary brilliance',
     href: '/search?q=white%20gold',
   },
   {
@@ -32,6 +34,7 @@ const METALS = [
     tag: 'Rose Gold',
     desc: 'Subtle blush alloys formulated for daily skin comfort.',
     image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80',
+    alt: 'Subtle blush rose gold fine earrings crafted for everyday luxury',
     href: '/search?q=rose%20gold',
   },
   {
@@ -42,6 +45,7 @@ const METALS = [
     tag: 'Tricolor',
     desc: 'Exquisite harmony of yellow, white, and rose gold in one piece.',
     image: 'https://images.unsplash.com/photo-1603561591411-07134e71a2a9?auto=format&fit=crop&w=800&q=80',
+    alt: 'Tricolor gold jewellery in yellow, white, and rose gold harmony',
     href: '/search?q=three%20tone',
   },
   {
@@ -52,6 +56,7 @@ const METALS = [
     tag: 'Artisan Craft',
     desc: 'Intricately handcrafted antique finishes inspired by royal heirlooms.',
     image: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80',
+    alt: 'Handcrafted heritage and antique finished gold jewellery',
     href: '/collections/premium-collection',
   },
 ];
@@ -107,17 +112,13 @@ export default function Materials() {
             href={metal.href}
             className="group relative rounded-xl overflow-hidden aspect-[3/4] bg-surface-container"
           >
-            <span className="absolute top-2 left-2 z-10 bg-white/80 backdrop-blur-sm px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-[#2D2024]">
-              {metal.badge}
-            </span>
             <img
               className="w-full h-full object-cover group-active:scale-105 transition-transform duration-500"
               src={metal.image}
-              alt={metal.title}
+              alt={metal.alt}
               loading="lazy"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent flex flex-col justify-end p-3 text-white">
-              <span className="text-[8px] uppercase tracking-widest opacity-75 font-medium">{metal.tag}</span>
               <h3 className="text-[14px] font-semibold leading-tight mt-0.5">{metal.title}</h3>
             </div>
           </a>
@@ -132,25 +133,16 @@ export default function Materials() {
             href={metal.href}
             className="group relative rounded-xl overflow-hidden aspect-[4/5] bg-surface-container border border-outline-variant/50 hover:border-secondary/60 transition-all duration-300"
           >
-            <span className="absolute top-2 left-2 z-10 bg-surface/90 backdrop-blur-sm px-2 py-0.5 rounded-full text-[8px] sm:text-label-sm font-label-sm uppercase tracking-wider text-primary border border-secondary/40">
-              {metal.badge}
-            </span>
             <img
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               src={metal.image}
-              alt={metal.title}
+              alt={metal.alt}
               loading="lazy"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-primary/85 via-primary/20 to-transparent flex flex-col justify-end p-3 sm:p-5 text-surface">
-              <span className="font-label-sm text-[8px] sm:text-label-sm text-secondary-fixed tracking-wider uppercase">
-                {metal.tag}
-              </span>
               <h3 className="font-headline-sm text-[13px] sm:text-headline-sm mt-0.5 sm:mt-1 leading-tight">
                 {metal.title}
               </h3>
-              <p className="font-body-sm text-[11px] sm:text-body-sm opacity-80 mt-0.5 sm:mt-1 line-clamp-2">
-                {metal.desc}
-              </p>
             </div>
           </a>
         ))}

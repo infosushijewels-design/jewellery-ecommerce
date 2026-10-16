@@ -6,12 +6,13 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { checkIsAdmin } from '@/lib/supabase/orderService';
 import { useToast } from '@/lib/context/ToastContext';
-import { activateDemoAdmin, clearDemoAdmin } from '@/lib/utils/adminDemoAccess';
 
 const REMEMBERED_EMAIL_KEY = 'sushi_admin_remembered_email';
 
-// The demo bypass skips Supabase auth entirely, so it must never ship to production.
-const DEMO_ACCESS_ENABLED = process.env.NODE_ENV !== 'production';
+// Shown for every sign-in failure (wrong password, unknown email, or unconfirmed email alike) —
+// never reveals which of those actually happened, so the login form can't be used to enumerate
+// which email addresses have an account. See GENERIC_LOGIN_ERROR for details.
+const GENERIC_LOGIN_ERROR = "We couldn't sign you in with those details. Check your email and password, or use the resend-confirmation link below if you haven't verified your account yet.";
 
 interface FieldErrors {
   email?: string;
@@ -29,7 +30,6 @@ export default function AdminLoginPage() {
   const [rememberMe, setRememberMe] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
-  const [unconfirmedEmail, setUnconfirmedEmail] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const { showToast } = useToast();
@@ -66,7 +66,6 @@ export default function AdminLoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
-    setUnconfirmedEmail(null);
 
     if (!validate()) return;
 
@@ -97,22 +96,17 @@ export default function AdminLoginPage() {
           // localStorage unavailable — ignore
         }
 
-        clearDemoAdmin();
         showToast('Welcome back, Administrator', 'success');
         router.push('/admin');
         return;
       }
 
-      // Sign-in failed. This screen never creates accounts: signing up here
-      // returned a user without a session (the project requires email
-      // confirmation), so the old code pushed to /admin with no session and
-      // the layout bounced straight back here with no error shown.
-      if (error?.message?.toLowerCase().includes('email not confirmed')) {
-        setUnconfirmedEmail(cleanEmail);
-        setFormError('This email has not been confirmed yet. Check your inbox, or resend the confirmation link below.');
-      } else {
-        setFormError(error?.message || 'Invalid credentials. Please check your email and password.');
-      }
+      // Sign-in failed. Always show the same generic message, regardless of whether the real
+      // cause was a wrong password, an unknown email, or an unconfirmed account — distinguishing
+      // these in the UI would let the login form be used to enumerate which emails have an
+      // account. A "resend confirmation" option is offered unconditionally below, not only when
+      // an unconfirmed account is detected, so its presence can't leak that signal either.
+      setFormError(GENERIC_LOGIN_ERROR);
       setIsSubmitting(false);
     } catch (err) {
       console.error('Admin login error:', err);
@@ -122,26 +116,22 @@ export default function AdminLoginPage() {
   };
 
   const handleResendConfirmation = async () => {
-    if (!unconfirmedEmail) return;
+    const cleanEmail = email.trim();
+    if (!isValidEmail(cleanEmail)) {
+      setFieldErrors((prev) => ({ ...prev, email: 'Enter your email above first' }));
+      return;
+    }
     setIsSubmitting(true);
     try {
       const supabase = createClient();
-      const { error } = await supabase.auth.resend({ type: 'signup', email: unconfirmedEmail });
-      if (error) {
-        setFormError(error.message);
-      } else {
-        setFormError(null);
-        showToast(`Confirmation link sent to ${unconfirmedEmail}`, 'success');
-      }
+      // Always show the same confirmation regardless of whether this email actually has an
+      // unconfirmed account — Supabase's resend() doesn't distinguish this for us either way,
+      // and showing a different result per-email would reopen the enumeration gap above.
+      await supabase.auth.resend({ type: 'signup', email: cleanEmail });
+      showToast(`If ${cleanEmail} has an unconfirmed account, a confirmation link was just sent.`, 'success');
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleDemoAccess = () => {
-    activateDemoAdmin('anjaliworksphere@gmail.com');
-    showToast('Welcome, Administrator (Anjali)', 'success');
-    router.push('/admin');
   };
 
   return (
@@ -175,16 +165,16 @@ export default function AdminLoginPage() {
               </div>
             )}
 
-            {unconfirmedEmail && (
-              <button
-                type="button"
-                onClick={handleResendConfirmation}
-                disabled={isSubmitting}
-                className="w-full border border-secondary/50 text-secondary hover:bg-secondary-container/20 py-2.5 rounded-md font-label-sm text-label-sm uppercase tracking-wider transition-colors disabled:opacity-50"
-              >
-                Resend confirmation email
-              </button>
-            )}
+            {/* Always offered, not just when an unconfirmed account is detected — see the
+                comment in handleSubmit for why its visibility must never depend on that. */}
+            <button
+              type="button"
+              onClick={handleResendConfirmation}
+              disabled={isSubmitting}
+              className="w-full border border-secondary/50 text-secondary hover:bg-secondary-container/20 py-2.5 rounded-md font-label-sm text-label-sm uppercase tracking-wider transition-colors disabled:opacity-50"
+            >
+              Resend confirmation email
+            </button>
 
             <div className="space-y-1">
               <label htmlFor="admin-email" className="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant">
@@ -272,24 +262,6 @@ export default function AdminLoginPage() {
             </button>
           </form>
 
-          {DEMO_ACCESS_ENABLED && (
-          <>
-          <div className="flex items-center gap-3 my-6">
-            <div className="flex-1 h-px bg-outline-variant/40" />
-            <span className="font-label-sm text-label-sm uppercase tracking-widest text-outline">or</span>
-            <div className="flex-1 h-px bg-outline-variant/40" />
-          </div>
-
-          <button
-            type="button"
-            onClick={handleDemoAccess}
-            className="w-full border border-dashed border-secondary/50 text-secondary hover:bg-secondary-container/20 py-3 rounded-md font-label-sm text-label-sm uppercase tracking-wider transition-colors flex items-center justify-center gap-2"
-          >
-            <span className="material-symbols-outlined text-[16px]">science</span>
-            <span>Quick Demo Admin Access (Dev Only)</span>
-          </button>
-          </>
-          )}
         </div>
 
         {/* Return link */}

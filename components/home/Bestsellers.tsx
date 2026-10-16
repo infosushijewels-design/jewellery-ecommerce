@@ -24,7 +24,7 @@ export default async function Bestsellers() {
           <BestsellerCard
             id={product.id}
             imageSrc={product.image_url}
-            imageAlt={product.title}
+            imageAlt={product.material ? `${product.title}, ${product.material}` : product.title}
             title={product.title}
             certification={product.certification || 'Verified'}
             slug={product.slug}

@@ -7,6 +7,11 @@ import { getProductBySlug } from '@/lib/supabase/queries';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+// Was fully dynamic (no caching at all) — every product page view paid full Supabase
+// query latency as part of TTFB. ISR lets most views serve from cache; a 60s staleness
+// window is already accepted on the homepage for the same reason.
+export const revalidate = 60;
+
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const product = await getProductBySlug(slug);

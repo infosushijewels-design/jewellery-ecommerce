@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useWishlist } from '@/lib/context/WishlistContext';
+import { useCart } from '@/lib/context/CartContext';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import SearchBox from './SearchBox';
 import AvatarCircle from '@/components/ui/AvatarCircle';
@@ -32,7 +33,7 @@ const navLinks: NavItem[] = [
         heading: 'Shop by Style',
         links: [
           { label: 'Engagement Rings', href: '/category/rings?style=engagement' },
-          { label: 'Solitaire Rings', href: '/category/rings?style=solitaire' },
+          { label: 'Daily Wear Rings', href: '/category/rings?style=solitaire' },
           { label: 'Cocktail Rings', href: '/category/rings?style=cocktail' },
           { label: 'Bands', href: '/category/rings?style=bands' },
         ],
@@ -187,6 +188,8 @@ export default function Header() {
     }
   };
   const { wishlistIds } = useWishlist();
+  const { items: cartItems, toggleCart } = useCart();
+  const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
@@ -206,9 +209,17 @@ export default function Header() {
         <div className="w-full px-4 sm:px-6 lg:px-12 max-w-[1440px] mx-auto flex items-center gap-4 h-16 sm:h-20">
 
           {/* Brand Logo */}
-          <Link href="/" prefetch={true} onClick={handleLogoClick} className="flex items-center flex-shrink-0" aria-label="Sushi Jewels — home">
-            {/* mix-blend-multiply drops the logo file's white background so it sits cleanly on the header */}
-            <Image src="/logo.jpeg" alt="Sushi Jewels" width={638} height={978} priority className="h-14 sm:h-[68px] w-auto mix-blend-multiply" />
+          <Link href="/" prefetch={true} onClick={handleLogoClick} className="flex items-center gap-2 sm:gap-3 flex-shrink-0 min-w-0" aria-label="Sushi Jewels — home">
+            {/* The logo file has the "SUSHI JEWELS" wordmark baked into its bottom ~18%; no
+                symbol-only asset exists, so this crops it out visually (file itself is untouched)
+                since the brand name is now shown separately beside the logo. */}
+            <div className="h-[46px] sm:h-[56px] overflow-hidden flex-shrink-0">
+              {/* mix-blend-multiply drops the logo file's white background so it sits cleanly on the header */}
+              <Image src="/logo.jpeg" alt="Sushi Jewels Fine Jewellery" width={638} height={978} priority className="h-14 sm:h-[68px] w-auto mix-blend-multiply" />
+            </div>
+            <span className="font-headline-sm sm:font-headline-md text-[15px] sm:text-headline-md text-primary tracking-wide leading-tight whitespace-nowrap truncate">
+              Sushi Jewels
+            </span>
           </Link>
 
           {/* Center Search Bar */}
@@ -295,6 +306,13 @@ export default function Header() {
               )}
             </Link>
 
+            <button type="button" onClick={toggleCart} className="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary relative transition-colors rounded-full hover:bg-surface-container" title="Shopping Bag" aria-label="Shopping Bag">
+              <span className="material-symbols-outlined text-[22px]">shopping_bag</span>
+              {cartCount > 0 && (
+                <span className="absolute top-1 right-1 bg-secondary text-surface font-label-sm text-[9px] h-4 w-4 rounded-full flex items-center justify-center">{cartCount}</span>
+              )}
+            </button>
+
 
             <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface-container ml-1" aria-label="Open menu">
               <span className="material-symbols-outlined text-[24px]">menu</span>
@@ -374,7 +392,7 @@ export default function Header() {
       <div className={`fixed top-0 left-0 h-full w-[85vw] max-w-[340px] bg-surface z-[201] flex flex-col shadow-2xl transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="flex items-center justify-between px-5 py-4 border-b border-outline-variant/40">
           <Link href="/" onClick={closeMobileMenu} aria-label="Sushi Jewels — home">
-            <Image src="/logo.jpeg" alt="Sushi Jewels" width={638} height={978} className="h-14 w-auto mix-blend-multiply" />
+            <Image src="/logo.jpeg" alt="Sushi Jewels Fine Jewellery" width={638} height={978} className="h-14 w-auto mix-blend-multiply" />
           </Link>
           <button onClick={closeMobileMenu} className="p-2 text-on-surface-variant hover:text-primary rounded-full hover:bg-surface-container" aria-label="Close menu">
             <span className="material-symbols-outlined text-[22px]">close</span>

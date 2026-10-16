@@ -55,8 +55,6 @@ function CatImg({ src, alt }: { src: string; alt: string }) {
   );
 }
 
-const DESKTOP_ROW_SIZE = 5;
-
 function CategoryCircle({ cat, imageClass }: { cat: CategoryItem; imageClass: string }) {
   return (
     <Link href={cat.href} className="group flex flex-col items-center">
@@ -73,13 +71,11 @@ function CategoryCircle({ cat, imageClass }: { cat: CategoryItem; imageClass: st
 export default function CategoryMarquee({ items }: { items: CategoryItem[] }) {
   // Duplicated for seamless infinite loop (mobile/tablet marquee only)
   const marqueeItems = [...items, ...items];
-  const row1 = items.slice(0, DESKTOP_ROW_SIZE);
-  const row2 = items.slice(DESKTOP_ROW_SIZE);
 
   return (
     <section className="py-10 sm:py-16 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-16 relative" id="categories">
       {/* Header */}
-      <div className="text-center max-w-xl mx-auto mb-8 sm:mb-12">
+      <div className="text-center max-w-xl mx-auto mb-6 sm:mb-10">
         <span className="font-label-sm text-label-sm text-secondary tracking-widest uppercase">Explore Categories</span>
         <h2 className="font-headline-lg text-[24px] sm:text-headline-lg text-primary mt-1">Shop by Category</h2>
         <p className="font-body-md text-body-md text-on-surface-variant mt-2">Discover beautiful jewellery designed for every day and special occasions.</p>
@@ -117,20 +113,11 @@ export default function CategoryMarquee({ items }: { items: CategoryItem[] }) {
         </div>
       </div>
 
-      {/* DESKTOP: static balanced grid, 5 categories per row */}
-      <div className="hidden lg:flex flex-col items-center gap-y-10 max-w-5xl mx-auto">
-        <div className="flex justify-center gap-x-10 xl:gap-x-14">
-          {row1.map((cat) => (
-            <CategoryCircle key={cat.name} cat={cat} imageClass="w-24 h-24 xl:w-28 xl:h-28" />
-          ))}
-        </div>
-        {row2.length > 0 && (
-          <div className="flex justify-center gap-x-10 xl:gap-x-14">
-            {row2.map((cat) => (
-              <CategoryCircle key={cat.name} cat={cat} imageClass="w-24 h-24 xl:w-28 xl:h-28" />
-            ))}
-          </div>
-        )}
+      {/* DESKTOP: all categories in a single row */}
+      <div className="hidden lg:flex justify-center items-start gap-x-6 xl:gap-x-10 max-w-6xl mx-auto">
+        {items.map((cat) => (
+          <CategoryCircle key={cat.name} cat={cat} imageClass="w-20 h-20 xl:w-24 xl:h-24" />
+        ))}
       </div>
 
       <style jsx>{`

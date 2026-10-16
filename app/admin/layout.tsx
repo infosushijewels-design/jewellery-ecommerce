@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/context/AuthContext';
 import { checkIsAdmin } from '@/lib/supabase/orderService';
-import { isDemoAdminActive, clearDemoAdmin, getDemoAdminEmail } from '@/lib/utils/adminDemoAccess';
 import { AdminAccessProvider, SUPER_ADMIN_ACCESS, loadAdminAccess, type AdminAccess } from '@/components/admin/AdminAccessContext';
 import { moduleForPath, type PermissionModule } from '@/lib/permissions';
 import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
@@ -33,11 +32,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       if (authLoading) return;
 
       if (!user) {
-        if (isDemoAdminActive()) {
-          setAccess(await loadAdminAccess(null));
-          setIsAdmin(true);
-          return;
-        }
+        // No real Supabase session: always bounce to login. Admin access must come from a
+        // genuine, server-verified session — never from client-only state (see the brute-force
+        // login audit this fix addresses).
         setIsAdmin(false);
         router.replace('/admin/login');
         return;
@@ -49,8 +46,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         setAccess(await loadAdminAccess(user.id));
         setIsAdmin(true);
       } else {
-        // Customer account attempting to access admin — clear any demo flags and bounce to login
-        clearDemoAdmin();
+        // Customer account attempting to access admin
         setIsAdmin(false);
         router.replace('/admin/login');
       }
@@ -76,7 +72,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, []);
 
   const handleSignOut = async () => {
-    clearDemoAdmin();
     await signOut();
     router.push('/admin/login');
   };
@@ -328,8 +323,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </Link>
           <NotificationsBell />
           <ProfileMenu
-            name={(user?.user_metadata?.full_name as string | undefined)?.trim() || user?.email?.split('@')[0] || (getDemoAdminEmail() ? getDemoAdminEmail()!.split('@')[0] : 'Anjali (Admin)')}
-            email={user?.email || getDemoAdminEmail() || 'anjaliworksphere@gmail.com'}
+            name={(user?.user_metadata?.full_name as string | undefined)?.trim() || user?.email?.split('@')[0] || 'Admin'}
+            email={user?.email || ''}
             roleName={access?.roleName || 'Admin'}
             onSignOut={handleSignOut}
           />

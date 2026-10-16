@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -12,6 +12,7 @@ const DIAMONDS = [
     tag: 'Earth Mined',
     desc: 'Certified authentic natural diamonds with everlasting prestige and fire.',
     image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80',
+    alt: 'Certified natural earth-mined diamond necklace and fine jewellery',
     href: '/search?q=natural%20diamond',
   },
   {
@@ -22,6 +23,7 @@ const DIAMONDS = [
     tag: 'Conscious Luxury',
     desc: 'Precision-created diamonds matching identical optical and physical brilliance.',
     image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=800&q=80',
+    alt: 'Conscious luxury lab-grown diamond solitaire ring in hallmarked gold',
     href: '/search?q=lab%20grown',
   },
   {
@@ -32,16 +34,18 @@ const DIAMONDS = [
     tag: 'Statement Centerpiece',
     desc: 'Iconic single-stone masterpieces cut for maximum light dispersion.',
     image: 'https://images.unsplash.com/photo-1603561591411-07134e71a2a9?auto=format&fit=crop&w=800&q=80',
+    alt: 'Mastercrafted solitaire diamond ring with maximum light brilliance',
     href: '/search?q=solitaire',
   },
   {
     id: 'dia-jewellery',
-    tab: 'PavÃ©',
-    badge: 'PavÃ©',
-    title: 'PavÃ© Diamonds',
-    tag: 'Timeless PavÃ©',
+    tab: 'Pavé',
+    badge: 'Pavé',
+    title: 'Pavé Diamonds',
+    tag: 'Timeless Pavé',
     desc: 'Versatile diamond designs crafted for daily elegance and grand occasions.',
     image: 'https://images.unsplash.com/photo-1611591475152-4735661db190?auto=format&fit=crop&w=800&q=80',
+    alt: 'Handcrafted pavé diamond ring set in luminous precious metal',
     href: '/search?q=diamond',
   },
   {
@@ -52,6 +56,7 @@ const DIAMONDS = [
     tag: 'Royal Hues',
     desc: 'Vibrant rubies, emeralds, and sapphires harmonized with glittering diamonds.',
     image: 'https://images.unsplash.com/photo-1598560917505-59a3ad559071?auto=format&fit=crop&w=800&q=80',
+    alt: 'Precious gemstone and natural diamond jewellery in royal hues',
     href: '/search?q=gemstone',
   },
 ];
@@ -107,17 +112,13 @@ export default function ShopByDiamond() {
             href={item.href}
             className="group relative rounded-xl overflow-hidden aspect-[3/4] bg-surface-container"
           >
-            <span className="absolute top-2 left-2 z-10 bg-white/85 backdrop-blur-sm px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-[#2D2024]">
-              {item.badge}
-            </span>
             <img
               className="w-full h-full object-cover group-active:scale-105 transition-transform duration-500"
               src={item.image}
-              alt={item.title}
+              alt={item.alt}
               loading="lazy"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-transparent flex flex-col justify-end p-3 text-white">
-              <span className="text-[8px] uppercase tracking-widest opacity-75 font-medium">{item.tag}</span>
               <h3 className="text-[13px] font-semibold leading-tight mt-0.5">{item.title}</h3>
             </div>
           </a>
@@ -132,25 +133,16 @@ export default function ShopByDiamond() {
             href={item.href}
             className="group relative rounded-xl overflow-hidden aspect-[4/5] bg-surface-container border border-outline-variant/50 hover:border-secondary/60 transition-all duration-300"
           >
-            <span className="absolute top-2 left-2 z-10 bg-surface/90 backdrop-blur-sm px-2 py-0.5 rounded-full text-[8px] sm:text-label-sm font-label-sm uppercase tracking-wider text-primary border border-secondary/40">
-              {item.badge}
-            </span>
             <img
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               src={item.image}
-              alt={item.title}
+              alt={item.alt}
               loading="lazy"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-primary/85 via-primary/20 to-transparent flex flex-col justify-end p-3 sm:p-5 text-surface">
-              <span className="font-label-sm text-[8px] sm:text-label-sm text-secondary-fixed tracking-wider uppercase">
-                {item.tag}
-              </span>
               <h3 className="font-headline-sm text-[13px] sm:text-headline-sm mt-0.5 sm:mt-1 leading-tight">
                 {item.title}
               </h3>
-              <p className="font-body-sm text-[11px] sm:text-body-sm opacity-80 mt-0.5 sm:mt-1 hidden sm:block line-clamp-2">
-                {item.desc}
-              </p>
             </div>
           </a>
         ))}

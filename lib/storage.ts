@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/client';
-import { isDemoAdminActive } from '@/lib/utils/adminDemoAccess';
 
 export const MEDIA_BUCKET = 'store-media';
 export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -27,12 +26,6 @@ export function validateImageFile(file: File, accepted = ACCEPTED_IMAGE_TYPES): 
 export async function uploadImage(file: File, folder: string, accepted = ACCEPTED_IMAGE_TYPES): Promise<string> {
   const problem = validateImageFile(file, accepted);
   if (problem) throw new Error(problem);
-
-  if (isDemoAdminActive()) {
-    // For local demo testing, bypass Supabase entirely and return a local blob URL
-    // This prevents RLS / missing bucket errors when testing the UI.
-    return URL.createObjectURL(file);
-  }
 
   const supabase = createClient();
   const ext = EXTENSIONS[file.type] || 'bin';

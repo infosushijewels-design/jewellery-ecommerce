@@ -9,19 +9,23 @@ export interface Testimonial {
   subtitle: string;
   rating: number;
   date: string;
+  /** Short highlight line from the review's own title field — real data, not generated. */
+  headline: string;
   text: string;
+  /** The reviewed product's real title, when the review is linked to one. */
+  productName?: string;
 }
 
 const monthYear = (iso: string) =>
-  new Date(iso).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }).toUpperCase();
+  new Date(iso).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
 
 function StarRating({ rating }: { rating: number }) {
   return (
-    <div className="flex gap-0.5 text-[#E0A526]" aria-label={`${rating} out of 5 stars`}>
+    <div className="flex gap-0.5 text-secondary" aria-label={`${rating} out of 5 stars`}>
       {[1, 2, 3, 4, 5].map((i) => (
         <span
           key={i}
-          className="material-symbols-outlined text-[18px]"
+          className="material-symbols-outlined text-[16px]"
           style={{ fontVariationSettings: `'FILL' ${i <= rating ? 1 : 0}` }}
         >
           star
@@ -33,19 +37,43 @@ function StarRating({ rating }: { rating: number }) {
 
 function TestimonialCard({ t }: { t: Testimonial }) {
   return (
-    <article className="bg-surface rounded-2xl p-6 shadow-[0_2px_12px_rgba(45,32,36,0.06)] flex flex-col h-full">
-      <div className="flex items-center justify-between mb-4">
+    <article className="bg-surface rounded-[18px] border border-[#EDE4D8] shadow-[0_4px_20px_rgba(22,11,14,0.06)] p-6 sm:p-7 flex flex-col h-full">
+      <div className="flex items-center justify-between mb-3">
         <StarRating rating={t.rating} />
-        <span className="text-label-sm text-on-surface-variant tracking-wider">{monthYear(t.date)}</span>
+        <span className="font-label-sm text-[10px] text-on-surface-variant tracking-wider bg-surface-container-low px-2.5 py-1 rounded-full">
+          {monthYear(t.date)}
+        </span>
       </div>
-      <p className="font-body-md text-[15px] text-on-surface leading-relaxed flex-1 line-clamp-6">{t.text}</p>
-      <div className="flex items-center gap-3 pt-5 mt-6 border-t border-outline-variant/40">
-        <span className="w-12 h-12 rounded-full bg-secondary-container/60 text-primary flex items-center justify-center font-headline-sm text-lg flex-shrink-0">
+
+      <span className="font-headline-lg text-[40px] text-secondary/60 leading-none select-none" aria-hidden="true">&ldquo;</span>
+
+      {t.headline && (
+        <h3 className="font-headline-sm text-[17px] sm:text-headline-sm text-primary leading-snug -mt-2 mb-2 line-clamp-2">
+          &ldquo;{t.headline}&rdquo;
+        </h3>
+      )}
+
+      <p className="font-body-md text-[14px] text-[#6B5A5F] leading-relaxed flex-1 line-clamp-3">{t.text}</p>
+
+      {t.productName && (
+        <div className="mt-4 bg-[#FAF6F0] border border-[#EFE7DA] rounded-lg px-3 py-2 flex items-center gap-1.5">
+          <span className="text-secondary text-[12px]" aria-hidden="true">✦</span>
+          <span className="font-body-sm text-[12px] text-on-surface-variant">
+            Purchased: <span className="text-primary font-medium">{t.productName}</span>
+          </span>
+        </div>
+      )}
+
+      <div className="flex items-center gap-3 pt-4 mt-5 border-t border-outline-variant/40">
+        <span className="w-10 h-10 rounded-full bg-[#24181C] text-secondary flex items-center justify-center font-headline-sm text-base flex-shrink-0">
           {t.name.trim().charAt(0).toUpperCase()}
         </span>
         <div className="min-w-0">
-          <p className="font-headline-sm text-[16px] text-primary truncate">{t.name}</p>
-          <p className="text-label-sm text-on-surface-variant truncate">{t.subtitle}</p>
+          <p className="font-headline-sm text-[15px] text-primary truncate">{t.name}</p>
+          <p className="font-body-sm text-[11px] text-on-surface-variant truncate flex items-center gap-1">
+            <span className="material-symbols-outlined text-[12px] text-secondary">verified</span>
+            {t.subtitle}
+          </p>
         </div>
       </div>
     </article>

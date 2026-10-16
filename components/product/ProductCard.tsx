@@ -50,6 +50,7 @@ export default function ProductCard({
   const [isNavigating, setIsNavigating] = useState(false);
 
   const optimizedImage = getOptimizedImageUrl(imageSrc);
+  const richImageAlt = material ? `${imageAlt}, ${material}` : imageAlt;
 
   const handleViewDetails = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -71,7 +72,7 @@ export default function ProductCard({
     <article className="group bg-white flex flex-col overflow-hidden hover:shadow-xl transition-shadow duration-300">
       <div className="relative overflow-hidden">
         <Link href={`/product/${slug}`} className="block">
-          <ImgWithSkeleton src={optimizedImage} alt={imageAlt} />
+          <ImgWithSkeleton src={optimizedImage} alt={richImageAlt} />
         </Link>
         <div className="absolute top-2.5 left-2.5 flex items-start z-10">
           {badge ? (

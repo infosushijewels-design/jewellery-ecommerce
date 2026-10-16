@@ -18,16 +18,24 @@ const SHORTCUTS: CategoryItem[] = [
   { name: 'Gold Coins', href: '/search?q=gold%20coin', image: 'https://images.unsplash.com/photo-1708714290523-e9f76878bf53?auto=format&fit=crop&q=80&w=300' },
 ];
 
+// Approved homepage "Shop by Category" set, in display order. Other active
+// categories (e.g. Bangles, Pendant Sets, duplicate "Necklace") still exist
+// in the database/admin panel and are simply not shown in this section.
+const CATEGORY_ORDER = ['Rings', 'Earrings', 'Bracelets', 'Pendants', 'Necklaces', 'Mangalsutras', 'Gold Coins'];
+
 export default async function Categories() {
   const categories = await getHomeCategories();
-  const items: CategoryItem[] = [
-    ...categories.map((c, i) => ({
+  const allItems: CategoryItem[] = [
+    ...categories.map((c) => ({
       name: c.name,
       href: c.href,
       image: c.image || PLACEHOLDER_IMAGES[c.name] || GENERIC_PLACEHOLDER,
-      bold: i === 0,
     })),
     ...SHORTCUTS,
   ];
+  const items: CategoryItem[] = CATEGORY_ORDER
+    .map((name) => allItems.find((item) => item.name === name))
+    .filter((item): item is CategoryItem => item !== undefined)
+    .map((item, i) => ({ ...item, bold: i === 0 }));
   return <CategoryMarquee items={items} />;
 }

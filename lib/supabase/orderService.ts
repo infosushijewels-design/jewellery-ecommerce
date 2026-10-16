@@ -1,6 +1,5 @@
 import { createClient } from './client';
 import { Database } from './database.types';
-import { isDemoAdminActive } from '@/lib/utils/adminDemoAccess';
 export type Order = Database['public']['Tables']['orders']['Row'];
 export type OrderItem = Database['public']['Tables']['order_items']['Row'];
 export type Profile = Database['public']['Tables']['profiles']['Row'];
@@ -780,9 +779,6 @@ export async function getAdminCustomers(): Promise<AdminCustomer[]> {
  * Admin: Product management functions with graceful column fallback
  */
 export async function adminCreateProduct(product: Record<string, unknown>): Promise<{ success: boolean; id?: string; error?: string }> {
-  if (isDemoAdminActive()) {
-    return { success: true, id: `demo-product-${Date.now()}` };
-  }
   const supabase = createClient();
   try {
     // 1. Try full insert
@@ -846,9 +842,6 @@ export async function adminSaveProductVariants(
   productId: string,
   variants: { sku?: string | null; karat?: string | null; metal_color?: string | null; weight?: number | null; price?: number | null; stock?: number }[]
 ): Promise<{ success: boolean; error?: string }> {
-  if (isDemoAdminActive()) {
-    return { success: true };
-  }
   const supabase = createClient();
   try {
     const { error: deleteError } = await supabase.from('product_variants').delete().eq('product_id', productId);
@@ -868,9 +861,6 @@ export async function adminSaveProductVariants(
 }
 
 export async function adminUpdateProduct(id: string, product: Record<string, unknown>): Promise<{ success: boolean; error?: string }> {
-  if (isDemoAdminActive()) {
-    return { success: true };
-  }
   const supabase = createClient();
   try {
     const { error } = await supabase.from('products').update(product as ProductUpdate).eq('id', id);

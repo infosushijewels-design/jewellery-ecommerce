@@ -53,14 +53,22 @@ export async function getPublicTestimonials(limit = 12) {
   try {
     const { data, error } = await createPublicClient()
       .from('product_reviews')
-      .select('id, reviewer_name, rating, title, comment, created_at')
+      .select('id, reviewer_name, rating, title, comment, created_at, products(title)')
       // Exactly the reviews an admin approved (Admin → Reviews) — approval is the only gate
       .eq('status', 'approved')
       .not('comment', 'is', null)
       .order('created_at', { ascending: false })
       .limit(limit);
     if (error) return [];
-    return (data || []) as { id: string; reviewer_name: string; rating: number; title: string | null; comment: string | null; created_at: string }[];
+    return (data || []) as {
+      id: string;
+      reviewer_name: string;
+      rating: number;
+      title: string | null;
+      comment: string | null;
+      created_at: string;
+      products: { title: string } | { title: string }[] | null;
+    }[];
   } catch {
     return [];
   }

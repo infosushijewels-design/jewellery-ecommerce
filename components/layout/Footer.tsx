@@ -1,54 +1,59 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import FooterContact from './FooterContact';
+import FooterSocialLinks from './FooterSocialLinks';
 
 export default function Footer() {
   return (
     <footer className="bg-primary text-surface pt-12 sm:pt-20 pb-8 sm:pb-10 border-t border-outline-variant/20 relative overflow-hidden">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-16 relative z-10">
 
-        {/* Top row: Brand full-width on mobile, left col on desktop */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-10 gap-x-8 lg:gap-x-0">
 
-          {/* Brand & Manifesto */}
-          <div className="lg:col-span-4 lg:pr-4">
-            <Link className="inline-block mb-5 sm:mb-6" href="/" aria-label="Sushi Jewels — home">
-              {/* White-on-transparent version of the logo for the dark footer */}
-              <Image src="/logo-footer.png" alt="Sushi Jewels" width={638} height={978} className="h-28 sm:h-32 w-auto" />
+          {/* Brand */}
+          <div className="lg:pr-8">
+            <Link className="inline-flex items-center gap-2 sm:gap-3 mb-5 sm:mb-6" href="/" aria-label="Sushi Jewels — home">
+              {/* The logo file has the "SUSHI JEWELS" wordmark baked into its bottom ~18%; no
+                  symbol-only asset exists, so this crops it out visually (file itself is untouched)
+                  since the brand name is now shown separately beside the logo. */}
+              <div className="h-[46px] sm:h-[56px] overflow-hidden flex-shrink-0">
+                {/* White-on-transparent version of the logo for the dark footer */}
+                <Image src="/logo-footer.png" alt="Sushi Jewels Fine Jewellery" width={638} height={978} className="h-14 sm:h-[68px] w-auto" />
+              </div>
+              <span className="font-headline-sm sm:font-headline-md text-[17px] sm:text-headline-md text-surface tracking-wide leading-tight whitespace-nowrap">
+                Sushi Jewels
+              </span>
             </Link>
             <p className="font-body-sm text-body-sm text-surface-dim leading-relaxed max-w-sm">
-              Translating the eternal grammar of Indian royalty into modern fine jewellery. We steward ethically sourced natural diamonds and BIS hallmarked precious metals into heirlooms meant to be lived in.
+              Timeless fine jewellery, crafted with care. BIS hallmarked gold and certified natural diamonds.
             </p>
+            <FooterSocialLinks />
           </div>
 
-          {/* Nav columns — 2-col grid on mobile, individual cols on desktop */}
-          <div className="grid grid-cols-2 sm:contents gap-6 lg:col-span-4">
+          {/* Collections */}
+          <div className="lg:border-l lg:border-outline-variant/20 lg:pl-8">
+            <h4 className="font-label-md text-label-md text-surface uppercase tracking-wider mb-4 sm:mb-6">The Collections</h4>
+            <ul className="space-y-3 sm:space-y-4">
+              <li><Link className="font-body-sm text-body-sm text-surface-dim hover:text-secondary-fixed transition-colors" href="/collections/premium-collection">High Jewellery</Link></li>
+              <li><Link className="font-body-sm text-body-sm text-surface-dim hover:text-secondary-fixed transition-colors" href="/collections/best-sellers">Everyday Edit</Link></li>
+              <li><Link className="font-body-sm text-body-sm text-surface-dim hover:text-secondary-fixed transition-colors" href="/collections/bridal-collection">Bridal Trousseau</Link></li>
+              <li><Link className="font-body-sm text-body-sm text-surface-dim hover:text-secondary-fixed transition-colors" href="/search?q=men">Menswear Classics</Link></li>
+            </ul>
+          </div>
 
-            {/* Collections */}
-            <div className="lg:col-span-2">
-              <h4 className="font-label-md text-label-md text-surface uppercase tracking-wider mb-4 sm:mb-6">The Collections</h4>
-              <ul className="space-y-3 sm:space-y-4">
-                <li><Link className="font-body-sm text-body-sm text-surface-dim hover:text-secondary-fixed transition-colors" href="/collections/premium-collection">High Jewellery</Link></li>
-                <li><Link className="font-body-sm text-body-sm text-surface-dim hover:text-secondary-fixed transition-colors" href="/collections/best-sellers">Everyday Edit</Link></li>
-                <li><Link className="font-body-sm text-body-sm text-surface-dim hover:text-secondary-fixed transition-colors" href="/collections/bridal-collection">Bridal Trousseau</Link></li>
-                <li><Link className="font-body-sm text-body-sm text-surface-dim hover:text-secondary-fixed transition-colors" href="/search?q=men">Menswear Classics</Link></li>
-              </ul>
-            </div>
-
-            {/* Client Services */}
-            <div className="lg:col-span-2">
-              <h4 className="font-label-md text-label-md text-surface uppercase tracking-wider mb-4 sm:mb-6">Client Services</h4>
-              <ul className="space-y-3 sm:space-y-4">
-                <li><Link className="font-body-sm text-body-sm text-surface-dim hover:text-secondary-fixed transition-colors" href="/about">About Us</Link></li>
-                <li><Link className="font-body-sm text-body-sm text-surface-dim hover:text-secondary-fixed transition-colors" href="/contact">Contact Us</Link></li>
-                <li><Link className="font-body-sm text-body-sm text-surface-dim hover:text-secondary-fixed transition-colors" href="/faq">FAQ</Link></li>
-                <li><Link className="font-body-sm text-body-sm text-surface-dim hover:text-secondary-fixed transition-colors" href="/track-order">Track Order</Link></li>
-              </ul>
-            </div>
+          {/* Client Services */}
+          <div className="lg:border-l lg:border-outline-variant/20 lg:pl-8">
+            <h4 className="font-label-md text-label-md text-surface uppercase tracking-wider mb-4 sm:mb-6">Client Services</h4>
+            <ul className="space-y-3 sm:space-y-4">
+              <li><Link className="font-body-sm text-body-sm text-surface-dim hover:text-secondary-fixed transition-colors" href="/about">About Us</Link></li>
+              <li><Link className="font-body-sm text-body-sm text-surface-dim hover:text-secondary-fixed transition-colors" href="/contact">Contact Us</Link></li>
+            </ul>
           </div>
 
           {/* Concierge & Contact */}
-          <FooterContact />
+          <div className="lg:border-l lg:border-outline-variant/20 lg:pl-8">
+            <FooterContact />
+          </div>
         </div>
       </div>
 
@@ -58,11 +63,8 @@ export default function Footer() {
         <div className="flex flex-wrap justify-center sm:justify-end gap-3 sm:gap-4 md:gap-8">
           <Link className="font-label-sm text-label-sm text-surface-dim hover:text-surface transition-colors" href="/terms">Terms &amp; Conditions</Link>
           <Link className="font-label-sm text-label-sm text-surface-dim hover:text-surface transition-colors" href="/privacy-policy">Privacy Policy</Link>
-          <Link className="font-label-sm text-label-sm text-surface-dim hover:text-surface transition-colors" href="/shipping-policy">Shipping Policy</Link>
-          <Link className="font-label-sm text-label-sm text-surface-dim hover:text-surface transition-colors" href="/return-policy">Return Policy</Link>
         </div>
       </div>
     </footer>
   );
 }
-
