@@ -5,12 +5,11 @@ import Hero from '@/components/home/Hero';
 import Categories from '@/components/home/Categories';
 import CategoryBanners from '@/components/home/CategoryBanners';
 import OurProducts from '@/components/home/OurProducts';
-import Campaign from '@/components/home/Campaign';
-import Editorial from '@/components/home/Editorial';
+import ShopByGender from '@/components/home/ShopByGender';
 import Heritage from '@/components/home/Heritage';
-import TrustMatrix from '@/components/home/TrustMatrix';
 import FlagshipAtelier from '@/components/home/FlagshipAtelier';
 import Testimonials from '@/components/home/Testimonials';
+import ExploreCollections from '@/components/home/ExploreCollections';
 import Footer from '@/components/layout/Footer';
 
 export const revalidate = 60;
@@ -77,16 +76,15 @@ export default function Home() {
         <Suspense fallback={<CategoriesSkeleton />}>
           <Categories />
         </Suspense>
-        <CategoryBanners />
         <Suspense fallback={<OurProductsSkeleton />}>
           <OurProducts />
         </Suspense>
-        <Campaign />
-        <Editorial />
+        <ShopByGender />
+        <CategoryBanners />
         <Heritage />
-        <TrustMatrix />
         <FlagshipAtelier />
         <Testimonials />
+        <ExploreCollections />
       </main>
       <Footer />
     </>

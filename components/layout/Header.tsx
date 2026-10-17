@@ -238,9 +238,8 @@ export default function Header() {
                   onClick={() => setIsUserMenuOpen((v) => !v)}
                   aria-haspopup="menu"
                   aria-expanded={isUserMenuOpen}
-                  className={`w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors rounded-full ${
-                    isUserMenuOpen ? 'bg-surface-container text-primary ring-2 ring-primary/20' : 'hover:bg-surface-container'
-                  }`}
+                  className={`w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors rounded-full ${isUserMenuOpen ? 'bg-surface-container text-primary ring-2 ring-primary/20' : 'hover:bg-surface-container'
+                    }`}
                   title="Account"
                 >
                   <AvatarCircle avatarUrl={profile?.avatar_url ?? null} fullName={profile?.full_name ?? null} size={32} />
@@ -290,12 +289,12 @@ export default function Header() {
               </div>
             ) : (
               <>
-              <Link href="/track-order" className="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface-container" title="Track Order" aria-label="Track Order">
-                <span className="material-symbols-outlined text-[22px]">package_2</span>
-              </Link>
-              <Link href="/login" className="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface-container" title="Sign In">
-                <span className="material-symbols-outlined text-[22px]">person</span>
-              </Link>
+                <Link href="/track-order" className="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface-container" title="Track Order" aria-label="Track Order">
+                  <span className="material-symbols-outlined text-[22px]">package_2</span>
+                </Link>
+                <Link href="/login" className="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface-container" title="Sign In">
+                  <span className="material-symbols-outlined text-[22px]">person</span>
+                </Link>
               </>
             )}
 
@@ -336,8 +335,8 @@ export default function Header() {
                 <Link
                   href={link.href}
                   className={`flex items-center gap-1 px-4 py-3.5 text-[13px] font-medium tracking-wide whitespace-nowrap transition-colors border-b-2 border-transparent group-hover:border-primary group-hover:text-primary ${link.highlight
-                      ? 'text-secondary font-semibold group-hover:border-secondary group-hover:text-secondary'
-                      : 'text-on-surface-variant'
+                    ? 'text-secondary font-semibold group-hover:border-secondary group-hover:text-secondary'
+                    : 'text-on-surface-variant'
                     }`}
                 >
                   {link.label}

@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 240" width="1200" height="240">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="stripBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FCFAF6"/>
+      <stop offset="100%" stop-color="#F6F1EA"/>
+    </linearGradient>
+
+    <!-- Fade Mask for Left and Right Edges -->
+    <linearGradient id="fadeMask" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FCFAF6" stop-opacity="1"/>
+      <stop offset="6%" stop-color="#FCFAF6" stop-opacity="0"/>
+      <stop offset="94%" stop-color="#FCFAF6" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#FCFAF6" stop-opacity="1"/>
+    </linearGradient>
+
+    <filter id="pillShadow" x="-5%" y="-10%" width="110%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#160B0E" flood-opacity="0.04"/>
+    </filter>
+  </defs>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,500&amp;family=Manrope:wght@500;600;700&amp;display=swap');
+    .serif-text { font-family: 'Playfair Display', Georgia, serif; }
+    .sans-text { font-family: 'Manrope', system-ui, sans-serif; }
+
+    /* Smooth Infinite Horizontal Animation */
+    @keyframes marqueeScroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-1950px); }
+    }
+
+    .marquee-track {
+      animation: marqueeScroll 25s linear infinite;
+    }
+  </style>
+
+  <!-- Background -->
+  <rect width="1200" height="240" fill="url(#stripBg)"/>
+
+  <!-- Minimal Header (Small & Subtle) -->
+  <g transform="translate(600, 32)" text-anchor="middle">
+    <text x="0" y="10" class="sans-text" font-size="10.5" fill="#9E7D3B" font-weight="700" letter-spacing="3.5">
+      ✦ CLIENT LOVE &amp; RATINGS ✦
+    </text>
+    <text x="0" y="32" class="serif-title" font-size="18" fill="#160B0E" font-weight="600">
+      Rated ★★★★★ 4.9 / 5.0 by Fine Jewellery Lovers
+    </text>
+  </g>
+
+  <!-- Section Top & Bottom Border -->
+  <line x1="0" y1="80" x2="1200" y2="80" stroke="#EAE2D8" stroke-width="1"/>
+  <line x1="0" y1="210" x2="1200" y2="210" stroke="#EAE2D8" stroke-width="1"/>
+
+  <!-- ANIMATED TRACK (Contains 5 Reviews duplicated for seamless infinite loop) -->
+  <g transform="translate(0, 105)" clip-path="url(#stripClip)">
+    <g class="marquee-track">
+
+      <!-- ── Review 1 ── -->
+      <g transform="translate(0, 0)">
+        <rect width="360" height="80" rx="14" fill="#FFFFFF" stroke="#EFE7DC" stroke-width="1" filter="url(#pillShadow)"/>
+        <text x="20" y="30" class="sans-text" font-size="13" fill="#D4AF37">★★★★★</text>
+        <text x="85" y="30" class="sans-text" font-size="10.5" fill="#1B7A42" font-weight="600">✓ Verified Purchase</text>
+        <text x="20" y="56" class="serif-text" font-size="13.5" fill="#160B0E" font-style="italic">
+          “The diamond brilliance in real life is unmatched!”
+        </text>
+      </g>
+
+      <!-- ── Review 2 ── -->
+      <g transform="translate(390, 0)">
+        <rect width="360" height="80" rx="14" fill="#FFFFFF" stroke="#EFE7DC" stroke-width="1" filter="url(#pillShadow)"/>
+        <text x="20" y="30" class="sans-text" font-size="13" fill="#D4AF37">★★★★★</text>
+        <text x="85" y="30" class="sans-text" font-size="10.5" fill="#1B7A42" font-weight="600">✓ Verified Purchase</text>
+        <text x="20" y="56" class="serif-text" font-size="13.5" fill="#160B0E" font-style="italic">
+          “Bridal choker finish is truly royal. Pure 916 gold!”
+        </text>
+      </g>
+
+      <!-- ── Review 3 ── -->
+      <g transform="translate(780, 0)">
+        <rect width="360" height="80" rx="14" fill="#FFFFFF" stroke="#EFE7DC" stroke-width="1" filter="url(#pillShadow)"/>
+        <text x="20" y="30" class="sans-text" font-size="13" fill="#D4AF37">★★★★★</text>
+        <text x="85" y="30" class="sans-text" font-size="10.5" fill="#1B7A42" font-weight="600">✓ Verified Purchase</text>
+        <text x="20" y="56" class="serif-text" font-size="13.5" fill="#160B0E" font-style="italic">
+          “Packaging was luxurious. IGI certificate included.”
+        </text>
+      </g>
+
+      <!-- ── Review 4 ── -->
+      <g transform="translate(1170, 0)">
+        <rect width="360" height="80" rx="14" fill="#FFFFFF" stroke="#EFE7DC" stroke-width="1" filter="url(#pillShadow)"/>
+        <text x="20" y="30" class="sans-text" font-size="13" fill="#D4AF37">★★★★★</text>
+        <text x="85" y="30" class="sans-text" font-size="10.5" fill="#1B7A42" font-weight="600">✓ Verified Purchase</text>
+        <text x="20" y="56" class="serif-text" font-size="13.5" fill="#160B0E" font-style="italic">
+          “Flawless bespoke anniversary ring customization!”
+        </text>
+      </g>
+
+      <!-- ── Review 5 ── -->
+      <g transform="translate(1560, 0)">
+        <rect width="360" height="80" rx="14" fill="#FFFFFF" stroke="#EFE7DC" stroke-width="1" filter="url(#pillShadow)"/>
+        <text x="20" y="30" class="sans-text" font-size="13" fill="#D4AF37">★★★★★</text>
+        <text x="85" y="30" class="sans-text" font-size="10.5" fill="#1B7A42" font-weight="600">✓ Verified Purchase</text>
+        <text x="20" y="56" class="serif-text" font-size="13.5" fill="#160B0E" font-style="italic">
+          “Lightweight, elegant studs. Perfect for daily wear.”
+        </text>
+      </g>
+
+      <!-- ── DUPLICATE FOR SEAMLESS INFINITE LOOP ── -->
+      <g transform="translate(1950, 0)">
+        <rect width="360" height="80" rx="14" fill="#FFFFFF" stroke="#EFE7DC" stroke-width="1"/>
+        <text x="20" y="30" class="sans-text" font-size="13" fill="#D4AF37">★★★★★</text>
+        <text x="85" y="30" class="sans-text" font-size="10.5" fill="#1B7A42" font-weight="600">✓ Verified Purchase</text>
+        <text x="20" y="56" class="serif-text" font-size="13.5" fill="#160B0E" font-style="italic">
+          “The diamond brilliance in real life is unmatched!”
+        </text>
+      </g>
+      <g transform="translate(2340, 0)">
+        <rect width="360" height="80" rx="14" fill="#FFFFFF" stroke="#EFE7DC" stroke-width="1"/>
+        <text x="20" y="30" class="sans-text" font-size="13" fill="#D4AF37">★★★★★</text>
+        <text x="85" y="30" class="sans-text" font-size="10.5" fill="#1B7A42" font-weight="600">✓ Verified Purchase</text>
+        <text x="20" y="56" class="serif-text" font-size="13.5" fill="#160B0E" font-style="italic">
+          “Bridal choker finish is truly royal. Pure 916 gold!”
+        </text>
+      </g>
+      <g transform="translate(2730, 0)">
+        <rect width="360" height="80" rx="14" fill="#FFFFFF" stroke="#EFE7DC" stroke-width="1"/>
+        <text x="20" y="30" class="sans-text" font-size="13" fill="#D4AF37">★★★★★</text>
+        <text x="85" y="30" class="sans-text" font-size="10.5" fill="#1B7A42" font-weight="600">✓ Verified Purchase</text>
+        <text x="20" y="56" class="serif-text" font-size="13.5" fill="#160B0E" font-style="italic">
+          “Packaging was luxurious. IGI certificate included.”
+        </text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Left & Right Fade Overlay Gradient for Seamless Luxury Entrance/Exit -->
+  <rect y="81" width="120" height="128" fill="url(#bgLight)" opacity="0.95"/>
+  <rect x="1080" y="81" width="120" height="128" fill="url(#bgLight)" opacity="0.95"/>
+</svg>

@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 620" width="1280" height="620">
+  <defs>
+    <linearGradient id="bgLight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FCFAF6"/>
+      <stop offset="100%" stop-color="#F5EFE6"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#160B0E" flood-opacity="0.04"/>
+    </filter>
+  </defs>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,400&amp;family=Manrope:wght@400;500;600;700&amp;display=swap');
+    .serif-title { font-family: 'Playfair Display', Georgia, serif; }
+    .sans-text { font-family: 'Manrope', system-ui, sans-serif; }
+  </style>
+
+  <!-- Background -->
+  <rect width="1280" height="620" fill="url(#bgLight)"/>
+
+  <!-- Main Section Title -->
+  <g transform="translate(640, 45)" text-anchor="middle">
+    <text x="0" y="16" class="sans-text" font-size="11" fill="#9E7D3B" font-weight="700" letter-spacing="3">VOICES OF ELEGANCE</text>
+    <text x="0" y="48" class="serif-title" font-size="28" fill="#160B0E" font-weight="600">Loved by Our Connoisseurs</text>
+  </g>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       OPTION A: COMPACT 3-CARD SLIM GRID (Height: only ~180px)
+       ══════════════════════════════════════════════════════════════ -->
+  <g transform="translate(60, 130)">
+    <!-- Label for Option A -->
+    <text x="0" y="-12" class="sans-text" font-size="12" fill="#9E7D3B" font-weight="700">IDEA 1: SLIM MICRO-CARDS (Only Stars + Review + Name)</text>
+
+    <!-- Card 1 -->
+    <g transform="translate(0, 5)">
+      <rect width="365" height="175" rx="14" fill="#FFFFFF" filter="url(#cardShadow)" stroke="#EDE4D8" stroke-width="1"/>
+      <text x="24" y="34" class="sans-text" font-size="14" fill="#D4AF37">★★★★★</text>
+      <text x="24" y="68" class="sans-text" font-size="13" fill="#2D2024" line-height="1.5">
+        <tspan x="24" dy="0">“The craftsmanship of my bridal choker</tspan>
+        <tspan x="24" dy="20">exceeded every expectation. Truly royal finish!”</tspan>
+      </text>
+      <line x1="24" y1="120" x2="341" y2="120" stroke="#F0E8DD" stroke-width="1"/>
+      <text x="24" y="146" class="serif-title" font-size="14" fill="#160B0E" font-weight="600">Priya Singhal</text>
+      <text x="120" y="146" class="sans-text" font-size="11" fill="#1B7A42" font-weight="600">• Verified Buyer</text>
+    </g>
+
+    <!-- Card 2 -->
+    <g transform="translate(395, 5)">
+      <rect width="365" height="175" rx="14" fill="#FFFFFF" filter="url(#cardShadow)" stroke="#EDE4D8" stroke-width="1"/>
+      <text x="24" y="34" class="sans-text" font-size="14" fill="#D4AF37">★★★★★</text>
+      <text x="24" y="68" class="sans-text" font-size="13" fill="#2D2024" line-height="1.5">
+        <tspan x="24" dy="0">“The diamond brilliance in real life is unmatched.</tspan>
+        <tspan x="24" dy="20">Lightweight and perfect for daily wear.”</tspan>
+      </text>
+      <line x1="24" y1="120" x2="341" y2="120" stroke="#F0E8DD" stroke-width="1"/>
+      <text x="24" y="146" class="serif-title" font-size="14" fill="#160B0E" font-weight="600">Dr. Radhika Mehta</text>
+      <text x="155" y="146" class="sans-text" font-size="11" fill="#1B7A42" font-weight="600">• Verified Buyer</text>
+    </g>
+
+    <!-- Card 3 -->
+    <g transform="translate(790, 5)">
+      <rect width="365" height="175" rx="14" fill="#FFFFFF" filter="url(#cardShadow)" stroke="#EDE4D8" stroke-width="1"/>
+      <text x="24" y="34" class="sans-text" font-size="14" fill="#D4AF37">★★★★★</text>
+      <text x="24" y="68" class="sans-text" font-size="13" fill="#2D2024" line-height="1.5">
+        <tspan x="24" dy="0">“Bespoke customization for our anniversary.</tspan>
+        <tspan x="24" dy="20">Prompt delivery and authentic certification!”</tspan>
+      </text>
+      <line x1="24" y1="120" x2="341" y2="120" stroke="#F0E8DD" stroke-width="1"/>
+      <text x="24" y="146" class="serif-title" font-size="14" fill="#160B0E" font-weight="600">Vikram Joshi</text>
+      <text x="120" y="146" class="sans-text" font-size="11" fill="#1B7A42" font-weight="600">• Verified Buyer</text>
+    </g>
+  </g>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       OPTION B: MINIMAL EDITORIAL QUOTE CAROUSEL (Center Single-Line)
+       ══════════════════════════════════════════════════════════════ -->
+  <g transform="translate(60, 370)">
+    <!-- Label for Option B -->
+    <text x="0" y="-12" class="sans-text" font-size="12" fill="#9E7D3B" font-weight="700">IDEA 2: SINGLE CENTERED QUOTE STRIP (Ultra-Minimal &amp; Sleek, Cartier Style)</text>
+
+    <rect y="5" width="1160" height="170" rx="16" fill="#FFFFFF" filter="url(#cardShadow)" stroke="#EDE4D8" stroke-width="1"/>
+
+    <!-- Left Arrow -->
+    <circle cx="50" cy="90" r="18" fill="#FBF8F3" stroke="#E5DEC9" stroke-width="1"/>
+    <text x="50" y="94" class="sans-text" font-size="14" fill="#160B0E" text-anchor="middle">‹</text>
+
+    <!-- Center Content -->
+    <g transform="translate(580, 45)" text-anchor="middle">
+      <text x="0" y="10" class="sans-text" font-size="16" fill="#D4AF37">★★★★★</text>
+      
+      <text x="0" y="44" class="serif-title" font-size="20" fill="#160B0E" font-style="italic">
+        “The craftsmanship of my bridal choker exceeded every expectation. Truly royal finish!”
+      </text>
+
+      <text x="0" y="78" class="sans-text" font-size="12" fill="#756166">
+        <tspan font-weight="700" fill="#160B0E">Priya Singhal</tspan>  —  <tspan fill="#1B7A42" font-weight="600">✓ Verified Buyer</tspan>  •  New Delhi
+      </text>
+    </g>
+
+    <!-- Right Arrow -->
+    <circle cx="1110" cy="90" r="18" fill="#FBF8F3" stroke="#E5DEC9" stroke-width="1"/>
+    <text x="1110" y="94" class="sans-text" font-size="14" fill="#160B0E" text-anchor="middle">›</text>
+
+    <!-- Carousel Dots below -->
+    <circle cx="565" cy="150" r="3.5" fill="#9E7D3B"/>
+    <circle cx="580" cy="150" r="3.5" fill="#D1C3C6"/>
+    <circle cx="595" cy="150" r="3.5" fill="#D1C3C6"/>
+  </g>
+
+</svg>
