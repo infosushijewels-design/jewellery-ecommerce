@@ -39,6 +39,7 @@ interface FormState {
   description: string;
   isFeatured: boolean;
   isNewArrival: boolean;
+  audience: string;
 }
 
 interface VariantRow {
@@ -69,6 +70,7 @@ const EMPTY_FORM: FormState = {
   description: 'Meticulously set in hallmarked gold and accompanied by international authenticity certification.',
   isFeatured: false,
   isNewArrival: true,
+  audience: '',
 };
 
 function productToForm(product: Product): FormState {
@@ -89,6 +91,7 @@ function productToForm(product: Product): FormState {
     description: product.description || '',
     isFeatured: product.is_featured || false,
     isNewArrival: product.is_new_arrival || false,
+    audience: product.audience || '',
   };
 }
 
@@ -243,6 +246,7 @@ export default function ProductForm({ mode, productId, initialProduct }: Product
       description: form.description,
       is_featured: form.isFeatured,
       is_new_arrival: form.isNewArrival,
+      audience: form.audience || null,
     };
 
     const variantsPayload = variants
@@ -362,6 +366,21 @@ export default function ProductForm({ mode, productId, initialProduct }: Product
               ))}
             </select>
             <p className="text-[11px] text-[#2D2024]/50 mt-1">Shown on /collections/… pages, e.g. Bridal or Best Sellers.</p>
+          </div>
+
+          <div>
+            <label className="text-xs uppercase tracking-wider text-[#2D2024]/65 block mb-1">Audience (For Him / For Her)</label>
+            <select
+              value={form.audience}
+              onChange={(e) => setForm({ ...form, audience: e.target.value })}
+              className="w-full bg-white border border-[#E8D5C5] rounded-xl px-4 py-2.5 text-sm text-[#2D2024] focus:outline-none focus:border-[#B99A62]"
+            >
+              <option value="">Unclassified — won&apos;t appear in For Him or For Her</option>
+              <option value="men">Men&apos;s Jewellery</option>
+              <option value="women">Women&apos;s Jewellery</option>
+              <option value="unisex">Unisex (shows in both)</option>
+            </select>
+            <p className="text-[11px] text-[#2D2024]/50 mt-1">Drives the homepage &quot;For Him / For Her&quot; section. Leave unclassified unless you&apos;re sure.</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

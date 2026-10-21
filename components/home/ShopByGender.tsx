@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 export default function ShopByGender() {
   return (
-    <section className="py-12 sm:py-20 bg-surface" id="shop-by-gender">
+    <section className="py-12 sm:py-20 bg-surface scroll-mt-[120px] lg:scroll-mt-[150px]" id="shop-by-gender">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-16">
         
         {/* Section Header */}
@@ -25,7 +25,7 @@ export default function ShopByGender() {
           
           {/* Card 1: FOR HIM (Deep rich primary-container tones + Gold) */}
           <Link
-            href="/search?q=men"
+            href="/for-him"
             className="group relative flex flex-col justify-end overflow-hidden rounded-2xl sm:rounded-3xl border border-[#371736]/30 bg-[#160B0E] min-h-[460px] sm:min-h-[540px] lg:min-h-[600px] p-6 sm:p-10 transition-all duration-500 hover:shadow-2xl hover:border-secondary/60"
           >
             {/* Background Model Image with smooth zoom-in on hover */}
@@ -79,7 +79,7 @@ export default function ShopByGender() {
 
           {/* Card 2: FOR HER (Warm Champagne surface-container-low tones + Gold) */}
           <Link
-            href="/search?q=women"
+            href="/for-her"
             className="group relative flex flex-col justify-end overflow-hidden rounded-2xl sm:rounded-3xl border border-secondary/30 bg-[#F6F3EE] min-h-[460px] sm:min-h-[540px] lg:min-h-[600px] p-6 sm:p-10 transition-all duration-500 hover:shadow-2xl hover:border-secondary/80"
           >
             {/* Background Model Image with smooth zoom-in on hover */}

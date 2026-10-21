@@ -15,7 +15,6 @@ export default function MyOrdersPage() {
   const { user, isLoading: authLoading } = useAuth();
   const [orders, setOrders] = useState<FullOrder[]>([]);
   const [loading, setLoading] = useState(true);
-  const [trackingRef, setTrackingRef] = useState('');
   const router = useRouter();
 
   useEffect(() => {
@@ -31,19 +30,10 @@ export default function MyOrdersPage() {
       }
     }
     if (!authLoading) {
-      // Guests (no account) see their orders through email + one-time code, not the account page
-      if (!user) router.replace('/track-order');
+      if (!user) router.replace('/login');
       else loadOrders();
     }
   }, [user, authLoading, router]);
-
-  const handleTrackConsignment = (e: React.FormEvent) => {
-    e.preventDefault();
-    const ref = trackingRef.trim();
-    if (ref) {
-      router.push(`/orders/${encodeURIComponent(ref)}`);
-    }
-  };
 
   const getStatusBadge = (status: FullOrder['status']) => {
     switch (status) {
@@ -88,37 +78,6 @@ export default function MyOrdersPage() {
           </Link>
         </div>
 
-        {/* Track by Order ID */}
-        <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-2xl p-5 sm:p-6 mb-6 flex flex-col sm:flex-row sm:items-center gap-4">
-          <div className="flex items-center gap-3 flex-shrink-0">
-            <span className="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center text-secondary">
-              <span className="material-symbols-outlined text-[20px]">search</span>
-            </span>
-            <div>
-              <h2 className="font-headline-sm text-headline-sm text-primary">Track a Consignment</h2>
-              <p className="text-xs text-on-surface-variant">Look up any order directly by its reference number.</p>
-            </div>
-          </div>
-          <form onSubmit={handleTrackConsignment} className="flex-1 flex flex-col sm:flex-row gap-3">
-            <input
-              type="text"
-              value={trackingRef}
-              onChange={(e) => setTrackingRef(e.target.value)}
-              placeholder="Enter Order Reference (e.g. SJ-849201)"
-              className="flex-1 bg-surface border border-outline-variant rounded-full px-5 py-2.5 text-sm text-on-surface focus:outline-none focus:border-primary transition-colors"
-            />
-            <button
-              type="submit"
-              disabled={!trackingRef.trim()}
-              className="bg-primary text-surface px-6 py-2.5 rounded-full text-xs font-label-md uppercase tracking-wider hover:bg-tertiary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 whitespace-nowrap"
-            >
-              <span>Track Consignment</span>
-              <span className="material-symbols-outlined text-sm">local_shipping</span>
-            </button>
-          </form>
-        </div>
-
-        
         {/* Content */}
         {loading ? (
           <div className="py-24 text-center">
@@ -175,8 +134,8 @@ export default function MyOrdersPage() {
                       href={`/orders/${order.id}`}
                       className="bg-primary text-surface px-4 py-2 rounded-full text-xs font-medium uppercase tracking-wider hover:bg-tertiary transition-colors flex items-center gap-1 shadow-sm"
                     >
-                      <span>Track Order</span>
-                      <span className="material-symbols-outlined text-sm">local_shipping</span>
+                      <span>View Details</span>
+                      <span className="material-symbols-outlined text-sm">arrow_forward</span>
                     </Link>
                   </div>
                 </div>

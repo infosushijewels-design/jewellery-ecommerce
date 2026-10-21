@@ -14,8 +14,7 @@ export default function OrderTrackingPage() {
   const params = useParams();
   const orderId = params?.id as string;
   const { user } = useAuth();
-  // Registered customers go back to their account's orders; guests to the email-verified list
-  const listHref = user ? '/orders' : '/track-order';
+  const listHref = user ? '/orders' : '/';
   // The tracking link in the confirmation email carries a secret (?t=...) so a guest can open the order on any device.
   const trackingToken = useSearchParams().get('t');
 

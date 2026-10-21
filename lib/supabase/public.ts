@@ -1,6 +1,7 @@
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { DEFAULT_STORE_SETTINGS, mergeStoreSettings, type StoreSettings } from '@/lib/storeSettings';
 import { FALLBACK_BRANCHES, sortStores, type StoreBranch } from '@/lib/stores';
+import { FALLBACK_COLLECTION_CARDS, sortCollectionCards, type CollectionCard } from '@/lib/homepageCollections';
 
 /**
  * Cookie-less client for public, cacheable reads on the server (e.g. metadata).
@@ -45,6 +46,21 @@ export async function getPublicStores(): Promise<StoreBranch[]> {
     return sortStores((data as StoreBranch[]) || []);
   } catch {
     return FALLBACK_BRANCHES;
+  }
+}
+
+/** Active "Explore Our Collections" cards; falls back to the seeded 5 before migration 040. */
+export async function getPublicHomepageCollections(): Promise<CollectionCard[]> {
+  try {
+    const { data, error } = await createPublicClient()
+      .from('homepage_collection_cards')
+      .select('*')
+      .eq('is_active', true)
+      .order('sort_order');
+    if (error) return FALLBACK_COLLECTION_CARDS;
+    return sortCollectionCards((data as CollectionCard[]) || []);
+  } catch {
+    return FALLBACK_COLLECTION_CARDS;
   }
 }
 

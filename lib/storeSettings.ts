@@ -35,6 +35,9 @@ export interface StoreSettings {
     shippingFee: number;
   };
   homepage: {
+    heroVideoUrl: string;
+    heroPosterUrl: string;
+    heroBannerLink: string;
     philosophyEyebrow: string;
     philosophyQuote: string;
     philosophyText: string;
@@ -108,6 +111,9 @@ export const DEFAULT_STORE_SETTINGS: StoreSettings = {
     shippingFee: 99,
   },
   homepage: {
+    heroVideoUrl: '',
+    heroPosterUrl: '',
+    heroBannerLink: '/collections',
     philosophyEyebrow: 'Our Promise',
     philosophyQuote: 'Jewellery That Feels Like You — Crafted with BIS 916 hallmarked gold and certified diamonds to celebrate every milestone.',
     philosophyText:

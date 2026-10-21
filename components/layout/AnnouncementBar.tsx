@@ -11,8 +11,8 @@ export default function AnnouncementBar() {
   // Mobile cycling state
   const [mobileIndex, setMobileIndex] = useState(0);
 
-  // Total mobile items = store messages + 1 appointment booking item
-  const totalMobileItems = messages.length + 1;
+  // Total mobile items = store messages + appointment booking + customize jewellery
+  const totalMobileItems = messages.length + 2;
 
   useEffect(() => {
     if (totalMobileItems <= 1) return;
@@ -25,6 +25,7 @@ export default function AnnouncementBar() {
   if (!announcement.enabled && messages.length === 0) return null;
 
   const isAppointmentSlide = mobileIndex === messages.length;
+  const isCustomizeSlide = mobileIndex === messages.length + 1;
 
   return (
     <aside
@@ -42,6 +43,17 @@ export default function AnnouncementBar() {
               calendar_month
             </span>
             <span>Book a Personalised Appointment</span>
+            <span className="material-symbols-outlined text-[11px] leading-none">arrow_forward</span>
+          </Link>
+        ) : isCustomizeSlide ? (
+          <Link
+            href="/customize-your-design"
+            className="inline-flex items-center justify-center gap-1.5 font-label-sm text-[10.5px] text-secondary-fixed active:text-surface font-semibold tracking-wide transition-colors"
+          >
+            <span className="material-symbols-outlined text-[13px] leading-none" aria-hidden="true">
+              diamond
+            </span>
+            <span>Customize Jewellery</span>
             <span className="material-symbols-outlined text-[11px] leading-none">arrow_forward</span>
           </Link>
         ) : (
@@ -83,6 +95,23 @@ export default function AnnouncementBar() {
             calendar_month
           </span>
           <span>Book a Personalised Appointment</span>
+        </Link>
+
+        {/* Separator before Customize Jewellery option */}
+        <span className="inline-block w-1 h-1 rounded-full bg-secondary-fixed flex-shrink-0" aria-hidden="true" />
+
+        {/* Reuses the same destination as the "Customize Your Jewellery" CTA below the hero */}
+        <Link
+          href="/customize-your-design"
+          className="inline-flex items-center gap-1.5 text-secondary-fixed hover:text-surface font-semibold transition-colors group underline-offset-4 hover:underline"
+        >
+          <span
+            className="material-symbols-outlined text-[14px] leading-none text-secondary-fixed group-hover:text-surface transition-colors"
+            aria-hidden="true"
+          >
+            diamond
+          </span>
+          <span>Customize Jewellery</span>
         </Link>
       </div>
     </aside>

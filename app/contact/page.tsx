@@ -90,7 +90,7 @@ export default function ContactPage() {
       const { ok, json: body, dismissed } = await postJson('/api/contact', { ...form, website, startedAt });
       if (dismissed) return;
       if (!ok || !body?.success) {
-        showToast(body?.error || 'Sorry, we could not send your message. Please try again or email concierge@sushijewels.com.', 'error');
+        showToast(body?.error || 'Sorry, we could not send your message. Please try again or email infosushijewels@gmail.com.', 'error');
         return;
       }
       showToast('💬 Message sent! Our team will respond shortly.', 'success');
@@ -99,7 +99,7 @@ export default function ContactPage() {
       setSubmitAttempted(false);
     } catch (err) {
       console.error('Failed to submit enquiry:', err);
-      showToast('Sorry, we could not send your message. Please check your connection or email concierge@sushijewels.com.', 'error');
+      showToast('Sorry, we could not send your message. Please check your connection or email infosushijewels@gmail.com.', 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -243,9 +243,9 @@ export default function ContactPage() {
                   <span className="material-symbols-outlined text-secondary text-[22px]">call</span>
                   +91 91669 67234
                 </a>
-                <a href="mailto:concierge@sushijewels.com" className="flex items-center gap-3 font-body-sm text-body-sm text-on-surface hover:text-secondary transition-colors">
+                <a href="mailto:infosushijewels@gmail.com" className="flex items-center gap-3 font-body-sm text-body-sm text-on-surface hover:text-secondary transition-colors">
                   <span className="material-symbols-outlined text-secondary text-[22px]">mail</span>
-                  concierge@sushijewels.com
+                  infosushijewels@gmail.com
                 </a>
 
               </div>

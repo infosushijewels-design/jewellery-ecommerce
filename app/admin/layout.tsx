@@ -92,6 +92,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       links: [
         { href: '/admin/customers', label: 'Customers', icon: 'group', module: 'customers' },
         { href: '/admin/stores', label: 'Stores', icon: 'storefront', module: 'stores' },
+        { href: '/admin/homepage-collections', label: 'Homepage Collections', icon: 'view_carousel', module: 'homepage_collections' },
       ],
     },
     {
@@ -234,8 +235,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         aria-current={isActive ? 'page' : undefined}
                         title={collapsed ? item.label : undefined}
                         className={`flex items-center gap-3 ${collapsed ? 'lg:justify-center lg:px-0' : ''} px-4 py-1.5 rounded-md font-label-sm text-label-sm uppercase tracking-wider transition-colors border-l-4 ${isActive
-                            ? 'bg-[#B99A62]/12 text-[#8A6F3C] border-[#B99A62]'
-                            : 'text-[#2D2024]/65 border-transparent hover:text-[#2D2024] hover:bg-[#E8D5C5]/35'
+                          ? 'bg-[#B99A62]/12 text-[#8A6F3C] border-[#B99A62]'
+                          : 'text-[#2D2024]/65 border-transparent hover:text-[#2D2024] hover:bg-[#E8D5C5]/35'
                           }`}
                       >
                         <span className="material-symbols-outlined text-xl">{item.icon}</span>
@@ -285,60 +286,60 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             )}
           </nav>
           <div className="flex items-center gap-2 sm:gap-3 ml-auto">
-          <button
-            type="button"
-            onClick={() => setPaletteOpen(true)}
-            className="hidden md:flex items-center gap-2 px-3 py-2 rounded-full border border-[#E8D5C5] bg-[#FFFCF7] hover:bg-[#E8D5C5]/40 text-[#2D2024]/70 text-xs transition-colors"
-            title="Search admin (Ctrl + K)"
-          >
-            <span className="material-symbols-outlined text-[18px]">search</span>
-            <span className="hidden lg:inline">Search…</span>
-            <kbd className="hidden lg:inline font-mono text-[10px] border border-[#E8D5C5] rounded px-1 py-0.5">Ctrl K</kbd>
-          </button>
-          <button
-            type="button"
-            onClick={() => setPaletteOpen(true)}
-            className="md:hidden p-2 rounded-full hover:bg-[#E8D5C5]/30 text-[#2D2024]/70"
-            aria-label="Search admin"
-          >
-            <span className="material-symbols-outlined text-[20px]">search</span>
-          </button>
-          {canQuickAction && quickAction && (
-            <Link
-              href={quickAction.href}
-              className="hidden sm:inline-flex items-center gap-1.5 bg-[#2D2024] text-[#FAF7F2] hover:bg-[#4B2949] px-3.5 py-2 rounded-full text-xs font-semibold transition-colors"
+            <button
+              type="button"
+              onClick={() => setPaletteOpen(true)}
+              className="hidden md:flex items-center gap-2 px-3 py-2 rounded-full border border-[#E8D5C5] bg-[#FFFCF7] hover:bg-[#E8D5C5]/40 text-[#2D2024]/70 text-xs transition-colors"
+              title="Search admin (Ctrl + K)"
             >
-              <span className="material-symbols-outlined text-[18px]">add</span>
-              {quickAction.label}
+              <span className="material-symbols-outlined text-[18px]">search</span>
+              <span className="hidden lg:inline">Search…</span>
+              <kbd className="hidden lg:inline font-mono text-[10px] border border-[#E8D5C5] rounded px-1 py-0.5">Ctrl K</kbd>
+            </button>
+            <button
+              type="button"
+              onClick={() => setPaletteOpen(true)}
+              className="md:hidden p-2 rounded-full hover:bg-[#E8D5C5]/30 text-[#2D2024]/70"
+              aria-label="Search admin"
+            >
+              <span className="material-symbols-outlined text-[20px]">search</span>
+            </button>
+            {canQuickAction && quickAction && (
+              <Link
+                href={quickAction.href}
+                className="hidden sm:inline-flex items-center gap-1.5 bg-[#2D2024] text-[#FAF7F2] hover:bg-[#4B2949] px-3.5 py-2 rounded-full text-xs font-semibold transition-colors"
+              >
+                <span className="material-symbols-outlined text-[18px]">add</span>
+                {quickAction.label}
+              </Link>
+            )}
+            <Link
+              href="/"
+              target="_blank"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-full border border-[#E8D5C5] bg-[#FFFCF7] hover:bg-[#E8D5C5]/40 text-[#2D2024] text-xs font-medium transition-colors"
+              title="Open storefront in a new tab"
+            >
+              <span className="material-symbols-outlined text-[18px] text-[#8A6F3C]">language</span>
+              <span className="hidden sm:inline">Visit Store</span>
             </Link>
-          )}
-          <Link
-            href="/"
-            target="_blank"
-            className="flex items-center gap-2 px-3.5 py-2 rounded-full border border-[#E8D5C5] bg-[#FFFCF7] hover:bg-[#E8D5C5]/40 text-[#2D2024] text-xs font-medium transition-colors"
-            title="Open storefront in a new tab"
-          >
-            <span className="material-symbols-outlined text-[18px] text-[#8A6F3C]">language</span>
-            <span className="hidden sm:inline">Visit Store</span>
-          </Link>
-          <NotificationsBell />
-          <ProfileMenu
-            name={(user?.user_metadata?.full_name as string | undefined)?.trim() || user?.email?.split('@')[0] || 'Admin'}
-            email={user?.email || ''}
-            roleName={access?.roleName || 'Admin'}
-            onSignOut={handleSignOut}
-          />
+            <NotificationsBell />
+            <ProfileMenu
+              name={(user?.user_metadata?.full_name as string | undefined)?.trim() || user?.email?.split('@')[0] || 'Admin'}
+              email={user?.email || ''}
+              roleName={access?.roleName || 'Admin'}
+              onSignOut={handleSignOut}
+            />
           </div>
         </div>
         <AdminAccessProvider value={access ?? SUPER_ADMIN_ACCESS}>
           {paletteOpen && (
-          <CommandPalette
-            onClose={() => setPaletteOpen(false)}
-            links={visibleSections.flatMap((sec) => sec.links.map((l) => ({ href: l.href, label: l.label, icon: l.icon, section: sec.title })))}
-            canViewOrders={canView('orders')}
-            canViewProducts={canView('products')}
-            canViewCustomers={canView('customers')}
-          />
+            <CommandPalette
+              onClose={() => setPaletteOpen(false)}
+              links={visibleSections.flatMap((sec) => sec.links.map((l) => ({ href: l.href, label: l.label, icon: l.icon, section: sec.title })))}
+              canViewOrders={canView('orders')}
+              canViewProducts={canView('products')}
+              canViewCustomers={canView('customers')}
+            />
           )}
           {pageAllowed ? (
             children

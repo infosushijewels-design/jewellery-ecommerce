@@ -58,7 +58,7 @@
   --spacing-margin: 4rem;
   --spacing-gutter-mobile: 1rem;
   --spacing-space-sm: 0.5rem;
-  
+
   --font-headline-md: Playfair Display, serif;
   --font-display-lg-mobile: Playfair Display, serif;
   --font-display-lg: Playfair Display, serif;
@@ -165,6 +165,7 @@
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -182,13 +183,25 @@ html {
 
 /* Admin: right-side drawer slide-in */
 @keyframes drawerIn {
-  from { transform: translateX(24px); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 /* ------------------------------------------------------------------------------------------------------------------
@@ -208,6 +221,7 @@ html {
   /* system sans digits are larger than Playfair's; scale them to sit with the surrounding text */
   size-adjust: 90%;
 }
+
 @font-face {
   font-family: 'AdminDigits';
   src: local('Segoe UI Semibold'), local('SegoeUI-Semibold'), local('Helvetica Neue Medium'), local('HelveticaNeue-Medium'), local('Roboto Medium'), local('Roboto-Medium'), local('Arial Bold'), local('Arial-BoldMT');
@@ -217,6 +231,7 @@ html {
   /* system sans digits are larger than Playfair's; scale them to sit with the surrounding text */
   size-adjust: 90%;
 }
+
 @font-face {
   font-family: 'AdminDigits';
   src: local('Segoe UI Bold'), local('SegoeUI-Bold'), local('Helvetica Neue Bold'), local('HelveticaNeue-Bold'), local('Roboto Bold'), local('Roboto-Bold'), local('Arial Bold'), local('Arial-BoldMT');
@@ -248,8 +263,8 @@ html {
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }
+
 .scrollbar-none {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
-

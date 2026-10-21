@@ -1,154 +1,84 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import Image from 'next/image';
+import { useRef, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useSwipe } from '@/lib/hooks/useSwipe';
+import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 
-const slides = [
-  {
-    id: 1,
-    src: '/images/hero/banner-1.png',
-    alt: 'Sushi Jewels - Fine handcrafted gold and diamond jewellery showcase',
-    href: '/collections',
-    cta: 'Shop Now',
-  },
-  {
-    id: 2,
-    src: '/images/hero/banner-2.png',
-    alt: 'Sushi Jewels Premium Collection - Timeless elegance and artisan bridal designs',
-    href: '/collections/premium-collection',
-    cta: 'Explore Collections',
-  },
-  {
-    id: 3,
-    src: '/images/hero/banner-3.png',
-    alt: 'Sushi Jewels - Natural diamond jewellery anthology and timeless statement pieces',
-    href: '/anthologies',
-    cta: 'Explore Now',
-  },
-  {
-    id: 4,
-    src: '/images/hero/banner-4.png',
-    alt: 'Sushi Jewels - Handcrafted BIS hallmarked gold bangles collection',
-    href: '/category/bangles',
-    cta: 'Shop Bangles',
-  },
-];
+const DEFAULT_VIDEO = '/videos/hero-banner.mp4';
+const DEFAULT_POSTER = '/videos/hero-poster.jpg';
 
 export default function Hero() {
-  const [current, setCurrent] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
+  const { homepage } = useStoreSettings();
+  const videoRef = useRef<HTMLVideoElement>(null);
 
-  const nextSlide = useCallback(() => {
-    setCurrent((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
-  }, []);
+  const configuredVideo = homepage.heroVideoUrl?.trim() || '';
+  const posterSrc = homepage.heroPosterUrl?.trim() || DEFAULT_POSTER;
+  const bannerLink = homepage.heroBannerLink?.trim() || '/collections';
 
-  const prevSlide = useCallback(() => {
-    setCurrent((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
-  }, []);
+  // Graceful fallback: if the admin-configured video fails to load, fall back to the
+  // local default video; if even that fails (e.g. the file was deleted), stop trying
+  // to play video at all and show the poster as a plain static image instead of a
+  // broken/frozen player.
+  const [videoFailed, setVideoFailed] = useState(false);
+  const [defaultFailed, setDefaultFailed] = useState(false);
 
-  // Auto-advance every 5 seconds, pauses when user hovers or interacts
   useEffect(() => {
-    if (isPaused) return;
-    const timer = setInterval(nextSlide, 5000);
-    return () => clearInterval(timer);
-  }, [nextSlide, isPaused]);
+    // A new video URL was configured — give it a fresh chance to play.
+    setVideoFailed(false);
+  }, [configuredVideo]);
 
-  // Touch swipe gestures for mobile & tablet
-  const { onTouchStart, onTouchEnd } = useSwipe({
-    onSwipeLeft: nextSlide,
-    onSwipeRight: prevSlide,
-    threshold: 40,
-  });
+  const videoSrc = !configuredVideo || videoFailed ? DEFAULT_VIDEO : configuredVideo;
+  const showStaticFallback = defaultFailed;
+
+  useEffect(() => {
+    // Autoplay when mounted or video src changes
+    if (videoRef.current && !showStaticFallback) {
+      videoRef.current.load();
+      videoRef.current.play().catch(() => {});
+    }
+  }, [videoSrc, showStaticFallback]);
+
+  function handleVideoError() {
+    if (videoSrc === DEFAULT_VIDEO) {
+      setDefaultFailed(true);
+    } else {
+      setVideoFailed(true);
+    }
+  }
 
   return (
-    <section className="w-full bg-surface-container-low" aria-label="Featured Collections Carousel">
-      <div
-        className="relative overflow-hidden group select-none"
-        onTouchStart={onTouchStart}
-        onTouchEnd={onTouchEnd}
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
-      >
-        {/* Slider Track */}
-        <div
-          className="flex transition-transform duration-700 ease-out"
-          style={{ transform: `translateX(-${current * 100}%)` }}
+    <section className="w-full bg-surface-container-low" aria-label="Brand Hero Banner">
+      {/* Video Hero Showcase */}
+      <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] lg:aspect-[3/1] max-h-[640px] overflow-hidden bg-[#1A1416] select-none group">
+        <Link
+          href={bannerLink}
+          className="block w-full h-full relative cursor-pointer"
+          aria-label="Explore Sushi Jewels High Jewellery Collections"
         >
-          {slides.map((slide, index) => {
-            const isFirst = index === 0;
-            return (
-              <div
-                key={slide.id}
-                className="min-w-full relative aspect-[3/1] bg-surface-container"
-                aria-hidden={current !== index}
-              >
-                <Link
-                  href={slide.href}
-                  className="block w-full h-full absolute inset-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-secondary"
-                  tabIndex={current === index ? 0 : -1}
-                  aria-label={slide.alt}
-                >
-                  <Image
-                    src={slide.src}
-                    alt={slide.alt}
-                    fill
-                    // Native aspect ratio of the banner PNGs is exactly 3:1 (2172x724).
-                    // Centered object-cover at 3:1 ensures the jewellery on the left
-                    // and typography on the right are both 100% visible across mobile, tablet & desktop.
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 1440px"
-                    className="object-cover object-center"
-                    priority={isFirst}
-                  />
-                </Link>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Previous Navigation Arrow */}
-        <button
-          onClick={prevSlide}
-          className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-11 sm:h-11 rounded-full bg-surface/85 hover:bg-surface text-primary backdrop-blur-md shadow-md flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 focus:opacity-100 -translate-x-1 group-hover:translate-x-0 z-10"
-          aria-label="Previous banner slide"
-        >
-          <span className="material-symbols-outlined text-[18px] sm:text-[22px]">chevron_left</span>
-        </button>
-
-        {/* Next Navigation Arrow */}
-        <button
-          onClick={nextSlide}
-          className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-11 sm:h-11 rounded-full bg-surface/85 hover:bg-surface text-primary backdrop-blur-md shadow-md flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 focus:opacity-100 translate-x-1 group-hover:translate-x-0 z-10"
-          aria-label="Next banner slide"
-        >
-          <span className="material-symbols-outlined text-[18px] sm:text-[22px]">chevron_right</span>
-        </button>
-
-        {/* Slide Indicator Dots (Positioned cleanly at bottom without obscuring content) */}
-        <div
-          className="absolute bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 sm:gap-2 z-10 px-3 py-1 rounded-full bg-primary/20 backdrop-blur-xs"
-          role="tablist"
-          aria-label="Slide dots"
-        >
-          {slides.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrent(index)}
-              className={`transition-all duration-300 rounded-full ${
-                current === index
-                  ? 'w-5 sm:w-6 h-1 sm:h-1.5 bg-secondary-fixed shadow-xs'
-                  : 'w-1.5 sm:w-2 h-1 sm:h-1.5 bg-surface/60 hover:bg-surface'
-              }`}
-              aria-label={`Go to slide ${index + 1}`}
-              role="tab"
-              aria-selected={current === index}
+          {showStaticFallback ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={posterSrc} alt="Sushi Jewels fine jewellery" className="w-full h-full object-cover object-center pointer-events-none" />
+          ) : (
+            <video
+              ref={videoRef}
+              src={videoSrc}
+              poster={posterSrc}
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="metadata"
+              onError={handleVideoError}
+              className="w-full h-full object-cover object-center pointer-events-none"
             />
-          ))}
-        </div>
+          )}
+
+          {/* Subtle cinematic gradient overlays for depth and luxury readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent pointer-events-none" />
+        </Link>
       </div>
 
-      {/* Custom design entry point — sits below the slider so it never overlaps the slide area */}
+      {/* Custom design entry point below the video banner */}
       <div className="border-t border-outline-variant/30 py-3 sm:py-3.5 px-4 bg-surface">
         <div className="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-5 text-center">
           <p className="font-body-sm text-[12px] sm:text-body-sm text-on-surface-variant italic">

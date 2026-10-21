@@ -2,13 +2,9 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
-import { buildWhatsAppLink } from '@/lib/whatsapp';
 
 export default function FlagshipAtelier() {
-  const { contact } = useStoreSettings();
   const googleMapsUrl = 'https://www.google.com/maps/search/?api=1&query=2Ch4+Dadabari+Main+Road+3rd+Floor+Pukhraj+Prime+Kota+Rajasthan';
-  const waUrl = buildWhatsAppLink(contact.whatsapp, 'Hi Sushi Jewels, I would like to schedule a private visit to your Kota atelier.') || '';
 
   return (
     <section className="py-12 sm:py-20 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-16" id="atelier">
@@ -118,15 +114,6 @@ export default function FlagshipAtelier() {
               <span className="material-symbols-outlined text-[18px]">event</span>
               <span>Book Appointment</span>
             </Link>
-            <a
-              href={waUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="py-3.5 px-4 rounded-full bg-[#1A4D2E] text-white hover:bg-[#143B23] transition-colors flex items-center justify-center"
-              title="Chat on WhatsApp"
-            >
-              <span className="material-symbols-outlined text-[20px]">chat</span>
-            </a>
           </div>
 
         </div>

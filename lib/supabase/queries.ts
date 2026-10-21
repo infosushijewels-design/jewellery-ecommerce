@@ -87,6 +87,31 @@ export async function getNewArrivals(): Promise<Product[]> {
   return fallback.data || [];
 }
 
+export type Audience = 'men' | 'women';
+
+/**
+ * Products for the homepage "For Him" / "For Her" section (migration 039).
+ * Business rule: a "men" page shows products classified `men` or `unisex`;
+ * a "women" page shows `women` or `unisex`. Nothing is auto-classified —
+ * products only appear here once an admin explicitly sets Audience in
+ * Admin → Products, so an empty result is expected until that happens.
+ */
+export async function getProductsByAudience(audience: Audience): Promise<Product[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .in('audience', [audience, 'unisex'])
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching products by audience:', error);
+    return [];
+  }
+
+  return data || [];
+}
+
 export async function getProductsByCategorySlug(slug: string): Promise<{ category: Category | null, products: Product[] }> {
   const supabase = await createClient();
   

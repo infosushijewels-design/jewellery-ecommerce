@@ -6,8 +6,6 @@ import Categories from '@/components/home/Categories';
 import CategoryBanners from '@/components/home/CategoryBanners';
 import OurProducts from '@/components/home/OurProducts';
 import ShopByGender from '@/components/home/ShopByGender';
-import Heritage from '@/components/home/Heritage';
-import FlagshipAtelier from '@/components/home/FlagshipAtelier';
 import Testimonials from '@/components/home/Testimonials';
 import ExploreCollections from '@/components/home/ExploreCollections';
 import Footer from '@/components/layout/Footer';
@@ -81,8 +79,6 @@ export default function Home() {
         </Suspense>
         <ShopByGender />
         <CategoryBanners />
-        <Heritage />
-        <FlagshipAtelier />
         <Testimonials />
         <ExploreCollections />
       </main>

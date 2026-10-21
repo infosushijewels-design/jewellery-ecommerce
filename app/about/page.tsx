@@ -1,49 +1,30 @@
-import type { Metadata } from 'next';
+'use client';
+
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import AnnouncementBar from '@/components/layout/AnnouncementBar';
-import Breadcrumb from '@/components/ui/Breadcrumb';
-import Link from 'next/link';
 import Image from 'next/image';
-
-export const metadata: Metadata = {
-  title: 'The Atelier & Heritage | Sushi Jewels',
-  description: 'Discover the story of Sushi Jewels — master karigars, BIS 916 hallmarked gold, and conflict-free natural diamonds, handcrafted into timeless heirlooms.',
-};
-
-const values = [
-  {
-    icon: 'diversity_3',
-    title: 'Ethical Sourcing',
-    description: 'Every diamond and gemstone is traced through the Kimberley Process Certification Scheme, ensuring fair, conflict-free mining livelihoods across our supply chain.',
-  },
-  {
-    icon: 'no_accounts',
-    title: 'Zero Child Labour',
-    description: 'We audit every atelier and sourcing partner against strict labour standards. Our karigars are skilled adult artisans, fairly compensated for generational craft.',
-  },
-  {
-    icon: 'eco',
-    title: 'Sustainability Commitment',
-    description: 'From recycled precious metals to responsibly mined gold, we minimise environmental impact at every stage of the jewellery-making journey.',
-  },
-];
+import Link from 'next/link';
+import FlagshipAtelier from '@/components/home/FlagshipAtelier';
 
 const certifications = [
   {
-    icon: 'verified',
+    seal: 'BIS',
     title: 'BIS 916 Hallmarking',
-    description: 'Every gram of gold used across our collections is assayed and hallmarked to the Bureau of Indian Standards\' 916 (22K) purity grade, so authenticity is never in question.',
+    subtitle: 'Bureau of Indian Standards',
+    description: 'Every gram of gold across all our collections is certified 916 (22K) or 750 (18K) by the Government of India, complete with unique HUID laser marking.',
   },
   {
-    icon: 'diamond',
-    title: 'IGI / GIA Certification',
-    description: 'Natural diamonds above 30 cents are accompanied by independent IGI or GIA grading reports verifying the 4Cs — carat, cut, clarity, and colour.',
+    seal: 'IGI / GIA',
+    title: 'IGI & GIA Certified',
+    subtitle: 'Natural Diamond Grading',
+    description: 'All natural solitaire diamonds are accompanied by independent laboratory certificates verifying color, clarity, carat, and symmetry with complete transparency.',
   },
   {
-    icon: 'workspace_premium',
-    title: 'Purity Guarantee',
-    description: 'Every invoice discloses exact metal weight, purity, and diamond certification numbers — full transparency and certified authenticity on every heirloom.',
+    seal: '100%',
+    title: 'Ethical & Conflict-Free',
+    subtitle: 'Kimberley Process Compliant',
+    description: 'We only procure ethical diamonds that strictly adhere to the Kimberley Process. Zero child labour, fair artisan remuneration, and sustainable gold recycling.',
   },
 ];
 
@@ -52,125 +33,109 @@ export default function AboutPage() {
     <>
       <AnnouncementBar />
       <Header />
-      <main className="flex-grow w-full">
-        {/* Hero */}
-        <section className="relative bg-[#0F0F11] overflow-hidden">
-          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-16 pt-4 sm:pt-6">
-            <div className="text-white/80">
-              <Breadcrumb
-                items={[
-                  { label: 'Home', href: '/' },
-                  { label: 'About Us' },
-                ]}
+      <main className="flex-grow w-full bg-surface">
+        
+        {/* ============================================================ */}
+        {/* 1. HERO BANNER: Golden Jewelry Portrait Banner (Exact 3:1)   */}
+        {/* ============================================================ */}
+        <section className="relative w-full bg-[#160B0E] text-surface overflow-hidden">
+          
+          {/* Banner Graphic: Surrounded by luxury breathing space and subtle framing */}
+          <div className="relative w-full max-w-[1520px] mx-auto px-3 sm:px-6 lg:px-10 py-4 sm:py-6 lg:py-8 flex justify-center">
+            <div className="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden border border-[#E4C286]/20 shadow-[0_16px_50px_rgba(0,0,0,0.5)] bg-[#160B0E]">
+              <Image
+                src="/images/golden-jewelry-banner.png"
+                alt="Sushi Jewels - Made to Make You Feel Beautiful"
+                width={2172}
+                height={724}
+                priority
+                sizes="100vw"
+                className="w-full h-auto object-contain block animate-fade-in"
               />
+              {/* Soft ambient inner border glow */}
+              <div className="absolute inset-0 rounded-2xl sm:rounded-3xl pointer-events-none ring-1 ring-inset ring-white/10" />
             </div>
           </div>
-          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-16 py-10 sm:py-16 lg:py-24">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-20 items-center">
-              {/* Text Content */}
-              <div className="text-center lg:text-left order-2 lg:order-1">
-                <span className="font-label-sm text-sm text-[#D4AF37] tracking-[0.3em] uppercase">The Atelier &amp; Heritage</span>
-                <h1 className="font-serif mt-4 leading-[1.1] text-white" style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(28px, 5vw, 64px)' }}>
-                  Made to Make You Feel Beautiful
-                </h1>
-                <p className="font-body-md text-sm sm:text-body-lg text-white/70 mt-4 sm:mt-6 max-w-lg mx-auto lg:mx-0 leading-relaxed">
-                  For four generations, Sushi Jewels has translated the eternal grammar of Indian royalty into fine jewellery meant to be lived in — handcrafted by master karigars, in certified gold and conflict-free diamonds. Our commitment is to timeless beauty, tradition, and luxury craftsmanship.
-                </p>
-                <div className="mt-8 flex justify-center lg:justify-start">
-                  <div className="w-16 h-[1px] bg-[#D4AF37]"></div>
-                </div>
+
+          {/* Luxury Floating Status & Action Bar */}
+          <div className="relative z-10 border-t border-white/10 bg-[#160B0E] py-3.5 px-4 sm:px-6 lg:px-16">
+            <div className="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs sm:text-sm text-[#DCDAD5]">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#E4C286] animate-pulse" />
+                <span className="tracking-wide">✦ BIS 916 Hallmarked Gold &amp; IGI/GIA Certified Solitaires</span>
               </div>
-              {/* Image Content */}
-              <div className="order-1 lg:order-2 relative">
-                <div className="relative w-full max-w-[280px] sm:max-w-sm mx-auto lg:max-w-none aspect-[3/4] sm:aspect-[4/5] rounded-tl-[60px] sm:rounded-tl-[80px] rounded-br-[60px] sm:rounded-br-[80px] overflow-hidden border border-[#D4AF37]/30 shadow-[0_0_40px_rgba(212,175,55,0.1)]">
-                  <Image
-                    src="/images/about-hero.png"
-                    alt="Made to Make You Feel Beautiful"
-                    fill
-                    className="object-cover"
-                    priority
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0F0F11]/60 via-transparent to-transparent"></div>
-                </div>
+              
+              <div className="flex items-center gap-4">
+                <span className="text-[#E4C286] font-serif italic text-xs sm:text-sm">
+                  Flagship Boutique: Kota, Rajasthan
+                </span>
+                <Link
+                  href="/collections"
+                  className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#E4C286] text-[#160B0E] font-medium text-xs tracking-wider uppercase hover:bg-surface transition-all duration-300 shadow-sm hover:scale-105"
+                >
+                  <span>Explore Atelier</span>
+                  <span className="material-symbols-outlined text-xs font-bold">arrow_forward</span>
+                </Link>
               </div>
             </div>
           </div>
+
         </section>
 
-        {/* Heritage & Craftsmanship */}
+        {/* ============================================================ */}
+        {/* 2. PURITY & TRUST MATRIX (Provenance You Can Verify)          */}
+        {/* ============================================================ */}
         <section className="py-14 sm:py-24 bg-surface">
-          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-16 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
-            <div className="lg:col-span-5">
-              <span className="font-label-sm text-label-sm text-secondary tracking-widest uppercase">Heritage &amp; Craftsmanship</span>
-              <h2 className="font-headline-lg text-[26px] sm:text-headline-lg text-primary mt-2 leading-tight">
-                Sculpted by Master Karigars
+          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-16">
+            
+            <div className="text-center max-w-xl mx-auto mb-12 sm:mb-16">
+              <span className="font-label-sm text-label-sm text-secondary tracking-widest uppercase font-semibold">
+                Certification &amp; Purity Matrix
+              </span>
+              <h2 className="font-headline-lg text-[26px] sm:text-[34px] font-serif text-primary mt-1.5">
+                Provenance You Can Verify
               </h2>
-            </div>
-            <div className="lg:col-span-7 space-y-5">
-              <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
-                Our ateliers in Jaipur and Mumbai are home to karigars whose families have shaped royal jewellery for more than four generations. Each piece begins as a hand-drawn sketch and passes through the hands of specialist goldsmiths, stone-setters, and polishers before it earns the Sushi Jewels mark.
-              </p>
-              <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
-                We work exclusively with hallmarked gold and conflict-free natural diamonds, honouring a craft tradition that prizes patience over production speed. Nothing leaves our workshop until it meets the exacting standard our founders set decades ago.
+              <p className="font-body-md text-body-md text-on-surface-variant mt-2.5">
+                Complete transparency on every karat, cut, and laboratory certificate.
               </p>
             </div>
-          </div>
-        </section>
 
-        {/* Certification & Purity Matrix */}
-        <section className="py-14 sm:py-24 bg-surface-container-low border-y border-outline-variant/30">
-          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-16">
-            <div className="text-center max-w-xl mx-auto mb-10 sm:mb-16">
-              <span className="font-label-sm text-label-sm text-secondary tracking-widest uppercase">Certification &amp; Purity Matrix</span>
-              <h2 className="font-headline-lg text-[24px] sm:text-headline-lg text-primary mt-1">Provenance You Can Verify</h2>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
               {certifications.map((cert) => (
-                <div key={cert.title} className="p-6 sm:p-8 rounded-xl bg-surface-container-lowest border border-outline-variant/40">
-                  <div className="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-secondary mb-5">
-                    <span className="material-symbols-outlined text-[26px]">{cert.icon}</span>
+                <div 
+                  key={cert.title}
+                  className="p-6 sm:p-8 rounded-2xl bg-surface-container-lowest border border-outline-variant/50 hover:border-secondary/50 transition-colors shadow-xs flex flex-col items-center text-center"
+                >
+                  {/* Royal Gold Seal Medallion */}
+                  <div className="w-16 h-16 rounded-full bg-surface-container-low border-2 border-secondary/40 flex items-center justify-center text-secondary mb-5 shadow-inner">
+                    <span className="font-serif font-bold text-xs tracking-wider text-secondary">
+                      {cert.seal}
+                    </span>
                   </div>
-                  <h3 className="font-headline-sm text-headline-sm text-primary">{cert.title}</h3>
-                  <p className="font-body-sm text-body-sm text-on-surface-variant mt-2 leading-relaxed">{cert.description}</p>
+
+                  <h3 className="font-headline-sm text-lg sm:text-xl font-serif text-primary">
+                    {cert.title}
+                  </h3>
+                  <p className="text-[12px] font-label-md uppercase tracking-wider text-secondary font-semibold mt-1">
+                    {cert.subtitle}
+                  </p>
+                  <p className="font-body-sm text-body-sm text-on-surface-variant mt-3 leading-relaxed">
+                    {cert.description}
+                  </p>
                 </div>
               ))}
             </div>
+
           </div>
         </section>
 
-        {/* Brand Values */}
-        <section className="py-14 sm:py-24 bg-surface">
-          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-16">
-            <div className="text-center max-w-xl mx-auto mb-10 sm:mb-16">
-              <span className="font-label-sm text-label-sm text-secondary tracking-widest uppercase">Our Values</span>
-              <h2 className="font-headline-lg text-[24px] sm:text-headline-lg text-primary mt-1">A Promise Beyond the Piece</h2>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-8">
-              {values.map((value) => (
-                <div key={value.title} className="p-6 sm:p-8 rounded-xl border border-outline-variant/40 text-center sm:text-left">
-                  <div className="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-secondary mb-5 mx-auto sm:mx-0">
-                    <span className="material-symbols-outlined text-[26px]">{value.icon}</span>
-                  </div>
-                  <h3 className="font-headline-sm text-headline-sm text-primary">{value.title}</h3>
-                  <p className="font-body-sm text-body-sm text-on-surface-variant mt-2 leading-relaxed">{value.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+        {/* ============================================================ */}
+        {/* 3. VISIT OUR FLAGSHIP ATELIER                                 */}
+        {/* ============================================================ */}
+        <div className="border-t border-outline-variant/30 bg-surface-container-low">
+          <FlagshipAtelier />
+        </div>
 
-        {/* CTA */}
-        <section className="py-14 sm:py-20 bg-primary text-surface text-center">
-          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-16">
-            <h2 className="font-headline-lg text-[24px] sm:text-headline-lg text-surface mb-4">Experience the Atelier in Person</h2>
-            <p className="font-body-md text-body-md text-surface-dim max-w-xl mx-auto mb-8">
-              Book a private consultation with our concierge team to explore bespoke commissions and heirloom collections.
-            </p>
-            <Link href="/book-appointment" className="inline-block bg-secondary text-primary px-8 py-3.5 rounded-full font-label-md uppercase tracking-wide hover:bg-secondary-fixed-dim transition-colors">
-              Book a Personalized Appointment
-            </Link>
-          </div>
-        </section>
       </main>
       <Footer />
     </>

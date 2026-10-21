@@ -87,6 +87,7 @@ export interface Database {
           collection_id: string | null
           is_featured: boolean
           is_new_arrival: boolean
+          audience: string | null
           created_at: string
           updated_at: string
         }
@@ -109,6 +110,7 @@ export interface Database {
           collection_id?: string | null
           is_featured?: boolean
           is_new_arrival?: boolean
+          audience?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -131,6 +133,7 @@ export interface Database {
           collection_id?: string | null
           is_featured?: boolean
           is_new_arrival?: boolean
+          audience?: string | null
           created_at?: string
           updated_at?: string
         }

@@ -5,6 +5,7 @@ import { CartProvider } from "@/lib/context/CartContext";
 import CartSidebar from "@/components/cart/CartSidebar";
 import { AuthProvider } from "@/lib/context/AuthContext";
 import { WishlistProvider } from "@/lib/context/WishlistContext";
+import FloatingWhatsApp from "@/components/ui/FloatingWhatsApp";
 const manrope = Manrope({
   variable: "--font-manrope",
   subsets: ["latin"],
@@ -54,6 +55,7 @@ export default function RootLayout({
               <WishlistProvider>
                 {children}
                 <CartSidebar />
+                <FloatingWhatsApp />
               </WishlistProvider>
             </CartProvider>
           </ToastProvider>

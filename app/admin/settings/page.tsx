@@ -9,6 +9,7 @@ import { SLOT_LENGTH_OPTIONS } from '@/lib/appointments';
 import { DEFAULT_STORE_SETTINGS, mergeStoreSettings, type StoreSettings } from '@/lib/storeSettings';
 import { ACCEPTED_ICON_TYPES, ACCEPTED_IMAGE_TYPES, uploadImage } from '@/lib/storage';
 import { ImageUploader } from '@/components/admin/ImageUploader';
+import { VideoUploader } from '@/components/admin/VideoUploader';
 import {
   LoadingState,
   MigrationNotice,
@@ -575,9 +576,76 @@ export default function AdminSettingsPage() {
 
               {tab === 'homepage' && (
                 <>
-                  <p className="text-xs text-[#2D2024]/55 -mt-2">
-                    The &ldquo;Philosophy&rdquo; band on the homepage — the large quote next to the atelier photo.
-                  </p>
+                  <div className="bg-[#FAF7F2] border border-[#E8D5C5] rounded-xl p-5 mb-2">
+                    <h3 className="text-sm font-semibold text-[#2D2024] flex items-center gap-2 mb-1">
+                      <span className="material-symbols-outlined text-[18px] text-[#B99A62]">videocam</span>
+                      Hero Banner Video &amp; Link
+                    </h3>
+                    <p className="text-xs text-[#2D2024]/60 mb-4">
+                      Control the main video playing at the very top of the homepage — upload a file directly, or paste a link to a video hosted elsewhere. Leave both empty to use the default brand video.
+                    </p>
+
+                    <div className="space-y-4">
+                      <div>
+                        <p className="block text-[11px] uppercase tracking-wider text-[#2D2024]/60 mb-1.5 font-semibold">Upload Video</p>
+                        <div className="max-w-lg">
+                          <VideoUploader
+                            value={d.homepage.heroVideoUrl || ''}
+                            onChange={(url) => set('homepage', 'heroVideoUrl', url)}
+                            folder="homepage"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="h-video" hint="Alternative to uploading above — a direct link to an .mp4/.webm file hosted on a CDN, Cloudinary, etc.">
+                          Or paste a Video URL
+                        </Label>
+                        <IconInput
+                          id="h-video"
+                          icon="play_circle"
+                          type="url"
+                          value={d.homepage.heroVideoUrl || ''}
+                          onChange={(v) => set('homepage', 'heroVideoUrl', v)}
+                          placeholder="https://.../video.mp4 (leave empty for default video)"
+                        />
+                      </div>
+
+                      <div>
+                        <p className="block text-[11px] uppercase tracking-wider text-[#2D2024]/60 mb-1.5 font-semibold">Poster / Thumbnail Image</p>
+                        <p className="text-[11px] text-[#2D2024]/50 mb-2">Shown while the video loads or if it fails to play. Leave empty to keep the current default poster.</p>
+                        <div className="max-w-sm">
+                          <ImageUploader
+                            value={d.homepage.heroPosterUrl || ''}
+                            onChange={(url) => set('homepage', 'heroPosterUrl', url)}
+                            folder="homepage"
+                            label="Upload poster image"
+                            aspectClass="aspect-[21/9]"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="h-link" hint="Where clicking the banner takes the user">
+                          Banner Destination Link
+                        </Label>
+                        <IconInput
+                          id="h-link"
+                          icon="link"
+                          value={d.homepage.heroBannerLink || ''}
+                          onChange={(v) => set('homepage', 'heroBannerLink', v)}
+                          placeholder="/collections or /category/rings"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-[#E8D5C5]/60 pt-4 mt-2">
+                    <h3 className="text-sm font-semibold text-[#2D2024] mb-1">Brand Philosophy Section</h3>
+                    <p className="text-xs text-[#2D2024]/55 mb-4">
+                      The &ldquo;Philosophy&rdquo; band on the homepage — the large quote next to the atelier photo.
+                    </p>
+                  </div>
                   <div>
                     <Label htmlFor="h-eyebrow" hint="Small label above the quote">Section Label</Label>
                     <IconInput id="h-eyebrow" icon="label" value={d.homepage.philosophyEyebrow} onChange={(v) => set('homepage', 'philosophyEyebrow', v)} placeholder="The Philosophy" />

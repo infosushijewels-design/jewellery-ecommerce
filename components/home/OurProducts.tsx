@@ -10,7 +10,7 @@ export default async function OurProducts() {
   }
 
   return (
-    <section className="py-12 sm:py-20 bg-surface-container-low border-y border-outline-variant/30" id="our-products">
+    <section className="py-12 sm:py-20 bg-surface-container-low border-y border-outline-variant/30 scroll-mt-[120px] lg:scroll-mt-[150px]" id="our-products">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-16">
         <div className="relative flex flex-col items-center sm:block mb-8 sm:mb-12">
           <div className="text-center">

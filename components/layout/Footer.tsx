@@ -8,7 +8,7 @@ export default function Footer() {
     <footer className="bg-primary text-surface pt-12 sm:pt-20 pb-8 sm:pb-10 border-t border-outline-variant/20 relative overflow-hidden">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-16 relative z-10">
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-10 gap-x-8 lg:gap-x-0">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-y-10 gap-x-8 lg:gap-x-0">
 
           {/* Brand */}
           <div className="lg:pr-8">
@@ -30,23 +30,14 @@ export default function Footer() {
             <FooterSocialLinks />
           </div>
 
-          {/* Collections */}
-          <div className="lg:border-l lg:border-outline-variant/20 lg:pl-8">
-            <h4 className="font-label-md text-label-md text-surface uppercase tracking-wider mb-4 sm:mb-6">The Collections</h4>
-            <ul className="space-y-3 sm:space-y-4">
-              <li><Link className="font-body-sm text-body-sm text-surface-dim hover:text-secondary-fixed transition-colors" href="/collections/premium-collection">High Jewellery</Link></li>
-              <li><Link className="font-body-sm text-body-sm text-surface-dim hover:text-secondary-fixed transition-colors" href="/collections/best-sellers">Everyday Edit</Link></li>
-              <li><Link className="font-body-sm text-body-sm text-surface-dim hover:text-secondary-fixed transition-colors" href="/collections/bridal-collection">Bridal Trousseau</Link></li>
-              <li><Link className="font-body-sm text-body-sm text-surface-dim hover:text-secondary-fixed transition-colors" href="/search?q=men">Menswear Classics</Link></li>
-            </ul>
-          </div>
-
           {/* Client Services */}
           <div className="lg:border-l lg:border-outline-variant/20 lg:pl-8">
             <h4 className="font-label-md text-label-md text-surface uppercase tracking-wider mb-4 sm:mb-6">Client Services</h4>
             <ul className="space-y-3 sm:space-y-4">
               <li><Link className="font-body-sm text-body-sm text-surface-dim hover:text-secondary-fixed transition-colors" href="/about">About Us</Link></li>
               <li><Link className="font-body-sm text-body-sm text-surface-dim hover:text-secondary-fixed transition-colors" href="/contact">Contact Us</Link></li>
+              <li><Link className="font-body-sm text-body-sm text-surface-dim hover:text-secondary-fixed transition-colors" href="/#our-products">Our Products</Link></li>
+              <li><Link className="font-body-sm text-body-sm text-surface-dim hover:text-secondary-fixed transition-colors" href="/#shop-by-gender">Curated For Two</Link></li>
             </ul>
           </div>
 

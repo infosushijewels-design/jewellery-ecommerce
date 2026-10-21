@@ -5,7 +5,7 @@ import { useToast } from '@/lib/context/ToastContext';
 import { ACCEPTED_IMAGE_TYPES, uploadImage } from '@/lib/storage';
 import { inputClass } from './AdminUI';
 
-function useDropZone(onFiles: (files: File[]) => void, disabled?: boolean) {
+export function useDropZone(onFiles: (files: File[]) => void, disabled?: boolean) {
   const [dragging, setDragging] = useState(false);
   return {
     dragging,
@@ -24,7 +24,7 @@ function useDropZone(onFiles: (files: File[]) => void, disabled?: boolean) {
   };
 }
 
-function UrlFallback({ onAdd, disabled }: { onAdd: (url: string) => void; disabled?: boolean }) {
+export function UrlFallback({ onAdd, disabled, placeholder = 'https://...' }: { onAdd: (url: string) => void; disabled?: boolean; placeholder?: string }) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState('');
   if (!open) {
