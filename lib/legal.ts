@@ -7,8 +7,6 @@
 export const BUILT_IN_LEGAL_PAGES = [
   { slug: 'privacy-policy', title: 'Privacy Policy', path: '/privacy-policy' },
   { slug: 'terms', title: 'Terms & Conditions', path: '/terms' },
-  { slug: 'shipping-policy', title: 'Shipping Policy', path: '/shipping-policy' },
-  { slug: 'return-policy', title: 'Return Policy', path: '/return-policy' },
 ] as const;
 
 export function isBuiltInLegalSlug(slug: string) {

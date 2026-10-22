@@ -40,21 +40,18 @@ export default function AboutPage() {
         {/* ============================================================ */}
         <section className="relative w-full bg-[#160B0E] text-surface overflow-hidden">
           
-          {/* Banner Graphic: Surrounded by luxury breathing space and subtle framing */}
-          <div className="relative w-full max-w-[1520px] mx-auto px-3 sm:px-6 lg:px-10 py-4 sm:py-6 lg:py-8 flex justify-center">
-            <div className="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden border border-[#E4C286]/20 shadow-[0_16px_50px_rgba(0,0,0,0.5)] bg-[#160B0E]">
-              <Image
-                src="/images/golden-jewelry-banner.png"
-                alt="Sushi Jewels - Made to Make You Feel Beautiful"
-                width={2172}
-                height={724}
-                priority
-                sizes="100vw"
-                className="w-full h-auto object-contain block animate-fade-in"
-              />
-              {/* Soft ambient inner border glow */}
-              <div className="absolute inset-0 rounded-2xl sm:rounded-3xl pointer-events-none ring-1 ring-inset ring-white/10" />
-            </div>
+          {/* Full-bleed Hero Banner: 100% edge-to-edge across the entire screen */}
+          <div className="relative w-full">
+            <Image
+              src="/images/sushi-jewels-banner.png?v=4"
+              alt="Sushi Jewels - Made to Make You Feel Beautiful"
+              width={2048}
+              height={768}
+              priority
+              unoptimized
+              sizes="100vw"
+              className="w-full h-auto block"
+            />
           </div>
 
           {/* Luxury Floating Status & Action Bar */}

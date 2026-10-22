@@ -91,7 +91,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       title: 'Management',
       links: [
         { href: '/admin/customers', label: 'Customers', icon: 'group', module: 'customers' },
-        { href: '/admin/stores', label: 'Stores', icon: 'storefront', module: 'stores' },
         { href: '/admin/homepage-collections', label: 'Homepage Collections', icon: 'view_carousel', module: 'homepage_collections' },
       ],
     },

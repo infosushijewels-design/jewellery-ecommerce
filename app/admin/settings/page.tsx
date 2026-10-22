@@ -24,7 +24,7 @@ import {
 
 const MIGRATION = '010_staff_roles_and_settings.sql';
 
-type TabKey = 'general' | 'homepage' | 'payments' | 'tax' | 'shipping' | 'orders' | 'appointments' | 'social' | 'announcement';
+type TabKey = 'general' | 'homepage' | 'payments' | 'tax' | 'orders' | 'appointments' | 'social' | 'announcement';
 
 // shortLabel is what phones show in the horizontally scrolling tab strip
 const TABS: { key: TabKey; label: string; shortLabel: string; icon: string }[] = [
@@ -32,7 +32,6 @@ const TABS: { key: TabKey; label: string; shortLabel: string; icon: string }[] =
   { key: 'homepage', label: 'Homepage Content', shortLabel: 'Homepage', icon: 'home' },
   { key: 'payments', label: 'Payment Settings', shortLabel: 'Payments', icon: 'credit_card' },
   { key: 'tax', label: 'Tax Settings (GST)', shortLabel: 'Tax (GST)', icon: 'receipt_long' },
-  { key: 'shipping', label: 'Shipping Settings', shortLabel: 'Shipping', icon: 'local_shipping' },
   { key: 'orders', label: 'Order Settings', shortLabel: 'Orders', icon: 'inventory' },
   { key: 'appointments', label: 'Video Appointments', shortLabel: 'Appointments', icon: 'videocam' },
   { key: 'social', label: 'Social Media Settings', shortLabel: 'Social Media', icon: 'public' },
@@ -727,25 +726,6 @@ export default function AdminSettingsPage() {
                 </div>
               )}
 
-              {tab === 'shipping' && (
-                <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div>
-                      <Label htmlFor="s-free" hint="Orders at or above this amount ship free.">Free Shipping Above</Label>
-                      <IconInput id="s-free" icon="local_shipping" prefix="₹" type="number" min={0} value={d.commerce.freeShippingThreshold} onChange={(v) => set('commerce', 'freeShippingThreshold', num(v))} />
-                    </div>
-                    <div>
-                      <Label htmlFor="s-fee" hint="Charged on smaller orders. 0 = always free.">Flat Shipping Fee</Label>
-                      <IconInput id="s-fee" icon="payments" prefix="₹" type="number" min={0} value={d.commerce.shippingFee} onChange={(v) => set('commerce', 'shippingFee', num(v))} />
-                    </div>
-                  </div>
-                  <p className="text-xs text-[#2D2024]/65 bg-[#FAF7F2] border border-[#E8D5C5] rounded-xl px-4 py-3">
-                    Example: a {formatINR(1500)} order pays{' '}
-                    {1500 >= d.commerce.freeShippingThreshold || d.commerce.shippingFee === 0 ? 'no shipping' : formatINR(d.commerce.shippingFee)}; orders of{' '}
-                    {formatINR(d.commerce.freeShippingThreshold)} or more ship free.
-                  </p>
-                </>
-              )}
 
               {tab === 'orders' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

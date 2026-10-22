@@ -36,8 +36,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: '/faq', priority: 0.6, changeFrequency: 'monthly' },
     { path: '/privacy-policy', priority: 0.5, changeFrequency: 'monthly' },
     { path: '/terms', priority: 0.5, changeFrequency: 'monthly' },
-    { path: '/shipping-policy', priority: 0.5, changeFrequency: 'monthly' },
-    { path: '/return-policy', priority: 0.5, changeFrequency: 'monthly' },
   ];
 
   const now = new Date();
@@ -114,7 +112,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
       // Custom Admin Legal Pages (excluding built-in paths which already exist)
       if (legalRes.data) {
-        const builtIns = new Set(['privacy-policy', 'terms', 'shipping-policy', 'return-policy']);
+        const builtIns = new Set(['privacy-policy', 'terms']);
         for (const legal of legalRes.data) {
           if (!legal.slug || builtIns.has(legal.slug)) continue;
           entries.push({

@@ -11,7 +11,7 @@ export default function TrustMatrix() {
     { icon: 'verified', title: '100% Certified Jewellery', href: '/terms' },
     { icon: 'workspace_premium', title: 'BIS Hallmarked Gold', href: '/terms' },
     { icon: 'diamond', title: 'Certified Diamonds & Gems', href: '/search?q=diamond' },
-    { icon: 'local_shipping', title: 'Pan-India Insured Shipping', href: '/shipping-policy' },
+    { icon: 'local_shipping', title: 'Pan-India Insured Shipping', href: '/terms' },
     { icon: 'draw', title: 'Bespoke Custom Atelier', href: '/#customize-design' },
   ];
 
