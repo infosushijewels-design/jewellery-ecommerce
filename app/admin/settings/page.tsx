@@ -558,8 +558,8 @@ export default function AdminSettingsPage() {
                       <IconInput id="g-wa" icon="chat" inputMode="numeric" value={d.contact.whatsapp} onChange={(v) => set('contact', 'whatsapp', v.replace(/[^\d]/g, ''))} />
                     </div>
                     <div>
-                      <Label htmlFor="g-hours">Operating Hours (Weekdays)</Label>
-                      <IconInput id="g-hours" icon="schedule" value={d.contact.hoursWeekdays} onChange={(v) => set('contact', 'hoursWeekdays', v)} placeholder="Mon – Sat: 11 AM – 6 PM" />
+                      <Label htmlFor="g-hours">Operating Hours (Weekdays / Daily)</Label>
+                      <IconInput id="g-hours" icon="schedule" value={d.contact.hoursWeekdays} onChange={(v) => set('contact', 'hoursWeekdays', v)} placeholder="Every Day: 10:00 AM – 5:00 PM (IST)" />
                     </div>
                     <div>
                       <Label htmlFor="g-sunday">Operating Hours (Sundays)</Label>

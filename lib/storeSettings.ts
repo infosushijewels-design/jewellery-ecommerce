@@ -95,7 +95,7 @@ export const DEFAULT_STORE_SETTINGS: StoreSettings = {
     phoneSecondary: '+91 91669 67234',
     whatsapp: '919166967234',
     address: '2Ch4 Dadabari Main Road, 3rd Floor, Pukhraj Prime, Kota, Rajasthan',
-    hoursWeekdays: 'Mon – Sat: 10:00 AM – 7:00 PM (IST)',
+    hoursWeekdays: 'Every Day: 10:00 AM – 5:00 PM (IST)',
     hoursSunday: '',
   },
   social: {

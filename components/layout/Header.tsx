@@ -21,6 +21,7 @@ interface NavItem {
   label: string;
   href: string;
   highlight?: boolean;
+  icon?: string;
   dropdown?: DropdownColumn[];
 }
 
@@ -141,6 +142,7 @@ const navLinks: NavItem[] = [
   },
   { label: 'Collections', href: '/collections' },
   { label: 'Offers', href: '/#festive-offer', highlight: true },
+  { label: 'Plan Your Wedding', href: '/plan-your-wedding', icon: 'favorite_border' },
 ];
 
 export default function Header() {
@@ -334,6 +336,9 @@ export default function Header() {
                     : 'text-on-surface-variant'
                     }`}
                 >
+                  {link.icon && (
+                    <span className="material-symbols-outlined text-[15px] text-secondary">{link.icon}</span>
+                  )}
                   {link.label}
                   {link.dropdown && (
                     <span className="material-symbols-outlined text-[14px] opacity-60">expand_more</span>
@@ -404,7 +409,7 @@ export default function Header() {
             {navLinks.map((link) => (
               <Link key={link.label} href={link.href} onClick={closeMobileMenu}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg font-label-lg text-label-lg hover:bg-surface-container-low transition-colors ${link.highlight ? 'text-secondary font-semibold' : 'text-on-surface-variant hover:text-primary'}`}>
-                <span className="material-symbols-outlined text-secondary text-[20px]">chevron_right</span>
+                <span className="material-symbols-outlined text-secondary text-[20px]">{link.icon || 'chevron_right'}</span>
                 {link.label}
               </Link>
             ))}

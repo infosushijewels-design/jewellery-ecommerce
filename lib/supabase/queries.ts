@@ -263,6 +263,53 @@ export async function searchProducts(query: string): Promise<Product[]> {
     .map(({ p }) => p);
 }
 
+export interface PlannerProduct {
+  id: string;
+  slug: string;
+  title: string;
+  price: number;
+  image_url: string;
+  material: string | null;
+  badge: string | null;
+  categoryName: string | null;
+}
+
+/**
+ * Full catalogue for the "Plan Your Wedding" planner (/plan-your-wedding), matched
+ * client-side against the customer's item/style picks (see lib/weddingPlanner.ts).
+ * Mirrors searchProducts()'s products+categories join; the catalogue is small enough
+ * to filter in memory, same as free-text search already does.
+ */
+export async function getWeddingPlannerCatalog(): Promise<PlannerProduct[]> {
+  const supabase = await createClient();
+  const [productsRes, categoriesRes] = await Promise.all([
+    supabase
+      .from('products')
+      .select('id, slug, title, price, image_url, material, badge, category_id')
+      .order('created_at', { ascending: false })
+      .limit(1000),
+    supabase.from('categories').select('id, name'),
+  ]);
+
+  if (productsRes.error) {
+    console.error('Error fetching wedding planner catalogue:', productsRes.error);
+    return [];
+  }
+
+  const categoryName = new Map((categoriesRes.data || []).map((c) => [c.id, c.name]));
+
+  return (productsRes.data || []).map((p) => ({
+    id: p.id,
+    slug: p.slug,
+    title: p.title,
+    price: p.price,
+    image_url: p.image_url,
+    material: p.material,
+    badge: p.badge,
+    categoryName: (p.category_id && categoryName.get(p.category_id)) || null,
+  }));
+}
+
 export interface HomeCategory {
   name: string;
   href: string;

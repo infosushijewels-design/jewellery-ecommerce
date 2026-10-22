@@ -8,6 +8,7 @@ import AnnouncementBar from '@/components/layout/AnnouncementBar';
 import Breadcrumb from '@/components/ui/Breadcrumb';
 import { useToast } from '@/lib/context/ToastContext';
 import { useCaptchaPost } from '@/components/ui/TurnstileChallenge';
+import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 import {
   CONTACT_CATEGORIES,
   CONTACT_FIELD_LABELS,
@@ -24,6 +25,7 @@ const inputBase =
   'w-full px-4 py-3 rounded-lg border bg-surface font-body-sm text-body-sm text-on-surface focus:outline-none transition-colors';
 
 export default function ContactPage() {
+  const { contact } = useStoreSettings();
   const { showToast } = useToast();
   const { postJson, challenge } = useCaptchaPost();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -220,7 +222,7 @@ export default function ContactPage() {
                 <div className="flex gap-3">
                   <span className="material-symbols-outlined text-secondary text-[22px] shrink-0">schedule</span>
                   <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
-                    Mon – Sat: 10:00 AM – 7:00 PM (IST)
+                    {contact.hoursWeekdays || 'Every Day: 10:00 AM – 5:00 PM (IST)'}
                   </p>
                 </div>
                 <div className="flex gap-3">

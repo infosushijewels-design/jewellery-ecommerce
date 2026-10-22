@@ -62,6 +62,21 @@ export default function BookAppointmentPage() {
   // Bumping this re-fetches the booked slots (used after a booking conflict).
   const [reloadKey, setReloadKey] = useState(0);
 
+  // Prefills topic/message when linked from elsewhere (e.g. the wedding planner's
+  // consultation CTA) via ?topic=&message= — read from window.location directly so this
+  // stays a plain client page with no useSearchParams()/Suspense boundary to add.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const topic = params.get('topic');
+    const message = params.get('message');
+    if (!topic && !message) return;
+    setForm((prev) => ({
+      ...prev,
+      topic: topic && (APPOINTMENT_TOPICS as readonly string[]).includes(topic) ? topic : prev.topic,
+      message: message || prev.message,
+    }));
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     const now = new Date();

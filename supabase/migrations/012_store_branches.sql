@@ -77,8 +77,8 @@ CREATE TRIGGER trg_store_branches_updated_at BEFORE UPDATE ON public.store_branc
 -- Seed the two branches previously hard-coded on the homepage (only if the table is empty)
 INSERT INTO public.store_branches (name, address, city, state, pincode, hours, latitude, longitude, is_flagship, sort_order)
 SELECT * FROM (VALUES
-  ('Jaipur Flagship', 'MI Road, Heritage District', 'Jaipur', 'Rajasthan', '302001', 'Mon – Sat: 10:00 AM – 7:00 PM', 26.9157, 75.8105, TRUE, 1),
-  ('Mumbai Atelier', 'Turner Road, Bandra West', 'Mumbai', 'Maharashtra', '400050', 'Mon – Sat: 10:00 AM – 7:00 PM', 19.0625, 72.8347, FALSE, 2)
+  ('Jaipur Flagship', 'MI Road, Heritage District', 'Jaipur', 'Rajasthan', '302001', 'Every Day: 10:00 AM – 5:00 PM', 26.9157, 75.8105, TRUE, 1),
+  ('Mumbai Atelier', 'Turner Road, Bandra West', 'Mumbai', 'Maharashtra', '400050', 'Every Day: 10:00 AM – 5:00 PM', 19.0625, 72.8347, FALSE, 2)
 ) AS seed(name, address, city, state, pincode, hours, latitude, longitude, is_flagship, sort_order)
 WHERE NOT EXISTS (SELECT 1 FROM public.store_branches);
 

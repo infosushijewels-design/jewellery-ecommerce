@@ -2,8 +2,10 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 
 export default function FlagshipAtelier() {
+  const { contact } = useStoreSettings();
   const googleMapsUrl = 'https://www.google.com/maps/search/?api=1&query=2Ch4+Dadabari+Main+Road+3rd+Floor+Pukhraj+Prime+Kota+Rajasthan';
 
   return (
@@ -70,7 +72,7 @@ export default function FlagshipAtelier() {
               <div>
                 <p className="text-[12px] font-label-md uppercase tracking-wider text-secondary font-semibold">Atelier Hours</p>
                 <p className="font-body-md text-body-md text-primary font-medium mt-0.5">
-                  Monday – Saturday: 10:00 AM – 7:00 PM (IST)
+                  {contact.hoursWeekdays || 'Every Day: 10:00 AM – 5:00 PM (IST)'}
                 </p>
                 <p className="text-body-sm text-[12px] text-on-surface-variant">Private viewings by prior appointment recommended</p>
               </div>
