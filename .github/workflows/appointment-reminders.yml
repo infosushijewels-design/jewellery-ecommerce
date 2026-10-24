@@ -30,10 +30,20 @@ jobs:
           SITE_URL: ${{ vars.SITE_URL }}
         run: |
           if [ -z "$CRON_SECRET" ] || [ -z "$SITE_URL" ]; then
-            echo "::error::Set the CRON_SECRET secret and the SITE_URL variable in the repository settings."
+            echo "::error::Set the CRON_SECRET secret and the SITE_URL variable in the repository settings (Settings -> Secrets and variables -> Actions)."
             exit 1
           fi
-          response=$(curl --silent --show-error --fail --max-time 120 \
+          # Always print the response body and status before deciding pass/fail, instead of
+          # --fail swallowing it -- a future failure (wrong secret, 500, deploy down, etc.)
+          # is then diagnosable straight from this step's log, no re-run needed.
+          http_status=$(curl --silent --show-error --max-time 120 \
             --header "Authorization: Bearer $CRON_SECRET" \
+            --output response.json \
+            --write-out "%{http_code}" \
             "$SITE_URL/api/cron/appointment-reminders")
-          echo "$response"
+          echo "HTTP status: $http_status"
+          cat response.json
+          if [ "$http_status" -lt 200 ] || [ "$http_status" -ge 300 ]; then
+            echo "::error::Reminder endpoint returned HTTP $http_status -- see the response body above."
+            exit 1
+          fi
